@@ -305,7 +305,7 @@
       <div class="modal-header"><h5 class="modal-title">Fechamento controlado do RDC</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
         <p class="mb-2">O fechamento bloqueia edição comum e registra usuário, data e hora.</p>
-        <div class="mb-3"><label class="form-label">Justificativa / observação do fechamento</label><textarea name="justificativa_fechamento" class="form-control" rows="4"></textarea></div>
+        <div class="mb-3"><label class="form-label">Justificativa / observação do fechamento</label><input type="hidden" name="action" value="fechar"><textarea name="observacao" class="form-control" rows="4"></textarea></div>
         {% if can_force_close %}<div class="form-check"><input class="form-check-input" type="checkbox" name="forcar" value="1" id="forcar"><label class="form-check-label" for="forcar">Permitir fechamento mesmo com bloqueios críticos</label></div>{% endif %}
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success">Confirmar fechamento</button></div>
@@ -316,10 +316,10 @@
 <div class="modal fade" id="modalReabertura" tabindex="-1">
   <div class="modal-dialog">
     <form method="post" action="{% url 'rdc-workflow' rdc.pk %}" class="modal-content">{% csrf_token %}
-      <input type="hidden" name="acao" value="reabrir">
+      <input type="hidden" name="action" value="reabrir">
       <div class="modal-header"><h5 class="modal-title">Reabrir RDC</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
-        <div class="mb-3"><label class="form-label">Motivo da reabertura</label><textarea name="justificativa_reabertura" class="form-control" rows="4" required></textarea></div>
+        <div class="mb-3"><label class="form-label">Motivo da reabertura</label><textarea name="observacao" class="form-control" rows="4" required></textarea></div>
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-warning">Confirmar reabertura</button></div>
     </form>

@@ -11,7 +11,7 @@ from django.http import FileResponse, Http404, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from accounts.models import AuditLog
-from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin
+from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin
 from core.audit import registrar_auditoria, traduzir_acao_auditoria, cor_acao_auditoria
 from core.audit_decorators import audit_action
 from django.utils import timezone
@@ -1771,7 +1771,7 @@ class RDOExportView(AuthenticatedTemplateMixin, View):
         raise Http404("Tipo de exportAção de RDO não suportado.")
 
 
-class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, UpdateView):
+class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, UpdateView):
     allowed_roles = ["admin", "supervisor"]
 
     model = RDC
@@ -1785,7 +1785,7 @@ class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, UpdateView):
     )
     def form_valid(self, form):
         return super().form_valid(form)
-class RDCDeleteView(AuthenticatedTemplateMixin, RoleRequiredMixin, DeleteView):
+class RDCDeleteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, DeleteView):
     allowed_roles = ["admin"]
 
     model = RDC
@@ -2476,19 +2476,46 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
     @audit_action(
         action="workflow_rdc",
         target_model="RDC",
-        get_target_id=lambda self, request, *a, **k: request.POST.get("rdc_id") or request.POST.get("pk") or "",
-        detail_func=lambda self, request, *a, **k: f"Ação '{request.POST.get('action')}' aplicada",
+        get_target_id=lambda self, request, *a, **k: request.POST.get("rdc_id") or request.POST.get("pk") or k.get("pk") or "",
+        detail_func=lambda self, request, *a, **k: f"A??o '{request.POST.get('action')}' aplicada",
     )
     def post(self, request, *args, **kwargs):
-        rdc_id = request.POST.get("rdc_id")
-        action = request.POST.get("action")
+        rdc_id = request.POST.get("rdc_id") or kwargs.get("pk")
+        action = (
+            request.POST.get("action")
+            or request.POST.get("acao")
+            or ""
+        ).strip()
+        observacao = (
+            request.POST.get("observacao")
+            or request.POST.get("justificativa_fechamento")
+            or request.POST.get("justificativa_reabertura")
+            or ""
+        ).strip()
+
+        print("DEBUG WORKFLOW POST:", dict(request.POST))
+        print("DEBUG WORKFLOW ACTION:", action)
+        print("DEBUG WORKFLOW OBS:", observacao)
 
         rdc = get_object_or_404(RDC, pk=rdc_id)
 
-        process_rdc_workflow_action(rdc, action, request.user)
+        result = process_rdc_workflow_action(
+            rdc,
+            action=action,
+            user=request.user,
+            observacao=observacao,
+        )
 
-        return redirect(request.META.get("HTTP_REFERER", "/"))
+        if result.get("ok"):
+            messages.success(request, result.get("message", "A??o executada com sucesso."))
+        else:
+            level = (result.get("level") or "").lower()
+            msg = result.get("message", "N?o foi poss?vel executar a a??o.")
+            if level == "warning":
+                messages.warning(request, msg)
+            elif level == "error":
+                messages.error(request, msg)
+            else:
+                messages.info(request, msg)
 
-
-
-
+        return redirect(request.META.get("HTTP_REFERER", reverse("rdc-detail", kwargs={"pk": rdc.pk})))
