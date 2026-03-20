@@ -900,9 +900,18 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
 
         grupos = []
         grupo_atual = None
+        hoje = timezone.localdate()
+        ontem = hoje - timedelta(days=1)
 
         for evento in auditorias:
-            rotulo_data = evento["data"].strftime("%d/%m/%Y")
+            data_evento = timezone.localtime(evento["data"]).date()
+
+            if data_evento == hoje:
+                rotulo_data = "Hoje"
+            elif data_evento == ontem:
+                rotulo_data = "Ontem"
+            else:
+                rotulo_data = data_evento.strftime("%d/%m/%Y")
 
             if not grupo_atual or grupo_atual["data"] != rotulo_data:
                 grupo_atual = {
