@@ -886,7 +886,7 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
             target_id=str(rdc.pk),
         ).select_related("user")[:20]
 
-        context["auditorias"] = [
+        auditorias = [
             {
                 "data": log.created_at,
                 "usuario": log.user.username if log.user else "Sistema",
@@ -897,6 +897,24 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
             }
             for log in logs
         ]
+
+        grupos = []
+        grupo_atual = None
+
+        for evento in auditorias:
+            rotulo_data = evento["data"].strftime("%d/%m/%Y")
+
+            if not grupo_atual or grupo_atual["data"] != rotulo_data:
+                grupo_atual = {
+                    "data": rotulo_data,
+                    "eventos": [],
+                }
+                grupos.append(grupo_atual)
+
+            grupo_atual["eventos"].append(evento)
+
+        context["auditorias"] = auditorias
+        context["auditorias_grupos"] = grupos
 
         return context
 
