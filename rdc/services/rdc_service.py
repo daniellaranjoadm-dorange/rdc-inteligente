@@ -1143,3 +1143,10 @@ from .rdc_contexto_service import (
 
 
 
+
+from .rdc_montagem_service import (
+    sugerir_contexto_rdc_por_cronograma,
+    gerar_apontamentos_base_automaticos,
+    montar_rdc_pre_preenchido,
+    montar_rdc_simulado_por_cronograma,
+)
