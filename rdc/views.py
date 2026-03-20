@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin
 from core.audit import registrar_auditoria
+from core.audit_decorators import audit_action
 from django.utils import timezone
 from django.views import View
 from django.views.generic import (
@@ -2332,6 +2333,12 @@ class RDCDashboardHomeView(AuthenticatedTemplateMixin, TemplateView):
 class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin", "supervisor"]
 
+    @audit_action(
+        action="workflow_rdc",
+        target_model="RDC",
+        get_target_id=lambda self, request, *a, **k: request.POST.get("rdc_id") or request.POST.get("pk") or "",
+        detail_func=lambda self, request, *a, **k: f"Ação '{request.POST.get('action')}' aplicada",
+    )
     def post(self, request, *args, **kwargs):
         rdc_id = request.POST.get("rdc_id")
         action = request.POST.get("action")
@@ -2340,44 +2347,5 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
 
         process_rdc_workflow_action(rdc, action, request.user)
 
-        registrar_auditoria(
-            user=request.user,
-            action="workflow_rdc",
-            target_model="RDC",
-            target_id=rdc.pk,
-            detail=f"Ação '{action}' aplicada no RDC {rdc.pk}",
-        )
-
         return redirect(request.META.get("HTTP_REFERER", "/"))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
