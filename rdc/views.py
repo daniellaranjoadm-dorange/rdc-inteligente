@@ -2444,11 +2444,15 @@ class RDCAuditoriaDashboardView(AuthenticatedTemplateMixin, RoleRequiredMixin, T
 
         context["total_eventos"] = logs.count()
 
-        context["acoes_top"] = list(
+        acoes_top = list(
             logs.values("action")
             .annotate(total=Count("id"))
             .order_by("-total", "action")[:10]
         )
+        for item in acoes_top:
+            item["rotulo"] = traduzir_acao_auditoria(item["action"])
+            item["cor"] = cor_acao_auditoria(item["action"])
+        context["acoes_top"] = acoes_top
 
         context["usuarios_top"] = list(
             logs.values("user__username")

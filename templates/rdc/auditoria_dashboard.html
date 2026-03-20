@@ -28,7 +28,7 @@
                     <ul class="list-group list-group-flush">
                         {% for item in acoes_top %}
                             <li class="list-group-item d-flex justify-content-between">
-                                <span>{{ item.action }}</span>
+                                <span><span class="badge bg-{{ item.cor }} me-2">{{ item.rotulo }}</span></span>
                                 <strong>{{ item.total }}</strong>
                             </li>
                         {% endfor %}
