@@ -2,12 +2,14 @@
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import generics, permissions, status
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from cadastros.models import AreaLocal, Disciplina, Equipe, Funcionario, Projeto
 from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario
+
+from .permissions import PerfilRolePermission
 
 from .serializers import (
     MobileAreaLocalSerializer,
@@ -34,7 +36,7 @@ from .serializers import (
 
 
 class MeAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
 
     def get(self, request, *args, **kwargs):
         data = {
@@ -51,7 +53,7 @@ class MeAPIView(APIView):
 
 
 class BaseOperacionalAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
 
     def get(self, request, *args, **kwargs):
         data_ref = request.GET.get("data")
@@ -108,7 +110,11 @@ class BaseOperacionalAPIView(APIView):
 
 
 class MobileRDCListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "POST": ["admin", "supervisor"],
+    }
 
     def get_queryset(self):
         queryset = (
@@ -158,7 +164,7 @@ class MobileRDCListCreateAPIView(generics.ListCreateAPIView):
 
 
 class MobileRDCDetailAPIView(generics.RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
     serializer_class = MobileRDCDetailSerializer
     lookup_url_kwarg = "pk"
 
@@ -172,7 +178,11 @@ class MobileRDCDetailAPIView(generics.RetrieveAPIView):
 
 
 class MobileRDCFuncionarioListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "POST": ["admin", "supervisor"],
+    }
 
     def get_rdc(self):
         return get_object_or_404(RDC, pk=self.kwargs["pk"])
@@ -211,7 +221,11 @@ class MobileRDCFuncionarioListCreateAPIView(generics.ListCreateAPIView):
 
 
 class MobileRDCAtividadeListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "POST": ["admin", "supervisor"],
+    }
 
     def get_rdc(self):
         return get_object_or_404(RDC, pk=self.kwargs["pk"])
@@ -245,7 +259,11 @@ class MobileRDCAtividadeListCreateAPIView(generics.ListCreateAPIView):
 
 
 class MobileRDCApontamentoListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "POST": ["admin", "supervisor"],
+    }
 
     def get_rdc(self):
         return get_object_or_404(RDC, pk=self.kwargs["pk"])
@@ -279,7 +297,13 @@ class MobileRDCApontamentoListCreateAPIView(generics.ListCreateAPIView):
 
 
 class MobileRDCRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "PUT": ["admin", "supervisor"],
+        "PATCH": ["admin", "supervisor"],
+        "DELETE": ["admin"],
+    }
     lookup_url_kwarg = "pk"
 
     def get_queryset(self):
@@ -313,7 +337,13 @@ class MobileRDCRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIVie
 
 
 class MobileRDCFuncionarioRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "PUT": ["admin", "supervisor"],
+        "PATCH": ["admin", "supervisor"],
+        "DELETE": ["admin"],
+    }
     lookup_url_kwarg = "item_pk"
 
     def get_queryset(self):
@@ -358,7 +388,13 @@ class MobileRDCFuncionarioRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDe
 
 
 class MobileRDCAtividadeRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "PUT": ["admin", "supervisor"],
+        "PATCH": ["admin", "supervisor"],
+        "DELETE": ["admin"],
+    }
     lookup_url_kwarg = "item_pk"
 
     def get_queryset(self):
@@ -393,7 +429,13 @@ class MobileRDCAtividadeRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDest
 
 
 class MobileRDCApontamentoRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "PUT": ["admin", "supervisor"],
+        "PATCH": ["admin", "supervisor"],
+        "DELETE": ["admin"],
+    }
     lookup_url_kwarg = "item_pk"
 
     def get_queryset(self):
@@ -440,7 +482,8 @@ def _parse_sync_timestamp(value):
 
 
 class MobileSyncAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles = ["admin", "supervisor"]
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
@@ -706,3 +749,5 @@ class MobileSyncAPIView(APIView):
                 response_data["errors"].append(
                     {"scope": "apontamentos", "item": item, "error": str(exc)}
                 )
+
+

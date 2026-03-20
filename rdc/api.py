@@ -1,7 +1,7 @@
 ﻿from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from mobile_api.permissions import PerfilRolePermission
 from rdc.forms import RDCMontagemForm
 from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao
 from rdc.serializers import RDCAtividadeSerializer, RDCFuncionarioSerializer, RDCSerializer, RDCValidacaoSerializer
@@ -9,7 +9,16 @@ from rdc.services.rdc_montagem_service import montar_rdc_pre_preenchido
 
 
 class BaseViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles_by_method = {
+        "GET": ["admin", "supervisor", "operador"],
+        "HEAD": ["admin", "supervisor", "operador"],
+        "OPTIONS": ["admin", "supervisor", "operador"],
+        "POST": ["admin", "supervisor"],
+        "PUT": ["admin", "supervisor"],
+        "PATCH": ["admin", "supervisor"],
+        "DELETE": ["admin"],
+    }
 
 
 class RDCViewSet(BaseViewSet):
@@ -33,7 +42,8 @@ class RDCValidacaoViewSet(BaseViewSet):
 
 
 class RDCMontagemAPIView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PerfilRolePermission]
+    allowed_roles = ["admin", "supervisor"]
 
     def post(self, request, *args, **kwargs):
         form = RDCMontagemForm(request.data)
@@ -47,5 +57,3 @@ class RDCMontagemAPIView(generics.GenericAPIView):
             user=request.user,
         )
         return Response(RDCSerializer(rdc, context={"request": request}).data)
-
-

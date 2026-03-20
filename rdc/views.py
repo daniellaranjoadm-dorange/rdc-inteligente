@@ -10,6 +10,8 @@ from django.db.models import Q, Count, Sum
 from django.http import FileResponse, Http404, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin
+from core.audit import registrar_auditoria
 from django.utils import timezone
 from django.views import View
 from django.views.generic import (
@@ -665,7 +667,8 @@ class RDCListView(AuthenticatedTemplateMixin, ListView):
         return context
 
 
-class RDCMontagemView(AuthenticatedTemplateMixin, FormView):
+class RDCMontagemView(AuthenticatedTemplateMixin, RoleRequiredMixin, FormView):
+    allowed_roles = ["admin", "supervisor"]
     template_name = "rdc/novo_rdc.html"
     form_class = RDCMontagemForm
 
@@ -1690,7 +1693,8 @@ class RDOExportView(AuthenticatedTemplateMixin, View):
         raise Http404("Tipo de exportAção de RDO não suportado.")
 
 
-class RDCUpdateView(AuthenticatedTemplateMixin, UpdateView):
+class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, UpdateView):
+    allowed_roles = ["admin", "supervisor"]
     model = RDC
     form_class = RDCForm
     template_name = "rdc/editar_rdc.html"
@@ -1704,7 +1708,8 @@ class RDCUpdateView(AuthenticatedTemplateMixin, UpdateView):
         return reverse("rdc-detail", kwargs={"pk": self.object.pk})
 
 
-class RDCDeleteView(AuthenticatedTemplateMixin, DeleteView):
+class RDCDeleteView(AuthenticatedTemplateMixin, RoleRequiredMixin, DeleteView):
+    allowed_roles = ["admin"]
     model = RDC
     template_name = "rdc/excluir_rdc.html"
     context_object_name = "rdc"
@@ -1728,7 +1733,8 @@ class RDCValidacoesView(AuthenticatedTemplateMixin, TemplateView):
         return context
 
 
-class RDCExportarModeloView(AuthenticatedTemplateMixin, View):
+class RDCExportarModeloView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin", "supervisor"]
     def get(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         try:
@@ -2300,7 +2306,8 @@ class RDCDashboardHomeView(AuthenticatedTemplateMixin, TemplateView):
 
 
 
-class RDCWorkflowView(AuthenticatedTemplateMixin, View):
+class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin", "supervisor"]
     def post(self, request, *args, **kwargs):
         rdc = get_object_or_404(RDC, pk=kwargs["pk"])
         acao = (request.POST.get("acao") or "").strip()
@@ -2321,6 +2328,13 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, View):
         if observacao and not resultado["ok"]:
             messages.info(request, f"ObservAção: {observacao}")
         return redirect("rdc-detail", pk=rdc.pk)
+
+
+
+
+
+
+
 
 
 
