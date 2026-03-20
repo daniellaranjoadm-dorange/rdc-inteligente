@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from accounts.models import AuditLog
 from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin
-from core.audit import registrar_auditoria
+from core.audit import registrar_auditoria, traduzir_acao_auditoria
 from core.audit_decorators import audit_action
 from django.utils import timezone
 from django.views import View
@@ -892,7 +892,7 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
                 "usuario": log.user.username if log.user else "Sistema",
                 "acao": log.action,
                 "detalhe": log.detail,
-                "resumo": (log.action or "").replace("_", " ").title(),
+                "resumo": traduzir_acao_auditoria(log.action),
             }
             for log in logs
         ]
