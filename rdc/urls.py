@@ -5,6 +5,7 @@ from rdc.views import (
     RDCAtividadeBuscaView,
     RDCAtividadeCreateView,
     RDCAtividadeDeleteView,
+    RDCAtividadeInlineUpdateView,
     RDCAtividadeLoteView,
     RDCAtividadeUpdateView,
     RDCConsolidadoExportView,
@@ -104,6 +105,11 @@ urlpatterns = [
         "<int:pk>/atividades/<int:pk2>/excluir/",
         RDCAtividadeDeleteView.as_view(),
         name="rdc-atividade-delete",
+    ),
+    path(
+        "<int:pk>/atividades/<int:pk2>/inline-update/",
+        RDCAtividadeInlineUpdateView.as_view(),
+        name="rdc-atividade-inline-update",
     ),
     path(
         "<int:pk>/atividades/lote/",

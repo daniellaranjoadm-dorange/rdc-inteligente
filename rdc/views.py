@@ -16,6 +16,7 @@ from core.audit import registrar_auditoria, traduzir_acao_auditoria, cor_acao_au
 from core.audit_decorators import audit_action
 from django.utils import timezone
 from django.views import View
+from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -1963,6 +1964,51 @@ class RDCAtividadeUpdateView(RDCNestedUpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["rdc"] = self.rdc
         return kwargs
+
+
+
+class RDCAtividadeInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        self.obj = get_object_or_404(RDCAtividade, pk=kwargs["pk2"], rdc=self.rdc)
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk, pk2):
+        field = (request.POST.get("field") or "").strip()
+        value = (request.POST.get("value") or "").strip()
+
+        allowed_fields = {"qtd_executada"}
+        if field not in allowed_fields:
+            return JsonResponse(
+                {"ok": False, "message": "Campo n?o permitido para edi??o inline."},
+                status=400,
+            )
+
+        try:
+            if field == "qtd_executada":
+                from decimal import Decimal
+                parsed = Decimal(value or "0")
+                setattr(self.obj, field, parsed)
+
+            self.obj.full_clean()
+            self.obj.save(update_fields=[field, "updated_at", "sync_updated_at"])
+
+            display = f"{getattr(self.obj, field):.2f}" if field == "qtd_executada" else str(getattr(self.obj, field))
+            return JsonResponse(
+                {
+                    "ok": True,
+                    "field": field,
+                    "value": display,
+                    "display": display,
+                }
+            )
+        except Exception as exc:
+            return JsonResponse(
+                {"ok": False, "message": str(exc)},
+                status=400,
+            )
 
 
 class RDCAtividadeDeleteView(RDCNestedDeleteView):
