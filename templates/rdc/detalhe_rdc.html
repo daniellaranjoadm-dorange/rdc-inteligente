@@ -210,22 +210,27 @@
         <div class="table-card p-3 h-100">
             <h5 class="mb-1">Auditoria recente</h5>
             <div class="mini-muted mb-3">Últimos eventos deste RDC.</div>
-            {% if auditorias %}
-                <div class="audit-timeline">
-                    {% for evento in auditorias %}
-                        <div class="audit-item">
-                            <div class="audit-dot"></div>
-                            <div class="audit-content">
-                                <div class="d-flex justify-content-between gap-2 flex-wrap">
-                                    <span class="badge bg-{{ evento.cor }} me-2">{{ evento.resumo }}</span>
+            {% if auditorias_grupos %}
+                {% for grupo in auditorias_grupos %}
+                    <div class="mb-3">
+                        <div class="small text-uppercase text-muted fw-bold mb-2">{{ grupo.data }}</div>
+                        <div class="audit-timeline">
+                            {% for evento in grupo.eventos %}
+                                <div class="audit-item">
+                                    <div class="audit-dot"></div>
+                                    <div class="audit-content">
+                                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                                            <span class="badge bg-{{ evento.cor }} me-2">{{ evento.resumo }}</span>
                                     <span class="mini-muted">{{ evento.created_at|date:'d/m/Y H:i' }}</span>
                                 </div>
                                 <div class="mini-muted">{{ evento.usuario|default:'Sistema' }} · {{ evento.acao }}{% if evento.secao %} · {{ evento.secao }}{% endif %}</div>
                                 {% if evento.detalhe %}<div class="small mt-1">{{ evento.detalhe }}</div>{% endif %}
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
             {% else %}
                 <div class="text-muted small">Sem eventos de auditoria registrados ainda.</div>
             {% endif %}
