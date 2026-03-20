@@ -882,6 +882,7 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
             context["justificativa_excepcional"] = rdc.observacoes
 
         filtro_acao = self.request.GET.get("acao", "").strip()
+        filtro_usuario = self.request.GET.get("usuario", "").strip()
 
         logs = AuditLog.objects.filter(
             target_model="RDC",
@@ -890,6 +891,9 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
 
         if filtro_acao:
             logs = logs.filter(action=filtro_acao)
+
+        if filtro_usuario:
+            logs = logs.filter(user__username=filtro_usuario)
 
         logs = logs.select_related("user").order_by("-created_at")[:50]
 
@@ -930,6 +934,7 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
             grupo_atual["eventos"].append(evento)
 
         context["filtro_acao"] = self.request.GET.get("acao", "")
+        context["filtro_usuario"] = self.request.GET.get("usuario", "")
         context["acoes_disponiveis"] = [
             ("", "Todas"),
             ("create_rdc", "Cria??o"),
@@ -938,6 +943,15 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
             ("delete_rdc", "Exclus?o"),
             ("exportar_rdc_modelo", "Exporta??o"),
         ]
+        context["usuarios_auditoria"] = sorted({
+            log.user.username
+            for log in AuditLog.objects.filter(
+                target_model="RDC",
+                target_id=str(rdc.pk),
+                user__isnull=False,
+            ).select_related("user")
+            if log.user and log.user.username
+        })
 
         context["auditorias"] = auditorias
         context["auditorias_grupos"] = grupos

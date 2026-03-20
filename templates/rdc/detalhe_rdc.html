@@ -210,10 +210,16 @@
         <div class="table-card p-3 h-100">
             <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
     <h5 class="mb-1">Auditoria recente</h5>
-    <form method="get" class="d-flex gap-2">
+    <form method="get" class="d-flex gap-2 flex-wrap">
         <select name="acao" class="form-select form-select-sm" onchange="this.form.submit()">
             {% for value, label in acoes_disponiveis %}
                 <option value="{{ value }}" {% if value == filtro_acao %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="usuario" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todos os usu?rios</option>
+            {% for username in usuarios_auditoria %}
+                <option value="{{ username }}" {% if username == filtro_usuario %}selected{% endif %}>{{ username }}</option>
             {% endfor %}
         </select>
     </form>
