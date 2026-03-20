@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from accounts.models import AuditLog
 from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin
-from core.audit import registrar_auditoria, traduzir_acao_auditoria
+from core.audit import registrar_auditoria, traduzir_acao_auditoria, cor_acao_auditoria
 from core.audit_decorators import audit_action
 from django.utils import timezone
 from django.views import View
@@ -893,6 +893,7 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
                 "acao": log.action,
                 "detalhe": log.detail,
                 "resumo": traduzir_acao_auditoria(log.action),
+                "cor": cor_acao_auditoria(log.action),
             }
             for log in logs
         ]

@@ -20,3 +20,14 @@ def traduzir_acao_auditoria(action):
         "create_rdc": "Criou RDC",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
+
+
+def cor_acao_auditoria(action):
+    mapa = {
+        "exportar_rdc_modelo": "secondary",
+        "workflow_rdc": "primary",
+        "delete_rdc": "danger",
+        "update_rdc": "warning",
+        "create_rdc": "success",
+    }
+    return mapa.get(action, "light")
