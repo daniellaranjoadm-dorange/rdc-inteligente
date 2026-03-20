@@ -254,6 +254,59 @@
     </div>
 </div>
 
+
+<div class="table-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">Workflow do RDC</h5>
+            <div class="mini-muted">Acompanhe o est?gio atual e execute as transi??es permitidas.</div>
+        </div>
+        <span class="badge text-bg-dark">{{ rdc.get_status_display }}</span>
+    </div>
+
+    {% if workflow_actions_available %}
+    <div class="d-flex gap-2 flex-wrap">
+        {% if can_send_review %}
+        <form method="post" action="{% url 'rdc-workflow' rdc.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="enviar_revisao">
+            <button class="btn btn-outline-primary">Enviar para revis?o</button>
+        </form>
+        {% endif %}
+
+        {% if can_approve %}
+        <form method="post" action="{% url 'rdc-workflow' rdc.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="aprovar">
+            <button class="btn btn-primary">Aprovar</button>
+        </form>
+        {% endif %}
+
+        {% if can_return %}
+        <form method="post" action="{% url 'rdc-workflow' rdc.pk %}" class="d-flex gap-2 flex-wrap align-items-start">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="devolver">
+            <input type="text" name="observacao" class="form-control" style="max-width: 320px;" placeholder="Motivo da devolu??o">
+            <button class="btn btn-outline-warning">Devolver</button>
+        </form>
+        {% endif %}
+
+        {% if can_close_workflow and not rdc.is_fechado %}
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFechamento">Fechar RDC</button>
+        {% endif %}
+
+        {% if can_reopen_workflow and rdc.is_fechado %}
+        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalReabertura">Reabrir RDC</button>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="alert alert-light border mb-0">
+        Nenhuma a??o de workflow est? dispon?vel para este RDC no momento.
+    </div>
+    {% endif %}
+</div>
+
+
 <ul class="nav nav-tabs mb-3" id="rdcTabs" role="tablist">
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#atividades">Atividades</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#funcionarios">Funcionários</button></li>

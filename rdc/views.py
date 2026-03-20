@@ -957,6 +957,19 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
         context["auditorias"] = auditorias
         context["auditorias_grupos"] = grupos
 
+        context["can_send_review"] = bool(getattr(rdc, "usuario_pode_enviar_revisao", lambda user: False)(self.request.user))
+        context["can_approve"] = bool(getattr(rdc, "usuario_pode_aprovar", lambda user: False)(self.request.user))
+        context["can_return"] = bool(getattr(rdc, "usuario_pode_devolver", lambda user: False)(self.request.user))
+        context["can_close_workflow"] = bool(getattr(rdc, "usuario_pode_fechar", lambda user: False)(self.request.user))
+        context["can_reopen_workflow"] = bool(getattr(rdc, "usuario_pode_reabrir", lambda user: False)(self.request.user))
+        context["workflow_actions_available"] = any([
+            context["can_send_review"],
+            context["can_approve"],
+            context["can_return"],
+            context["can_close_workflow"],
+            context["can_reopen_workflow"],
+        ])
+
         return context
 
 
