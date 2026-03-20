@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="hero-panel mb-4">
+  <div class="row g-4 align-items-center">
+    <div class="col-lg-8">
+      <div class="subtle-label">D'OR@NGE Control</div>
+      <h1 class="display-6 fw-bold mb-2">Centro de comando do dia</h1>
+      <p class="mb-3 text-white-50">A partir daqui você acompanha a operAção do RDC, identifica desvios e entra direto no que precisa de Ação.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-light" href="/rdc/dashboard/">Abrir dashboard executivo</a>
+        <a class="btn btn-outline-light" href="/rdc/novo/">Montar novo RDC</a>
+        <a class="btn btn-outline-light" href="/rdc/consolidado/">Painel consolidado</a>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="hero-kpi-card">
+        <span class="subtle-label">Acesso rápido</span>
+        <div class="metric-value">RDC</div>
+        <div class="text-white-50 small">Use o dashboard como porta de entrada principal do sistema.</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

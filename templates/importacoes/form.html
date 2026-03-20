@@ -1,0 +1,11 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-3">Nova importação</h1>
+<div class="alert alert-info">
+    <strong>Cronograma:</strong> para importar com contexto completo, use em <strong>ObservAções</strong> algo como:<br>
+    <code>projeto=RDCPLA; projeto_nome=RDC PLA; disciplina=ELE; disciplina_nome=Elétrica; area=GENYARD; area_descricao=Generator Yard; turno=integral; unidade=UN</code>
+</div>
+<form method="post" enctype="multipart/form-data" class="card table-card card-body">{% csrf_token %}{{ form.as_p }}<button class="btn btn-success" type="submit">Enviar e processar</button></form>
+{% endblock %}
+
+

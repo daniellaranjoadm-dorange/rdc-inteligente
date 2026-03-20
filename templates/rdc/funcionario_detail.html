@@ -1,0 +1,29 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h4 mb-3">Detalhes do Funcionário RDC</h1>
+
+  <div class="card">
+    <div class="card-body">
+      <h2 class="h5">{{ object }}</h2>
+
+      <p class="mb-2">
+        <strong>Status:</strong>
+        {% if object.presente_catraca %}
+          <span class="badge bg-success">Presente na catraca</span>
+        {% elif object.liberado_sem_catraca %}
+          <span class="badge bg-info text-dark">Liberado manualmente</span>
+        {% else %}
+          <span class="badge bg-danger">Bloqueado: sem catraca</span>
+        {% endif %}
+      </p>
+
+      {% if object.liberado_sem_catraca %}
+        <p class="mb-1"><strong>Justificativa:</strong> {{ object.justificativa_liberacao }}</p>
+        <p class="mb-0"><strong>Liberado por:</strong> {{ object.liberado_por }} em {{ object.liberado_em|date:"d/m/Y H:i" }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

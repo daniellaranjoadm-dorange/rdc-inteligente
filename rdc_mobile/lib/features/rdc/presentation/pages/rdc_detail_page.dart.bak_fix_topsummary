@@ -1,0 +1,1897 @@
+import 'package:flutter/material.dart';
+
+import '../../../home/data/services/base_operacional_service.dart';
+import '../../data/services/rdc_detail_service.dart';
+import '../../data/services/rdc_update_service.dart';
+
+class RdcDetailPage extends StatefulWidget {
+  final int rdcId;
+
+  const RdcDetailPage({super.key, required this.rdcId});
+
+  @override
+  State<RdcDetailPage> createState() => _RdcDetailPageState();
+}
+
+class _RdcDetailPageState extends State<RdcDetailPage> {
+  final _updateService = RdcUpdateService();
+  final _baseOperacionalService = BaseOperacionalService();
+
+  final _observacoesController = TextEditingController();
+  final _horarioInicioController = TextEditingController();
+  final _horarioFimController = TextEditingController();
+  final _condicaoAreaController = TextEditingController();
+  final _climaManhaController = TextEditingController();
+  final _climaTardeController = TextEditingController();
+  final _climaNoiteController = TextEditingController();
+  final _dataController = TextEditingController();
+  final _diaSemanaController = TextEditingController();
+  final _statusController = TextEditingController();
+
+  bool _isEditing = false;
+  bool _isSaving = false;
+  bool _initialized = false;
+
+  int _activeSection = 0;
+
+  String? _turno;
+
+  int? _projetoId;
+  int? _areaLocalId;
+  int? _disciplinaId;
+  int? _supervisorId;
+
+  List<Map<String, dynamic>> _projetos = const [];
+  List<Map<String, dynamic>> _areas = const [];
+  List<Map<String, dynamic>> _disciplinas = const [];
+  List<Map<String, dynamic>> _funcionarios = const [];
+
+  late Future<RdcDetailResult> _detailFuture;
+  late Future<BaseOperacionalResult> _baseFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _detailFuture = RdcDetailService().getDetail(widget.rdcId);
+    _baseFuture = _baseOperacionalService.getBaseOperacional();
+  }
+
+  @override
+  void dispose() {
+    _observacoesController.dispose();
+    _horarioInicioController.dispose();
+    _horarioFimController.dispose();
+    _condicaoAreaController.dispose();
+    _climaManhaController.dispose();
+    _climaTardeController.dispose();
+    _climaNoiteController.dispose();
+    _dataController.dispose();
+    _diaSemanaController.dispose();
+    _statusController.dispose();
+    super.dispose();
+  }
+
+  bool _isPhone(double width) => width < 760;
+  bool _isTablet(double width) => width >= 760 && width < 1180;
+  bool _isWide(double width) => width >= 1180;
+
+  String _displayField(dynamic value, {String fallback = '-'}) {
+    if (value == null) return fallback;
+    final text = value.toString().trim();
+    return text.isEmpty ? fallback : text;
+  }
+
+  String _displayNested(Map<String, dynamic>? map, List<String> keys) {
+    if (map == null) return '-';
+    for (final key in keys) {
+      final value = map[key];
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value.toString().trim();
+      }
+    }
+    return '-';
+  }
+
+  String? _emptyToNull(String? value) {
+    if (value == null) return null;
+    final text = value.trim();
+    return text.isEmpty ? null : text;
+  }
+
+  Future<void> _pickDate() async {
+    final currentText = _dataController.text.trim();
+    DateTime initialDate = DateTime.now();
+
+    if (currentText.isNotEmpty) {
+      final parts = currentText.split('-');
+      if (parts.length == 3) {
+        final year = int.tryParse(parts[0]);
+        final month = int.tryParse(parts[1]);
+        final day = int.tryParse(parts[2]);
+        if (year != null && month != null && day != null) {
+          initialDate = DateTime(year, month, day);
+        }
+      }
+    }
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      final y = picked.year.toString().padLeft(4, '0');
+      final m = picked.month.toString().padLeft(2, '0');
+      final d = picked.day.toString().padLeft(2, '0');
+      _dataController.text = '$y-$m-$d';
+      _syncDiaSemanaFromDate();
+      setState(() {});
+    }
+  }
+
+  Future<void> _pickTime(TextEditingController controller) async {
+    TimeOfDay initialTime = const TimeOfDay(hour: 7, minute: 0);
+
+    final currentText = controller.text.trim();
+    final parts = currentText.split(':');
+    if (parts.length >= 2) {
+      final hour = int.tryParse(parts[0]);
+      final minute = int.tryParse(parts[1]);
+      if (hour != null && minute != null) {
+        initialTime = TimeOfDay(hour: hour, minute: minute);
+      }
+    }
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
+
+    if (picked != null) {
+      final h = picked.hour.toString().padLeft(2, '0');
+      final m = picked.minute.toString().padLeft(2, '0');
+      controller.text = '$h:$m';
+      setState(() {});
+    }
+  }
+
+  void _syncDiaSemanaFromDate() {
+    final currentText = _dataController.text.trim();
+    final parts = currentText.split('-');
+    if (parts.length != 3) return;
+
+    final year = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final day = int.tryParse(parts[2]);
+
+    if (year == null || month == null || day == null) return;
+
+    final date = DateTime(year, month, day);
+    const dias = [
+      'segunda',
+      'terça',
+      'quarta',
+      'quinta',
+      'sexta',
+      'sábado',
+      'domingo',
+    ];
+
+    _diaSemanaController.text = dias[date.weekday - 1];
+  }
+
+  int? _extractId(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is Map<String, dynamic>) {
+      final id = value['id'];
+      if (id is int) return id;
+      if (id != null) return int.tryParse(id.toString());
+    }
+    if (value is Map) {
+      final map = Map<String, dynamic>.from(value);
+      final id = map['id'];
+      if (id is int) return id;
+      if (id != null) return int.tryParse(id.toString());
+    }
+    return int.tryParse(value.toString());
+  }
+
+  Map<String, dynamic>? _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  List<Map<String, dynamic>> _asMapList(dynamic value) {
+    if (value is List) {
+      return value
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+    return const [];
+  }
+
+  void _fillBase(Map<String, dynamic> raw) {
+    _projetos = _asMapList(raw['projetos']);
+    _areas = _asMapList(raw['areas']);
+    _disciplinas = _asMapList(raw['disciplinas']);
+    _funcionarios = _asMapList(raw['funcionarios']);
+  }
+
+  void _fillForm(Map<String, dynamic> data) {
+    if (_initialized) return;
+    _initialized = true;
+
+    _turno = data['turno']?.toString();
+    _projetoId = _extractId(data['projeto']);
+    _areaLocalId = _extractId(data['area_local']);
+    _disciplinaId = _extractId(data['disciplina']);
+    _supervisorId = _extractId(data['supervisor']);
+
+    _condicaoAreaController.text = (data['condicao_area'] ?? '').toString();
+    _climaManhaController.text = (data['clima_manha'] ?? '').toString();
+    _climaTardeController.text = (data['clima_tarde'] ?? '').toString();
+    _climaNoiteController.text = (data['clima_noite'] ?? '').toString();
+    _horarioInicioController.text = (data['horario_inicio'] ?? '').toString();
+    _horarioFimController.text = (data['horario_fim'] ?? '').toString();
+    _observacoesController.text = (data['observacoes'] ?? '').toString();
+    _dataController.text = (data['data'] ?? '').toString();
+    _diaSemanaController.text = (data['dia_semana'] ?? '').toString();
+    _statusController.text = (data['status'] ?? '').toString();
+  }
+
+  String _optionLabel(Map<String, dynamic> item) {
+    final codigo = item['codigo']?.toString().trim() ?? '';
+    final nome =
+        item['nome']?.toString().trim() ??
+        item['descricao']?.toString().trim() ??
+        item['username']?.toString().trim() ??
+        '';
+    if (codigo.isNotEmpty && nome.isNotEmpty) return '$codigo - $nome';
+    if (nome.isNotEmpty) return nome;
+    if (codigo.isNotEmpty) return codigo;
+    return item['id']?.toString() ?? '-';
+  }
+
+  List<DropdownMenuItem<int>> _itemsFrom(List<Map<String, dynamic>> source) {
+    return source
+        .where((item) => item['id'] != null)
+        .map(
+          (item) => DropdownMenuItem<int>(
+            value: _extractId(item['id']),
+            child: Text(_optionLabel(item), overflow: TextOverflow.ellipsis),
+          ),
+        )
+        .toList();
+  }
+
+  List<Map<String, dynamic>> _filteredAreas() {
+    if (_projetoId == null) return _areas;
+    final filtered = _areas.where((item) {
+      final projeto = item['projeto'];
+      final projetoId = item['projeto_id'];
+      return _extractId(projeto) == _projetoId ||
+          _extractId(projetoId) == _projetoId;
+    }).toList();
+
+    return filtered.isEmpty ? _areas : filtered;
+  }
+
+  List<Map<String, dynamic>> _filteredSupervisores() {
+    if (_disciplinaId == null) return _funcionarios;
+
+    final filtered = _funcionarios.where((item) {
+      final disciplina = item['disciplina'];
+      final disciplinaId = item['disciplina_id'];
+      final funcao = (item['funcao_nome'] ?? '').toString().toLowerCase();
+      final cargo = (item['cargo'] ?? '').toString().toLowerCase();
+
+      final matchDisciplina =
+          _extractId(disciplina) == _disciplinaId ||
+          _extractId(disciplinaId) == _disciplinaId;
+
+      final matchPerfil =
+          funcao.contains('supervisor') || cargo.contains('supervisor');
+
+      return matchDisciplina || matchPerfil;
+    }).toList();
+
+    return filtered.isEmpty ? _funcionarios : filtered;
+  }
+
+  void _sanitizeDependentSelections() {
+    final areaIds = _filteredAreas()
+        .map((e) => _extractId(e['id']))
+        .whereType<int>()
+        .toSet();
+    final supervisorIds = _filteredSupervisores()
+        .map((e) => _extractId(e['id']))
+        .whereType<int>()
+        .toSet();
+
+    if (_areaLocalId != null && !areaIds.contains(_areaLocalId)) {
+      _areaLocalId = null;
+    }
+
+    if (_supervisorId != null && !supervisorIds.contains(_supervisorId)) {
+      _supervisorId = null;
+    }
+  }
+
+  Color _statusColor(String status) {
+    final value = status.toLowerCase();
+    if (value.contains('fech')) return const Color(0xFFB91C1C);
+    if (value.contains('valid')) return const Color(0xFF166534);
+    if (value.contains('edit')) return const Color(0xFFD97706);
+    if (value.contains('abert')) return const Color(0xFF1D4ED8);
+    if (value.contains('pre')) return const Color(0xFF475569);
+    return const Color(0xFF334155);
+  }
+
+  IconData _statusIcon(String status) {
+    final value = status.toLowerCase();
+    if (value.contains('fech')) return Icons.lock_outline;
+    if (value.contains('valid')) return Icons.verified_outlined;
+    if (value.contains('edit')) return Icons.edit_note;
+    if (value.contains('abert')) return Icons.folder_open_outlined;
+    if (value.contains('pre')) return Icons.auto_awesome_outlined;
+    return Icons.info_outline;
+  }
+
+  Future<void> _save() async {
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    final payload = <String, dynamic>{
+      'projeto': _projetoId,
+      'area_local': _areaLocalId,
+      'disciplina': _disciplinaId,
+      'supervisor': _supervisorId,
+      'turno': _turno,
+      'data': _emptyToNull(_dataController.text),
+      'dia_semana': _emptyToNull(_diaSemanaController.text),
+      'condicao_area': _emptyToNull(_condicaoAreaController.text),
+      'clima_manha': _emptyToNull(_climaManhaController.text),
+      'clima_tarde': _emptyToNull(_climaTardeController.text),
+      'clima_noite': _emptyToNull(_climaNoiteController.text),
+      'horario_inicio': _emptyToNull(_horarioInicioController.text),
+      'horario_fim': _emptyToNull(_horarioFimController.text),
+      'status': _emptyToNull(_statusController.text),
+      'observacoes': _observacoesController.text.trim(),
+    };
+
+    final result = await _updateService.updateRdc(
+      rdcId: widget.rdcId,
+      payload: payload,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(result.message)));
+
+    if (result.success) {
+      setState(() {
+        _isEditing = false;
+        _initialized = false;
+        _detailFuture = RdcDetailService().getDetail(widget.rdcId);
+      });
+    }
+  }
+
+  List<_WorkspaceItem> _workspaceItems() {
+    return const [
+      _WorkspaceItem('Geral', Icons.badge_outlined),
+      _WorkspaceItem('Condições', Icons.wb_cloudy_outlined),
+      _WorkspaceItem('Jornada', Icons.access_time_outlined),
+      _WorkspaceItem('Observações', Icons.notes_outlined),
+      _WorkspaceItem('Equipe', Icons.groups_outlined),
+      _WorkspaceItem('Atividades', Icons.assignment_outlined),
+      _WorkspaceItem('Apontamentos', Icons.fact_check_outlined),
+    ];
+  }
+
+  Widget _buildHeroHeader({
+    required double width,
+    required Map<String, dynamic> data,
+    required Map<String, dynamic>? projeto,
+    required Map<String, dynamic>? disciplina,
+    required Map<String, dynamic>? areaLocal,
+    required Map<String, dynamic>? supervisor,
+    required int funcionariosCount,
+    required int atividadesCount,
+    required int apontamentosCount,
+  }) {
+    final phone = _isPhone(width);
+    final status = _displayField(data['status'], fallback: 'sem status');
+    final statusColor = _statusColor(status);
+
+    return Container(
+      padding: EdgeInsets.all(phone ? 18 : 24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F172A),
+            Theme.of(context).colorScheme.primary,
+            const Color(0xFF3B82F6),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 14,
+            runSpacing: 14,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'RDC #${_displayField(data['id'])}',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.78),
+                      fontSize: phone ? 13 : 14,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _displayNested(projeto, ['codigo', 'nome']),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: phone ? 28 : 34,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    [
+                      _displayNested(disciplina, ['nome']),
+                      _displayNested(areaLocal, ['descricao', 'nome']),
+                    ].where((e) => e != '-').join(' • '),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.86),
+                      fontSize: phone ? 14 : 16,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(_statusIcon(status), color: statusColor, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      status,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _HeroChip(
+                icon: Icons.calendar_today_outlined,
+                label: 'Data',
+                value: _displayField(data['data']),
+              ),
+              _HeroChip(
+                icon: Icons.schedule_outlined,
+                label: 'Turno',
+                value: _displayField(data['turno']),
+              ),
+              _HeroChip(
+                icon: Icons.event_note_outlined,
+                label: 'Dia',
+                value: _displayField(data['dia_semana']),
+              ),
+              _HeroChip(
+                icon: Icons.person_outline,
+                label: 'Supervisor',
+                value: _displayNested(supervisor, ['nome', 'username']),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _HeroMetric(
+                title: 'Funcionários',
+                value: funcionariosCount.toString(),
+                icon: Icons.groups_outlined,
+              ),
+              _HeroMetric(
+                title: 'Atividades',
+                value: atividadesCount.toString(),
+                icon: Icons.assignment_outlined,
+              ),
+              _HeroMetric(
+                title: 'Apontamentos',
+                value: apontamentosCount.toString(),
+                icon: Icons.fact_check_outlined,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditToolbar(bool phone) {
+    return Container(
+      padding: EdgeInsets.all(phone ? 14 : 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: phone
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _ToolbarStatus(isEditing: _isEditing),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _isSaving
+                          ? null
+                          : () {
+                              setState(() {
+                                _isEditing = !_isEditing;
+                                _initialized = false;
+                                _detailFuture = RdcDetailService().getDetail(
+                                  widget.rdcId,
+                                );
+                              });
+                            },
+                      icon: Icon(
+                        _isEditing ? Icons.close : Icons.edit_outlined,
+                      ),
+                      label: Text(_isEditing ? 'Cancelar' : 'Editar'),
+                    ),
+                    if (_isEditing)
+                      FilledButton.icon(
+                        onPressed: _isSaving ? null : _save,
+                        icon: _isSaving
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: Text(_isSaving ? 'Salvando...' : 'Salvar'),
+                      ),
+                  ],
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: _ToolbarStatus(isEditing: _isEditing)),
+                const SizedBox(width: 16),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _isSaving
+                          ? null
+                          : () {
+                              setState(() {
+                                _isEditing = !_isEditing;
+                                _initialized = false;
+                                _detailFuture = RdcDetailService().getDetail(
+                                  widget.rdcId,
+                                );
+                              });
+                            },
+                      icon: Icon(
+                        _isEditing ? Icons.close : Icons.edit_outlined,
+                      ),
+                      label: Text(_isEditing ? 'Cancelar' : 'Editar'),
+                    ),
+                    if (_isEditing)
+                      FilledButton.icon(
+                        onPressed: _isSaving ? null : _save,
+                        icon: _isSaving
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: Text(
+                          _isSaving ? 'Salvando...' : 'Salvar alterações',
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildWorkspaceNav(bool phone) {
+    final items = _workspaceItems();
+
+    return Container(
+      padding: EdgeInsets.all(phone ? 12 : 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: List.generate(items.length, (index) {
+          final active = _activeSection == index;
+          final item = items[index];
+
+          return InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: () {
+              setState(() {
+                _activeSection = index;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: active
+                    ? Theme.of(context).colorScheme.primary
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: active
+                      ? Theme.of(context).colorScheme.primary
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    item.icon,
+                    size: 18,
+                    color: active ? Colors.white : const Color(0xFF334155),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    item.label,
+                    style: TextStyle(
+                      color: active ? Colors.white : const Color(0xFF0F172A),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildSummarySidebar({
+    required Map<String, dynamic> data,
+    required Map<String, dynamic>? projeto,
+    required Map<String, dynamic>? disciplina,
+    required Map<String, dynamic>? areaLocal,
+    required Map<String, dynamic>? supervisor,
+  }) {
+    return Column(
+      children: [
+        _SidebarCard(
+          title: 'Resumo rápido',
+          icon: Icons.dashboard_outlined,
+          children: [
+            _SidebarInfoRow(
+              label: 'Projeto',
+              value: projeto == null
+                  ? '-'
+                  : '${_displayField(projeto['codigo'])} - ${_displayField(projeto['nome'])}',
+            ),
+            _SidebarInfoRow(
+              label: 'Disciplina',
+              value: _displayNested(disciplina, ['nome']),
+            ),
+            _SidebarInfoRow(
+              label: 'Área/local',
+              value: _displayNested(areaLocal, ['descricao', 'nome']),
+            ),
+            _SidebarInfoRow(
+              label: 'Supervisor',
+              value: _displayNested(supervisor, ['nome', 'username']),
+            ),
+            _SidebarInfoRow(
+              label: 'Status',
+              value: _displayField(data['status']),
+              emphasize: true,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _SidebarCard(
+          title: 'Condições',
+          icon: Icons.wb_cloudy_outlined,
+          children: [
+            _SidebarInfoRow(
+              label: 'Dia',
+              value: _displayField(data['dia_semana']),
+            ),
+            _SidebarInfoRow(
+              label: 'Área',
+              value: _displayField(data['condicao_area']),
+            ),
+            _SidebarInfoRow(
+              label: 'Manhã',
+              value: _displayField(data['clima_manha']),
+            ),
+            _SidebarInfoRow(
+              label: 'Tarde',
+              value: _displayField(data['clima_tarde']),
+            ),
+            _SidebarInfoRow(
+              label: 'Noite',
+              value: _displayField(data['clima_noite']),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _SidebarCard(
+          title: 'Jornada',
+          icon: Icons.access_time_outlined,
+          children: [
+            _SidebarInfoRow(
+              label: 'Início',
+              value: _displayField(data['horario_inicio']),
+            ),
+            _SidebarInfoRow(
+              label: 'Fim',
+              value: _displayField(data['horario_fim']),
+            ),
+            _SidebarInfoRow(
+              label: 'Turno',
+              value: _displayField(data['turno']),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGeneralCard({
+    required Map<String, dynamic> data,
+    required Map<String, dynamic>? projeto,
+    required Map<String, dynamic>? areaLocal,
+    required Map<String, dynamic>? disciplina,
+    required Map<String, dynamic>? supervisor,
+  }) {
+    return _MainWorkspaceCard(
+      title: 'Dados gerais',
+      subtitle: 'Informações principais do RDC',
+      icon: Icons.badge_outlined,
+      child: _ResponsiveFormGrid(
+        columns: 2,
+        children: [
+          _isEditing
+              ? DropdownButtonFormField<int>(
+                  isExpanded: true,
+                  value: _projetoId,
+                  decoration: const InputDecoration(labelText: 'Projeto'),
+                  items: _itemsFrom(_projetos),
+                  onChanged: (value) {
+                    setState(() {
+                      _projetoId = value;
+                      _sanitizeDependentSelections();
+                    });
+                  },
+                )
+              : _ReadOnlyField(
+                  label: 'Projeto',
+                  value: projeto == null
+                      ? '-'
+                      : '${_displayField(projeto['codigo'])} - ${_displayField(projeto['nome'])}',
+                ),
+          _isEditing
+              ? DropdownButtonFormField<int>(
+                  isExpanded: true,
+                  value: _areaLocalId,
+                  decoration: const InputDecoration(labelText: 'Área/local'),
+                  items: _itemsFrom(_filteredAreas()),
+                  onChanged: (value) {
+                    setState(() {
+                      _areaLocalId = value;
+                    });
+                  },
+                )
+              : _ReadOnlyField(
+                  label: 'Área/local',
+                  value: areaLocal == null
+                      ? '-'
+                      : '${_displayField(areaLocal['codigo'])} - ${_displayField(areaLocal['descricao'])}',
+                ),
+          _isEditing
+              ? DropdownButtonFormField<int>(
+                  isExpanded: true,
+                  value: _disciplinaId,
+                  decoration: const InputDecoration(labelText: 'Disciplina'),
+                  items: _itemsFrom(_disciplinas),
+                  onChanged: (value) {
+                    setState(() {
+                      _disciplinaId = value;
+                      _sanitizeDependentSelections();
+                    });
+                  },
+                )
+              : _ReadOnlyField(
+                  label: 'Disciplina',
+                  value: disciplina == null
+                      ? '-'
+                      : '${_displayField(disciplina['codigo'], fallback: '')} ${_displayField(disciplina['nome'])}'
+                            .trim(),
+                ),
+          _isEditing
+              ? DropdownButtonFormField<int>(
+                  isExpanded: true,
+                  value: _supervisorId,
+                  decoration: const InputDecoration(labelText: 'Supervisor'),
+                  items: _itemsFrom(_filteredSupervisores()),
+                  onChanged: (value) {
+                    setState(() {
+                      _supervisorId = value;
+                    });
+                  },
+                )
+              : _ReadOnlyField(
+                  label: 'Supervisor',
+                  value: _displayNested(supervisor, ['nome', 'username']),
+                ),
+          _isEditing
+              ? TextFormField(
+                  controller: _dataController,
+                  readOnly: true,
+                  onTap: _pickDate,
+                  decoration: const InputDecoration(
+                    labelText: 'Data',
+                    suffixIcon: Icon(Icons.calendar_today_outlined),
+                  ),
+                )
+              : _ReadOnlyField(
+                  label: 'Data',
+                  value: _displayField(data['data']),
+                ),
+          _isEditing
+              ? DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _turno,
+                  decoration: const InputDecoration(labelText: 'Turno'),
+                  items: const [
+                    DropdownMenuItem(value: 'manha', child: Text('Manhã')),
+                    DropdownMenuItem(value: 'tarde', child: Text('Tarde')),
+                    DropdownMenuItem(value: 'noite', child: Text('Noite')),
+                    DropdownMenuItem(
+                      value: 'integral',
+                      child: Text('Integral'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _turno = value;
+                    });
+                  },
+                )
+              : _ReadOnlyField(
+                  label: 'Turno',
+                  value: _displayField(data['turno']),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConditionsCard(Map<String, dynamic> data) {
+    return _MainWorkspaceCard(
+      title: 'Condições do dia',
+      subtitle: 'Clima, condição da área e dia da semana',
+      icon: Icons.wb_cloudy_outlined,
+      child: _ResponsiveFormGrid(
+        columns: 2,
+        children: [
+          _isEditing
+              ? TextFormField(
+                  controller: _diaSemanaController,
+                  decoration: const InputDecoration(labelText: 'Dia da semana'),
+                )
+              : _ReadOnlyField(
+                  label: 'Dia da semana',
+                  value: _displayField(data['dia_semana']),
+                ),
+          _isEditing
+              ? TextFormField(
+                  controller: _condicaoAreaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Condição da área',
+                  ),
+                )
+              : _ReadOnlyField(
+                  label: 'Condição da área',
+                  value: _displayField(data['condicao_area']),
+                ),
+          _isEditing
+              ? TextFormField(
+                  controller: _climaManhaController,
+                  decoration: const InputDecoration(labelText: 'Clima manhã'),
+                )
+              : _ReadOnlyField(
+                  label: 'Clima manhã',
+                  value: _displayField(data['clima_manha']),
+                ),
+          _isEditing
+              ? TextFormField(
+                  controller: _climaTardeController,
+                  decoration: const InputDecoration(labelText: 'Clima tarde'),
+                )
+              : _ReadOnlyField(
+                  label: 'Clima tarde',
+                  value: _displayField(data['clima_tarde']),
+                ),
+          _isEditing
+              ? TextFormField(
+                  controller: _climaNoiteController,
+                  decoration: const InputDecoration(labelText: 'Clima noite'),
+                )
+              : _ReadOnlyField(
+                  label: 'Clima noite',
+                  value: _displayField(data['clima_noite']),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJourneyCard(Map<String, dynamic> data) {
+    return _MainWorkspaceCard(
+      title: 'Jornada e fechamento',
+      subtitle: 'Horários operacionais e status',
+      icon: Icons.access_time_outlined,
+      child: _ResponsiveFormGrid(
+        columns: 2,
+        children: [
+          _isEditing
+              ? TextFormField(
+                  controller: _horarioInicioController,
+                  readOnly: true,
+                  onTap: () => _pickTime(_horarioInicioController),
+                  decoration: const InputDecoration(
+                    labelText: 'Horário início',
+                    suffixIcon: Icon(Icons.access_time),
+                  ),
+                )
+              : _ReadOnlyField(
+                  label: 'Horário início',
+                  value: _displayField(data['horario_inicio']),
+                ),
+          _isEditing
+              ? TextFormField(
+                  controller: _horarioFimController,
+                  readOnly: true,
+                  onTap: () => _pickTime(_horarioFimController),
+                  decoration: const InputDecoration(
+                    labelText: 'Horário fim',
+                    suffixIcon: Icon(Icons.access_time),
+                  ),
+                )
+              : _ReadOnlyField(
+                  label: 'Horário fim',
+                  value: _displayField(data['horario_fim']),
+                ),
+          _isEditing
+              ? TextFormField(
+                  controller: _statusController,
+                  decoration: const InputDecoration(labelText: 'Status'),
+                )
+              : _ReadOnlyField(
+                  label: 'Status',
+                  value: _displayField(data['status']),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildObservationsCard(Map<String, dynamic> data) {
+    return _MainWorkspaceCard(
+      title: 'Observações',
+      subtitle: 'Anotações operacionais do dia',
+      icon: Icons.notes_outlined,
+      child: _isEditing
+          ? TextFormField(
+              controller: _observacoesController,
+              minLines: 10,
+              maxLines: 14,
+              decoration: const InputDecoration(
+                labelText: 'Observações',
+                alignLabelWithHint: true,
+              ),
+            )
+          : _ReadOnlyMultilineField(
+              label: 'Observações',
+              value: _displayField(data['observacoes']),
+            ),
+    );
+  }
+
+  Widget _buildEquipeCard(List<Map<String, dynamic>> funcionarios) {
+    return _MainWorkspaceCard(
+      title: 'Equipe',
+      subtitle: 'Pessoas registradas neste RDC',
+      icon: Icons.groups_outlined,
+      child: _ListSectionBody(
+        emptyMessage: 'Nenhum funcionário lançado neste RDC.',
+        items: funcionarios,
+        itemBuilder: (item) {
+          final map = Map<String, dynamic>.from(item);
+          return _FancyListTile(
+            icon: Icons.person_outline,
+            title: _displayField(map['nome']),
+            subtitle: [
+              _displayField(map['matricula'], fallback: ''),
+              _displayField(map['funcao_nome'], fallback: ''),
+            ].where((e) => e.isNotEmpty).join(' • '),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAtividadesCard(List<Map<String, dynamic>> atividades) {
+    return _MainWorkspaceCard(
+      title: 'Atividades',
+      subtitle: 'Atividades vinculadas ao RDC',
+      icon: Icons.assignment_outlined,
+      child: _ListSectionBody(
+        emptyMessage: 'Nenhuma atividade lançada neste RDC.',
+        items: atividades,
+        itemBuilder: (item) {
+          final map = Map<String, dynamic>.from(item);
+          return _FancyListTile(
+            icon: Icons.playlist_add_check_circle_outlined,
+            title: _displayField(map['descricao']),
+            subtitle: [
+              _displayField(map['codigo_atividade'], fallback: ''),
+              _displayField(map['codigo_subatividade'], fallback: ''),
+            ].where((e) => e.isNotEmpty).join(' • '),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildApontamentosCard(List<Map<String, dynamic>> apontamentos) {
+    return _MainWorkspaceCard(
+      title: 'Apontamentos',
+      subtitle: 'Registros quantitativos e observáveis',
+      icon: Icons.fact_check_outlined,
+      child: _ListSectionBody(
+        emptyMessage: 'Nenhum apontamento lançado neste RDC.',
+        items: apontamentos,
+        itemBuilder: (item) {
+          final map = Map<String, dynamic>.from(item);
+          return _FancyListTile(
+            icon: Icons.sticky_note_2_outlined,
+            title: _displayField(map['descricao']),
+            subtitle: _displayField(map['quantidade']),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildActiveSection({
+    required Map<String, dynamic> data,
+    required Map<String, dynamic>? projeto,
+    required Map<String, dynamic>? areaLocal,
+    required Map<String, dynamic>? disciplina,
+    required Map<String, dynamic>? supervisor,
+    required List<Map<String, dynamic>> funcionarios,
+    required List<Map<String, dynamic>> atividades,
+    required List<Map<String, dynamic>> apontamentos,
+  }) {
+    switch (_activeSection) {
+      case 0:
+        return _buildGeneralCard(
+          data: data,
+          projeto: projeto,
+          areaLocal: areaLocal,
+          disciplina: disciplina,
+          supervisor: supervisor,
+        );
+      case 1:
+        return _buildConditionsCard(data);
+      case 2:
+        return _buildJourneyCard(data);
+      case 3:
+        return _buildObservationsCard(data);
+      case 4:
+        return _buildEquipeCard(funcionarios);
+      case 5:
+        return _buildAtividadesCard(atividades);
+      case 6:
+        return _buildApontamentosCard(apontamentos);
+      default:
+        return _buildGeneralCard(
+          data: data,
+          projeto: projeto,
+          areaLocal: areaLocal,
+          disciplina: disciplina,
+          supervisor: supervisor,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final phone = _isPhone(width);
+    final wide = _isWide(width);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F7FB),
+      appBar: AppBar(title: Text('RDC #${widget.rdcId}')),
+      body: SafeArea(
+        child: FutureBuilder<List<dynamic>>(
+          future: Future.wait([_detailFuture, _baseFuture]),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (!snapshot.hasData || snapshot.data == null) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Não foi possível carregar os dados da tela.',
+                    style: TextStyle(color: Colors.redAccent, fontSize: 16),
+                  ),
+                ),
+              );
+            }
+
+            final detailResult = snapshot.data![0] as RdcDetailResult;
+            final baseResult = snapshot.data![1] as BaseOperacionalResult;
+
+            if (!detailResult.success || detailResult.data == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    detailResult.message,
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            if (baseResult.success && baseResult.rawData != null) {
+              _fillBase(baseResult.rawData!);
+            }
+
+            final data = detailResult.data!;
+            _fillForm(data);
+            _sanitizeDependentSelections();
+
+            final projeto = _asMap(data['projeto']);
+            final disciplina = _asMap(data['disciplina']);
+            final areaLocal = _asMap(data['area_local']);
+            final supervisor = _asMap(data['supervisor']);
+
+            final funcionarios = _asMapList(
+              data['funcionarios'] as List? ?? const [],
+            );
+            final atividades = _asMapList(
+              data['atividades'] as List? ?? const [],
+            );
+            final apontamentos = _asMapList(
+              data['apontamentos'] as List? ?? const [],
+            );
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(phone ? 12 : 20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1460),
+                  child: Column(
+                    children: [
+                      _buildHeroHeader(
+                        width: width,
+                        data: data,
+                        projeto: projeto,
+                        disciplina: disciplina,
+                        areaLocal: areaLocal,
+                        supervisor: supervisor,
+                        funcionariosCount: funcionarios.length,
+                        atividadesCount: atividades.length,
+                        apontamentosCount: apontamentos.length,
+                      ),
+                      const SizedBox(height: 18),
+                      _buildEditToolbar(phone),
+                      const SizedBox(height: 18),
+                      _buildWorkspaceNav(phone),
+                      const SizedBox(height: 18),
+                      _buildTopSummaryStrip(
+                        data: data,
+                        projeto: projeto,
+                        disciplina: disciplina,
+                        areaLocal: areaLocal,
+                        supervisor: supervisor,
+                      ),
+                      const SizedBox(height: 18),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1220),
+                        child: _buildActiveSection(
+                          data: data,
+                          projeto: projeto,
+                          areaLocal: areaLocal,
+                          disciplina: disciplina,
+                          supervisor: supervisor,
+                          funcionarios: funcionarios,
+                          atividades: atividades,
+                          apontamentos: apontamentos,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkspaceItem {
+  final String label;
+  final IconData icon;
+
+  const _WorkspaceItem(this.label, this.icon);
+}
+
+class _TopSummaryCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final bool emphasize;
+
+  const _TopSummaryCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    this.emphasize = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: emphasize ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: emphasize
+                  ? const Color(0xFFEFF6FF)
+                  : Theme.of(context).colorScheme.primary.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: emphasize
+                  ? const Color(0xFF2563EB)
+                  : Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
+                    color: emphasize
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToolbarStatus extends StatelessWidget {
+  final bool isEditing;
+
+  const _ToolbarStatus({required this.isEditing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            isEditing ? Icons.edit_note : Icons.visibility_outlined,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isEditing ? 'Modo de edição ativo' : 'Modo de visualização',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            ),
+            Text(
+              isEditing
+                  ? 'Alterações serão aplicadas ao salvar'
+                  : 'Clique em editar para alterar o RDC',
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _HeroChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 8),
+          Text(
+            '$label: $value',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+
+  const _HeroMetric({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 190,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 26, color: Colors.white),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 26,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SidebarCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Widget> children;
+
+  const _SidebarCard({
+    required this.title,
+    required this.icon,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 17,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _SidebarInfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool emphasize;
+
+  const _SidebarInfoRow({
+    required this.label,
+    required this.value,
+    this.emphasize = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        decoration: BoxDecoration(
+          color: emphasize ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: emphasize
+                ? const Color(0xFFBFDBFE)
+                : const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 88,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
+                  color: emphasize
+                      ? const Color(0xFF1D4ED8)
+                      : const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MainWorkspaceCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Widget child;
+
+  const _MainWorkspaceCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+              ),
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _ResponsiveFormGrid extends StatelessWidget {
+  final int columns;
+  final List<Widget> children;
+
+  const _ResponsiveFormGrid({required this.columns, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final phone = width < 760;
+    final spacing = phone ? 12.0 : 16.0;
+    final cols = phone ? 1 : columns;
+    final maxContainer = width >= 1180 ? 1180.0 : width;
+    final usable = maxContainer - (spacing * (cols - 1));
+    final itemWidth = usable / cols;
+
+    return Wrap(
+      spacing: spacing,
+      runSpacing: spacing,
+      children: children
+          .map(
+            (child) =>
+                SizedBox(width: itemWidth.clamp(240.0, 430.0), child: child),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ReadOnlyField({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 16,
+        ),
+      ),
+      child: Text(value, style: const TextStyle(fontSize: 15)),
+    );
+  }
+}
+
+class _ReadOnlyMultilineField extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ReadOnlyMultilineField({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        alignLabelWithHint: true,
+        contentPadding: const EdgeInsets.all(14),
+      ),
+      child: Text(value, style: const TextStyle(fontSize: 15)),
+    );
+  }
+}
+
+class _ListSectionBody extends StatelessWidget {
+  final String emptyMessage;
+  final List<Map<String, dynamic>> items;
+  final Widget Function(Map<String, dynamic> item) itemBuilder;
+
+  const _ListSectionBody({
+    required this.emptyMessage,
+    required this.items,
+    required this.itemBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Text(
+          emptyMessage,
+          style: const TextStyle(color: Color(0xFF64748B)),
+        ),
+      );
+    }
+
+    return Column(
+      children: items
+          .map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: itemBuilder(item),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _FancyListTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _FancyListTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Icon(icon, color: const Color(0xFF334155)),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        ),
+        subtitle: subtitle.trim().isEmpty ? null : Text(subtitle),
+      ),
+    );
+  }
+}

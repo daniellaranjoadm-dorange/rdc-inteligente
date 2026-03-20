@@ -1,0 +1,620 @@
+﻿{% extends "base.html" %}
+{% load static %}
+{% block title %}Painel RDC €¢ D'ORANGE Control{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="page-title-brand">
+        <img class="page-title-logo" src="{% static 'img/dorange-logo.png' %}" alt="D'ORANGE">
+        <div>
+            <h1 class="mb-0">Painel RDC</h1>
+            <div class="text-muted">D'ORANGE Control · visão gerencial com ranking, comparativos, semáforos e exportações completas.</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap panel-toolbar">
+        <a class="btn btn-outline-secondary" href="{% url 'rdc-list' %}">Voltar para RDCs</a>
+        <a class="btn btn-outline-success" href="{% url 'rdc-consolidado-export' 'excel' %}?q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}">Excel</a>
+        <a class="btn btn-outline-danger" href="{% url 'rdc-consolidado-export' 'pdf' %}?q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}">PDF</a>
+        <a class="btn btn-primary" href="{% url 'rdc-create' %}">Novo RDC</a>
+    </div>
+</div>
+
+<div class="table-card p-3 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div class="section-title mb-0">Filtros rápidos</div>
+        <div class="filter-chip-group">
+            <a class="filter-chip" href="?aba={{ aba }}&q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ quick_filters.hoje.data_ini|default:'' }}&data_fim={{ quick_filters.hoje.data_fim|default:'' }}">Hoje</a>
+            <a class="filter-chip" href="?aba={{ aba }}&q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ quick_filters.ontem.data_ini|default:'' }}&data_fim={{ quick_filters.ontem.data_fim|default:'' }}">Ontem</a>
+            <a class="filter-chip" href="?aba={{ aba }}&q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ quick_filters.ultimos_7_dias.data_ini|default:'' }}&data_fim={{ quick_filters.ultimos_7_dias.data_fim|default:'' }}">Últimos 7 dias</a>
+            <a class="filter-chip" href="?aba={{ aba }}&q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ quick_filters.mes_atual.data_ini|default:'' }}&data_fim={{ quick_filters.mes_atual.data_fim|default:'' }}">Mês atual</a>
+            <a class="filter-chip filter-chip-muted" href="?aba={{ aba }}">Limpar filtros</a>
+        </div>
+    </div>
+
+    <form method="get" class="row g-2">
+        <input type="hidden" name="aba" value="{{ aba }}">
+        <div class="col-md-3">
+            <input type="text" name="q" value="{{ filter_values.q }}" class="form-control" placeholder="Buscar em todo o consolidado">
+        </div>
+        <div class="col-md-2">
+            <select name="projeto" class="form-select">
+                <option value="">Todos os projetos</option>
+                {% for p in projetos %}
+                    <option value="{{ p.id }}" {% if filter_values.projeto == p.id|stringformat:'s' %}selected{% endif %}>{{ p.codigo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="disciplina" class="form-select">
+                <option value="">Todas as disciplinas</option>
+                {% for d in disciplinas %}
+                    <option value="{{ d.id }}" {% if filter_values.disciplina == d.id|stringformat:'s' %}selected{% endif %}>{{ d.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2"><input type="date" name="data_ini" value="{{ filter_values.data_ini }}" class="form-control"></div>
+        <div class="col-md-2"><input type="date" name="data_fim" value="{{ filter_values.data_fim }}" class="form-control"></div>
+        <div class="col-md-1 d-grid"><button class="btn btn-dark">Filtrar</button></div>
+    </form>
+</div>
+
+<div class="table-card p-3 mb-3">
+  <div class="section-title mb-3">Workflow do período</div>
+  <div class="row g-3">
+    <div class="col-md-2 col-6"><div class="executive-card exec-secondary"><div class="exec-label">Rascunho</div><div class="exec-number">{{ workflow_summary.rascunho|default:0 }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="executive-card exec-info"><div class="exec-label">Pré-preenchido</div><div class="exec-number">{{ workflow_summary.pre_preenchido|default:0 }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="executive-card exec-warning"><div class="exec-label">Em revisão</div><div class="exec-number">{{ workflow_summary.em_revisao|default:0 }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="executive-card exec-primary"><div class="exec-label">Aprovado</div><div class="exec-number">{{ workflow_summary.aprovado|default:0 }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="executive-card exec-success"><div class="exec-label">Fechado</div><div class="exec-number">{{ workflow_summary.fechado|default:0 }}</div></div></div>
+  </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="executive-card exec-{{ executivos.conformidade.nivel|default:'secondary' }}">
+            <div class="exec-label">{{ executivos.conformidade.rotulo|default:'Conformidade' }}</div>
+            <div class="exec-number">{{ executivos.conformidade.valor|default:'0' }}{{ executivos.conformidade.sufixo|default:'' }}</div>
+            <div class="exec-desc">{{ executivos.conformidade.descricao|default:'-' }}</div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="executive-card exec-{{ executivos.prontos.nivel|default:'secondary' }}">
+            <div class="exec-label">{{ executivos.prontos.rotulo|default:'Prontos' }}</div>
+            <div class="exec-number">{{ executivos.prontos.valor|default:'0' }}</div>
+            <div class="exec-desc">{{ executivos.prontos.descricao|default:'-' }}</div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="executive-card exec-{{ executivos.criticos.nivel|default:'secondary' }}">
+            <div class="exec-label">{{ executivos.criticos.rotulo|default:'Críticos' }}</div>
+            <div class="exec-number">{{ executivos.criticos.valor|default:'0' }}</div>
+            <div class="exec-desc">{{ executivos.criticos.descricao|default:'-' }}</div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="executive-card exec-{{ executivos.sem_presenca.nivel|default:'secondary' }}">
+            <div class="exec-label">{{ executivos.sem_presenca.rotulo|default:'Sem presença' }}</div>
+            <div class="exec-number">{{ executivos.sem_presenca.valor|default:'0' }}</div>
+            <div class="exec-desc">{{ executivos.sem_presenca.descricao|default:'-' }}</div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="executive-card exec-{{ executivos.fora_cronograma.nivel|default:'secondary' }}">
+            <div class="exec-label">{{ executivos.fora_cronograma.rotulo|default:'Fora do cronograma' }}</div>
+            <div class="exec-number">{{ executivos.fora_cronograma.valor|default:'0' }}</div>
+            <div class="exec-desc">{{ executivos.fora_cronograma.descricao|default:'-' }}</div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="executive-card exec-{{ executivos.alertas.nivel|default:'secondary' }}">
+            <div class="exec-label">{{ executivos.alertas.rotulo|default:'Alertas' }}</div>
+            <div class="exec-number">{{ executivos.alertas.valor|default:'0' }}</div>
+            <div class="exec-desc">{{ executivos.alertas.descricao|default:'-' }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-2 col-6">
+        <div class="card kpi-card-strong kpi-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="kpi-label">RDCs</div>
+                    <div class="kpi-icon">R</div>
+                </div>
+                <div class="kpi-number">{{ totais.rdcs|default:0 }}</div>
+                <div class="kpi-desc">{{ totais.fechados|default:0 }} fechados no filtro atual</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card kpi-card-strong kpi-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="kpi-label">Atividades</div>
+                    <div class="kpi-icon">A</div>
+                </div>
+                <div class="kpi-number text-primary">{{ totais.atividades|default:0 }}</div>
+                <div class="kpi-desc">{{ dashboard.top_atividades|length }} itens no ranking</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card kpi-card-strong kpi-secondary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="kpi-label">Funcionários</div>
+                    <div class="kpi-icon">F</div>
+                </div>
+                <div class="kpi-number">{{ totais.funcionarios|default:0 }}</div>
+                <div class="kpi-desc">{{ totais.sem_presenca|default:0 }} sem presença</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card kpi-card-strong kpi-secondary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="kpi-label">Apontamentos</div>
+                    <div class="kpi-icon">P</div>
+                </div>
+                <div class="kpi-number">{{ totais.apontamentos|default:0 }}</div>
+                <div class="kpi-desc">{{ totais.validacoes|default:0 }} Validações no período</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card kpi-card-strong kpi-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="kpi-label">HH total</div>
+                    <div class="kpi-icon">H</div>
+                </div>
+                <div class="kpi-number text-success">{{ totais.hh_total|default:0 }}</div>
+                <div class="kpi-desc">{{ previsto_realizado.hh_realizado|default:0 }} realizado</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card kpi-card-strong {% if totais.bloqueios %}kpi-danger{% else %}kpi-warning{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="kpi-label">Bloqueios</div>
+                    <div class="kpi-icon">!</div>
+                </div>
+                <div class="kpi-number {% if totais.bloqueios %}text-danger{% else %}text-warning{% endif %}">{{ totais.bloqueios|default:0 }}</div>
+                <div class="kpi-desc">{{ totais.alertas|default:0 }} alertas</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="soft-card p-3 h-100">
+            <div class="section-title">Comparativo previsto x realizado</div>
+            <div class="row g-3 mt-1">
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <div class="mini-muted">Escopo</div>
+                        <div class="fw-bold">{{ previsto_realizado.atividades_previsto|default:0 }} previsto</div>
+                        <div>{{ previsto_realizado.atividades_realizado|default:0 }} realizado</div>
+                        <div class="mt-2">
+                            <span class="summary-badge {{ previsto_realizado.escopo_nivel|default:'secondary' }}">{{ previsto_realizado.percentual_escopo|default:0|floatformat:1 }}%</span>
+                        </div>
+                        <div class="mini-muted mt-2">{{ previsto_realizado.escopo_texto|default:'-' }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <div class="mini-muted">HH</div>
+                        <div class="fw-bold">{{ previsto_realizado.hh_previsto|default:0 }} previsto</div>
+                        <div>{{ previsto_realizado.hh_realizado|default:0 }} realizado</div>
+                        <div class="mt-2">
+                            <span class="summary-badge {{ previsto_realizado.hh_nivel|default:'secondary' }}">{{ previsto_realizado.percentual_hh|default:0|floatformat:1 }}%</span>
+                        </div>
+                        <div class="mini-muted mt-2">{{ previsto_realizado.hh_texto|default:'-' }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <div class="mini-muted">Equipe</div>
+                        <div class="fw-bold">{{ previsto_realizado.equipe_prevista|default:0 }} prevista</div>
+                        <div>{{ previsto_realizado.equipe_realizada|default:0 }} lançada</div>
+                        <div class="mini-muted mt-2">Diferença: {{ previsto_realizado.equipe_realizada|default:0 }}</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded bg-light border">
+                        <div class="mini-muted">Presentes x lançados</div>
+                        <div class="fw-bold">{{ previsto_realizado.presentes|default:0 }} presentes</div>
+                        <div>{{ previsto_realizado.lancados|default:0 }} lançados</div>
+                        <div class="mini-muted mt-2">Sem presença: {{ totais.sem_presenca|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="soft-card p-3 h-100">
+            <div class="section-title">Dashboard premium</div>
+            <div style="position: relative; height: 280px;"><canvas id="chartHHDisciplina"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="soft-card p-3">
+            <div class="section-title">Top 10 atividades</div>
+            <div style="position: relative; height: 320px;"><canvas id="chartTopAtividades"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="soft-card p-3">
+            <div class="section-title">Top 10 funcionários por HH</div>
+            <div style="position: relative; height: 320px;"><canvas id="chartTopFuncionarios"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="soft-card p-3">
+            <div class="section-title">HH por dia</div>
+            <div style="position: relative; height: 320px;"><canvas id="chartHHDia"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="soft-card p-3">
+            <div class="section-title">Validações por tipo</div>
+            <div style="position: relative; height: 320px;"><canvas id="chartValidacoes"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-pills gap-2 mb-3">
+    <li class="nav-item"><a class="nav-link {% if aba == 'resumo' %}active{% endif %}" href="?{% for k,v in filter_values.items %}{% if v %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}aba=resumo">Resumo</a></li>
+    <li class="nav-item"><a class="nav-link {% if aba == 'atividades' %}active{% endif %}" href="?{% for k,v in filter_values.items %}{% if v %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}aba=atividades">Atividades</a></li>
+    <li class="nav-item"><a class="nav-link {% if aba == 'funcionarios' %}active{% endif %}" href="?{% for k,v in filter_values.items %}{% if v %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}aba=funcionarios">Funcionários</a></li>
+    <li class="nav-item"><a class="nav-link {% if aba == 'apontamentos' %}active{% endif %}" href="?{% for k,v in filter_values.items %}{% if v %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}aba=apontamentos">Apontamentos</a></li>
+    <li class="nav-item"><a class="nav-link {% if aba == 'validacoes' %}active{% endif %}" href="?{% for k,v in filter_values.items %}{% if v %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}aba=validacoes">Validações</a></li>
+</ul>
+
+{% if aba == 'resumo' %}
+<div class="d-flex justify-content-end mb-2">
+    <a class="btn btn-sm btn-success" href="{% url 'rdc-consolidado-export' 'resumo' %}?q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}">Exportar CSV</a>
+</div>
+<div class="table-card p-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <h5 class="mb-0">RDCs filtrados</h5>
+        <div class="mini-muted">Leitura gerencial com semáforos de Situação</div>
+    </div>
+
+    {% if not schema_fechamento_ok %}
+        <div class="alert alert-warning py-2">
+            Os campos de fechamento ainda não foram aplicados no banco. O consolidado segue funcionando, mas a coluna de fechamento e o botão de fechar RDC dependem da migration nova.
+        </div>
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Projeto</th>
+                    <th>Área</th>
+                    <th>Disciplina</th>
+                    <th>Data</th>
+                    <th>Turno</th>
+                    <th>Status</th>
+                    <th>Situação gerencial</th>
+                    <th>Fechado em</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in rdcs %}
+                <tr>
+                    <td><a href="{% url 'rdc-detail' r.pk %}">{{ r.id }}</a></td>
+                    <td>{{ r.projeto.codigo }}</td>
+                    <td>{{ r.area_local.descricao }}</td>
+                    <td>{{ r.disciplina.nome }}</td>
+                    <td>{{ r.data|date:'d/m/Y' }}</td>
+                    <td>{{ r.get_turno_display }}</td>
+                    <td>
+                        <span class="badge {% if r.status == 'fechado' %}text-bg-primary{% elif r.status == 'aprovado' %}text-bg-success{% elif r.status == 'em_revisao' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">
+                            {{ r.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="summary-badge {{ r.situacao_nivel|default:'secondary' }}">
+                            <span class="status-dot {{ r.situacao_nivel|default:'secondary' }}"></span>
+                            {{ r.situacao_gerencial|default:'-' }}
+                        </span>
+                    </td>
+                    <td>{% if schema_fechamento_ok %}{{ r.fechado_em|date:'d/m/Y H:i'|default:'-' }}{% else %}-{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="9">Sem RDCs para exibir.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% elif aba == 'atividades' %}
+<div class="d-flex justify-content-end mb-2">
+    <a class="btn btn-sm btn-success" href="{% url 'rdc-consolidado-export' 'atividades' %}?q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}">Exportar CSV</a>
+</div>
+<div class="table-card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>RDC</th>
+                    <th>Data</th>
+                    <th>Projeto</th>
+                    <th>Disciplina</th>
+                    <th>Área</th>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Executada</th>
+                    <th>Origem</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in atividades %}
+                <tr>
+                    <td><a href="{% url 'rdc-detail' a.rdc.pk %}">{{ a.rdc.id }}</a></td>
+                    <td>{{ a.rdc.data|date:'d/m/Y' }}</td>
+                    <td>{{ a.rdc.projeto.codigo }}</td>
+                    <td>{{ a.rdc.disciplina.nome }}</td>
+                    <td>{{ a.rdc.area_local.descricao }}</td>
+                    <td>{{ a.codigo_atividade }}</td>
+                    <td>{{ a.descr_atividade }}</td>
+                    <td>{{ a.qtd_executada }}</td>
+                    <td>{{ a.get_origem_display }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="9">Sem atividades.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% elif aba == 'funcionarios' %}
+<div class="d-flex justify-content-end mb-2">
+    <a class="btn btn-sm btn-success" href="{% url 'rdc-consolidado-export' 'funcionarios' %}?q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}">Exportar CSV</a>
+</div>
+<div class="table-card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>RDC</th>
+                    <th>Data</th>
+                    <th>Projeto</th>
+                    <th>Nome</th>
+                    <th>Matrícula</th>
+                    <th>Função</th>
+                    <th>Equipe</th>
+                    <th>HH</th>
+                    <th>Catraca</th>
+                    <th>Elegível</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for f in funcionarios %}
+                <tr>
+                    <td><a href="{% url 'rdc-detail' f.rdc.pk %}">{{ f.rdc.id }}</a></td>
+                    <td>{{ f.rdc.data|date:'d/m/Y' }}</td>
+                    <td>{{ f.rdc.projeto.codigo }}</td>
+                    <td>{{ f.nome }}</td>
+                    <td>{{ f.matricula }}</td>
+                    <td>{{ f.funcao.nome|default:'-' }}</td>
+                    <td>{{ f.equipe|default:'-' }}</td>
+                    <td>{{ f.hh_total }}</td>
+                    <td>{% if f.presente_catraca %}<span class="summary-badge success">Sim</span>{% else %}<span class="summary-badge warning">Não</span>{% endif %}</td>
+                    <td>{% if f.elegivel %}<span class="summary-badge success">Sim</span>{% else %}<span class="summary-badge danger">Não</span>{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="10">Sem funcionários.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% elif aba == 'apontamentos' %}
+<div class="d-flex justify-content-end mb-2">
+    <a class="btn btn-sm btn-success" href="{% url 'rdc-consolidado-export' 'apontamentos' %}?q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}">Exportar CSV</a>
+</div>
+<div class="table-card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>RDC</th>
+                    <th>Data</th>
+                    <th>Projeto</th>
+                    <th>Funcionário</th>
+                    <th>Atividade</th>
+                    <th>Horas</th>
+                    <th>Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in apontamentos %}
+                <tr>
+                    <td><a href="{% url 'rdc-detail' a.rdc.pk %}">{{ a.rdc.id }}</a></td>
+                    <td>{{ a.rdc.data|date:'d/m/Y' }}</td>
+                    <td>{{ a.rdc.projeto.codigo }}</td>
+                    <td>{{ a.rdc_funcionario.nome }}</td>
+                    <td>{{ a.rdc_atividade.codigo_atividade }} - {{ a.rdc_atividade.descr_atividade }}</td>
+                    <td>{{ a.horas }}</td>
+                    <td>{{ a.observacao }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">Sem apontamentos.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% elif aba == 'validacoes' %}
+<div class="d-flex justify-content-end mb-2">
+    <a class="btn btn-sm btn-success" href="{% url 'rdc-consolidado-export' 'validacoes' %}?q={{ filter_values.q|urlencode }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}">Exportar CSV</a>
+</div>
+<div class="table-card p-3">
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>RDC</th>
+                    <th>Data</th>
+                    <th>Projeto</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Mensagem</th>
+                    <th>Referência</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for v in validacoes %}
+                <tr class="{% if v.status == 'bloqueio' %}table-danger{% elif v.status == 'alerta' %}table-warning{% endif %}">
+                    <td><a href="{% url 'rdc-detail' v.rdc.pk %}">{{ v.rdc.id }}</a></td>
+                    <td>{{ v.rdc.data|date:'d/m/Y' }}</td>
+                    <td>{{ v.rdc.projeto.codigo }}</td>
+                    <td>{{ v.get_tipo_display }}</td>
+                    <td>
+                        {% if v.status == 'bloqueio' %}
+                            <span class="summary-badge danger">{{ v.get_status_display }}</span>
+                        {% elif v.status == 'alerta' %}
+                            <span class="summary-badge warning">{{ v.get_status_display }}</span>
+                        {% else %}
+                            <span class="summary-badge secondary">{{ v.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ v.mensagem }}</td>
+                    <td>{{ v.referencia }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">Sem Validações.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{{ dashboard.top_atividades|default:'[]'|json_script:"chart-top-atividades" }}
+{{ dashboard.top_funcionarios|default:'[]'|json_script:"chart-top-funcionarios" }}
+{{ dashboard.hh_por_dia|default:'[]'|json_script:"chart-hh-dia" }}
+{{ dashboard.hh_por_disciplina|default:'[]'|json_script:"chart-hh-disciplina" }}
+{{ dashboard.validacoes_por_tipo|default:'[]'|json_script:"chart-validacoes" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function readJson(id) {
+    const el = document.getElementById(id);
+    return el ? JSON.parse(el.textContent) : [];
+}
+
+function smartLabels(items, key, max = 18) {
+    return items.map(i => {
+        const raw = (i[key] || '').toString();
+        return raw.length > max ? raw.slice(0, max - 1) + '€¦' : raw;
+    });
+}
+
+function renderEmptyState(el) {
+    const wrapper = el.parentElement;
+    if (!wrapper) return;
+    if (wrapper.querySelector('.chart-empty-state')) return;
+    const empty = document.createElement('div');
+    empty.className = 'chart-empty-state text-muted small mt-2';
+    empty.textContent = 'Sem dados para exibir neste gráfico.';
+    wrapper.appendChild(empty);
+}
+
+function makeChart(canvasId, labels, values, horizontal = false) {
+    const el = document.getElementById(canvasId);
+    if (!el) return;
+    if (!labels || !labels.length || !values || !values.length) {
+        renderEmptyState(el);
+        return;
+    }
+
+    new Chart(el, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                borderWidth: 1,
+                borderRadius: 8,
+                maxBarThickness: 28
+            }]
+        },
+        options: {
+            indexAxis: horizontal ? 'y' : 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { beginAtZero: true },
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+const topAtv = readJson('chart-top-atividades');
+makeChart(
+    'chartTopAtividades',
+    smartLabels(topAtv, 'codigo_atividade', 22),
+    topAtv.map(i => Number(i.total_exec || 0)),
+    true
+);
+
+const topFunc = readJson('chart-top-funcionarios');
+makeChart(
+    'chartTopFuncionarios',
+    smartLabels(topFunc, 'nome', 20),
+    topFunc.map(i => Number(i.hh_total || 0)),
+    true
+);
+
+const hhDia = readJson('chart-hh-dia');
+makeChart(
+    'chartHHDia',
+    hhDia.map(i => i.rdc__data),
+    hhDia.map(i => Number(i.total || 0)),
+    false
+);
+
+const hhDisc = readJson('chart-hh-disciplina');
+makeChart(
+    'chartHHDisciplina',
+    smartLabels(hhDisc, 'rdc__disciplina__nome', 18),
+    hhDisc.map(i => Number(i.total || 0)),
+    false
+);
+
+const valTipo = readJson('chart-validacoes');
+makeChart(
+    'chartValidacoes',
+    smartLabels(valTipo, 'tipo', 18),
+    valTipo.map(i => Number(i.total || 0)),
+    false
+);
+</script>
+{% endblock %}
+
+
+

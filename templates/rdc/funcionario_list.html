@@ -1,0 +1,44 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h4 mb-3">Funcionários RDC</h1>
+
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Funcionário</th>
+        <th>Status</th>
+        <th>LiberAção</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for funcionario in object_list %}
+        <tr>
+          <td>{{ funcionario }}</td>
+          <td>
+            {% if funcionario.presente_catraca %}
+              <span class="badge bg-success">Presente na catraca</span>
+            {% elif funcionario.liberado_sem_catraca %}
+              <span class="badge bg-info text-dark">Liberado manualmente</span>
+            {% else %}
+              <span class="badge bg-danger">Bloqueado: sem catraca</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if funcionario.liberado_sem_catraca and funcionario.liberado_por %}
+              {{ funcionario.liberado_por }} em {{ funcionario.liberado_em|date:"d/m/Y H:i" }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="3" class="text-center text-muted">Nenhum funcionário encontrado.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

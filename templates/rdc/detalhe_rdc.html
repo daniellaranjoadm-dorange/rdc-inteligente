@@ -1,0 +1,418 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 sticky-actions p-2 rounded">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <h1 class="mb-0">
+  RDC #{{ rdc.id }}
+
+  {% if montagem_excepcional %}
+    <span class="badge bg-danger ms-2">Exceção operacional</span>
+  {% endif %}</h1>
+        <span class="badge bg-{{ status_badge }} fs-6">{{ rdc.get_status_display }}</span>
+        <span class="badge bg-{{ dashboard.nivel }}-subtle text-{{ dashboard.nivel }} border border-{{ dashboard.nivel }}">{{ dashboard.rotulo }}</span>
+        {% if schema_fechamento_ok and rdc.fechado_em %}<span class="badge text-bg-light">Fechado em {{ rdc.fechado_em|date:'d/m/Y H:i' }}</span>{% endif %}
+        {% if schema_fechamento_ok and rdc.fechado_por %}<span class="badge text-bg-light">por {{ rdc.fechado_por.username }}</span>{% endif %}
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <form method="post" action="{% url 'rdc-revalidar' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary">Revalidar</button></form>
+        {% if can_edit_rdc %}<a class="btn btn-outline-dark" href="{% url 'rdc-update' rdc.pk %}">Editar RDC</a>{% endif %}
+        <a class="btn btn-outline-primary" href="{% url 'rdc-exportar-modelo' rdc.pk %}">Modelo Excel</a>
+        {% if not rdc.is_fechado %}
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFechamento">Fechar RDC</button>
+        {% elif can_reopen_rdc %}
+        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalReabertura">Reabrir RDC</button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="table-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">Resumo da montagem automática</h5>
+<div class="mt-2">
+    {% if resumo_montagem.status_geral == "critico" %}
+        <span class="badge text-bg-danger">CRÍTICO</span>
+    {% elif resumo_montagem.status_geral == "atencao" %}
+        <span class="badge text-bg-warning">ATENÇÃO</span>
+    {% else %}
+        <span class="badge text-bg-success">OK</span>
+    {% endif %}
+</div>
+            <div class="mini-muted">Visão rápida de como este RDC foi pré-preenchido.</div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Ativ. planejamento</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_planejamento }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Ativ. cronograma</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_cronograma }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Atividades total</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_total }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Com catraca</div>
+                <div class="metric-value text-success">{{ resumo_montagem.funcionarios_com_catraca }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Sem catraca</div>
+                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.funcionarios_sem_catraca }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Não elegíveis</div>
+                <div class="metric-value text-danger">{{ resumo_montagem.funcionarios_nao_elegiveis }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mt-1">
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Funcionários total</div>
+                <div class="metric-value">{{ resumo_montagem.funcionarios_total }}</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Alertas</div>
+                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.alertas }}</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Bloqueios</div>
+                <div class="metric-value text-danger">{{ resumo_montagem.bloqueios }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-2 col-6"><div class="card kpi"><div class="card-body"><div class="small text-muted">Atividades</div><div class="fs-4 fw-bold">{{ dashboard.total_atividades }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi"><div class="card-body"><div class="small text-muted">Funcionários</div><div class="fs-4 fw-bold">{{ dashboard.total_funcionarios }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi"><div class="card-body"><div class="small text-muted">Apontamentos</div><div class="fs-4 fw-bold">{{ dashboard.total_apontamentos }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi"><div class="card-body"><div class="small text-muted">HH total</div><div class="fs-4 fw-bold text-success">{{ dashboard.hh_total }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi"><div class="card-body"><div class="small text-muted">Bloqueios</div><div class="fs-4 fw-bold text-danger">{{ dashboard.bloqueios }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi"><div class="card-body"><div class="small text-muted">Presentes</div><div class="fs-4 fw-bold">{{ dashboard.funcionarios_presentes }}</div></div></div></div>
+</div>
+
+<div class="table-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">Resumo da montagem automática</h5>
+<div class="mt-2">
+    {% if resumo_montagem.status_geral == "critico" %}
+        <span class="badge text-bg-danger">CRÍTICO</span>
+    {% elif resumo_montagem.status_geral == "atencao" %}
+        <span class="badge text-bg-warning">ATENÇÃO</span>
+    {% else %}
+        <span class="badge text-bg-success">OK</span>
+    {% endif %}
+</div>
+            <div class="mini-muted">Visão rápida de como este RDC foi pré-preenchido.</div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Ativ. planejamento</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_planejamento }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Ativ. cronograma</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_cronograma }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Atividades total</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_total }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Com catraca</div>
+                <div class="metric-value text-success">{{ resumo_montagem.funcionarios_com_catraca }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Sem catraca</div>
+                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.funcionarios_sem_catraca }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Não elegíveis</div>
+                <div class="metric-value text-danger">{{ resumo_montagem.funcionarios_nao_elegiveis }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mt-1">
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Funcionários total</div>
+                <div class="metric-value">{{ resumo_montagem.funcionarios_total }}</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Alertas</div>
+                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.alertas }}</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Bloqueios</div>
+                <div class="metric-value text-danger">{{ resumo_montagem.bloqueios }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        {% if not can_edit_rdc %}<div class="alert alert-warning">Este RDC está fechado. Edição somente com Liberação especial.</div>{% endif %}
+        {% if rdc.justificativa_fechamento %}<div class="alert alert-light border"><strong>Justificativa do fechamento:</strong> {{ rdc.justificativa_fechamento }}</div>{% endif %}
+        <div class="table-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-0">Resumo de fechamento</h5>
+                    <div class="mini-muted">Pronto para fechamento e visão operacional do dia.</div>
+                </div>
+                <span class="badge text-bg-{{ dashboard.nivel }}">{{ dashboard.rotulo }}</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Bloqueios</div><div class="metric-value text-danger">{{ fechamento_resumo.bloqueios }}</div></div></div>
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Alertas</div><div class="metric-value text-warning-emphasis">{{ fechamento_resumo.alertas }}</div></div></div>
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Funcionários</div><div class="metric-value">{{ fechamento_resumo.funcionarios }}</div></div></div>
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">HH total</div><div class="metric-value text-success">{{ fechamento_resumo.hh_total }}</div></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="table-card p-3 h-100">
+            <h5 class="mb-1">Auditoria recente</h5>
+            <div class="mini-muted mb-3">Últimos eventos deste RDC.</div>
+            {% if auditorias %}
+                <div class="audit-timeline">
+                    {% for evento in auditorias %}
+                        <div class="audit-item">
+                            <div class="audit-dot"></div>
+                            <div class="audit-content">
+                                <div class="d-flex justify-content-between gap-2 flex-wrap">
+                                    <strong>{{ evento.resumo }}</strong>
+                                    <span class="mini-muted">{{ evento.created_at|date:'d/m/Y H:i' }}</span>
+                                </div>
+                                <div class="mini-muted">{{ evento.usuario|default:'Sistema' }} · {{ evento.acao }}{% if evento.secao %} · {{ evento.secao }}{% endif %}</div>
+                                {% if evento.detalhe %}<div class="small mt-1">{{ evento.detalhe }}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-muted small">Sem eventos de auditoria registrados ainda.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="rdcTabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#atividades">Atividades</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#funcionarios">Funcionários</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#apontamentos">Apontamentos</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#validacoes">ValidAções</button></li>
+</ul>
+
+<div class="tab-content">
+<div class="tab-pane fade show active" id="atividades">
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-atividade-create' rdc.pk %}">Incluir atividade</a><form method="post" action="{% url 'rdc-importar-atividades-cronograma' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm">Importar do cronograma</button></form>{% endif %}</div>
+    <form method="post" action="{% url 'rdc-atividade-lote' rdc.pk %}">{% csrf_token %}
+    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">Ação em lote</option><option value="ativar">Ativar</option><option value="inativar">Inativar</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-atividades"><thead><tr><th><input type="checkbox" data-check-all="#tabela-atividades"></th><th>Código</th><th>Descrição</th><th>Escopo</th><th>Executada</th><th>Origem</th><th>Ativa</th><th>Comentário</th><th>Ações</th></tr></thead><tbody>
+    {% for item in atividades_filtradas %}<tr><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.codigo_atividade }}</td><td>{{ item.descr_atividade }}</td><td>{{ item.qtd_escopo }}</td><td class="inline-editable" data-section="atividade" data-id="{{ item.pk }}" data-field="qtd_executada">{{ item.qtd_executada }}</td><td>{{ item.get_origem_display }}</td><td class="inline-editable" data-section="atividade" data-id="{{ item.pk }}" data-field="ativa_no_dia">{% if item.ativa_no_dia %}Sim{% else %}Não{% endif %}</td><td class="inline-editable" data-section="atividade" data-id="{{ item.pk }}" data-field="comentarios">{{ item.comentarios|default:'-'|truncatechars:40 }}</td><td>{% if can_edit_rdc %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-atividade-update' pk=rdc.pk pk2=item.pk %}">Editar</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="9">Sem atividades.</td></tr>{% endfor %}
+    </tbody></table></div></form>
+</div>
+
+<div class="tab-pane fade" id="funcionarios">
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-funcionario-create' rdc.pk %}">Incluir funcionário</a><form method="post" action="{% url 'rdc-importar-funcionarios-alocacao' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm">Importar da alocação</button></form>{% endif %}</div>
+    <form method="post" action="{% url 'rdc-funcionario-lote' rdc.pk %}">{% csrf_token %}
+    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:260px"><option value="">Ação em lote</option><option value="confirmar_supervisor">Confirmar supervisor</option><option value="liberar">Liberar</option><option value="bloquear_sem_catraca">Bloquear sem catraca</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-funcionarios"><thead><tr><th><input type="checkbox" data-check-all="#tabela-funcionarios"></th><th>Matrícula</th><th>Nome</th><th>Equipe</th><th>Função</th><th>Catraca</th><th>Elegível</th><th>HN</th><th>HE</th><th>HH</th><th>Bloqueio</th></tr></thead><tbody>
+    {% for item in funcionarios_filtrados %}<tr class="{% if item.liberado_sem_catraca %}table-warning{% elif item.motivo_bloqueio %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.matricula }}</td><td>{{ item.nome }}</td><td>{{ item.equipe|default:'-' }}</td><td>{{ item.funcao|default:'-' }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="presente_catraca">{% if item.presente_catraca %}Sim{% else %}Não{% endif %}</td><td>{% if item.presente_catraca %}<span class="badge text-bg-success">Presente na catraca</span>{% elif item.liberado_sem_catraca %}<span class="badge text-bg-warning">Liberado manualmente</span>{% else %}<span class="badge text-bg-danger">Bloqueado</span>{% endif %}<div class="small text-muted mt-1">{% if item.liberado_sem_catraca %}Sem catraca, mas apto para apontamento.{% elif item.motivo_bloqueio %}{{ item.motivo_bloqueio|truncatechars:55 }}{% else %}Apto para apontamento.{% endif %}</div>{% if item.liberado_sem_catraca and item.liberado_por %}<div class="small text-muted">Por {{ item.liberado_por }}{% if item.liberado_em %} em {{ item.liberado_em|date:'d/m/Y H:i' }}{% endif %}</div>{% endif %}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_normal">{{ item.hora_normal }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_extra">{{ item.hora_extra }}</td><td class="hh-cell" data-id="{{ item.pk }}">{{ item.hh_total }}</td><td>{% if item.liberado_sem_catraca %}{{ item.justificativa_liberacao|default:'-'|truncatechars:35 }}{% else %}{{ item.motivo_bloqueio|default:'-'|truncatechars:35 }}{% endif %}</td></tr>{% empty %}<tr><td colspan="11">Sem funcionários.</td></tr>{% endfor %}
+    </tbody></table></div></form>
+</div>
+
+<div class="tab-pane fade" id="apontamentos">
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-apontamento-create' rdc.pk %}">Incluir apontamento</a>{% endif %}</div>
+    <form method="post" action="{% url 'rdc-apontamento-lote' rdc.pk %}">{% csrf_token %}
+    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">Ação em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-apontamentos"><thead><tr><th><input type="checkbox" data-check-all="#tabela-apontamentos"></th><th>Funcionário</th><th>Atividade</th><th>Horas</th><th>observação</th></tr></thead><tbody>
+    {% for item in apontamentos_filtrados %}<tr><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.rdc_funcionario }}</td><td>{{ item.rdc_atividade }}</td><td class="inline-editable" data-section="apontamento" data-id="{{ item.pk }}" data-field="horas">{{ item.horas }}</td><td class="inline-editable" data-section="apontamento" data-id="{{ item.pk }}" data-field="observacao">{{ item.observacao|default:'-'|truncatechars:70 }}</td></tr>{% empty %}<tr><td colspan="5">Sem apontamentos.</td></tr>{% endfor %}
+    </tbody></table></div></form>
+</div>
+
+<div class="tab-pane fade" id="validacoes">
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-validacao-create' rdc.pk %}">Incluir Validação</a>{% endif %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-validacoes' rdc.pk %}">Ver tela dedicada</a></div>
+    <form method="post" action="{% url 'rdc-validacao-lote' rdc.pk %}">{% csrf_token %}
+    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">Ação em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-validacoes"><thead><tr><th><input type="checkbox" data-check-all="#tabela-validacoes"></th><th>Tipo</th><th>Status</th><th>Mensagem</th><th>Referência</th></tr></thead><tbody>
+    {% for item in validacoes_filtradas %}<tr class="{% if item.status == 'bloqueio' %}table-danger{% elif item.status == 'alerta' %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.get_tipo_display }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="status">{{ item.status }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="mensagem">{{ item.mensagem|truncatechars:70 }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="referencia">{{ item.referencia|default:'-' }}</td></tr>{% empty %}<tr><td colspan="5">Sem validAções.</td></tr>{% endfor %}
+    </tbody></table></div></form>
+</div>
+</div>
+
+<div class="modal fade" id="modalFechamento" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'rdc-workflow' rdc.pk %}" class="modal-content">{% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Fechamento controlado do RDC</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="mb-2">O fechamento bloqueia edição comum e registra usuário, data e hora.</p>
+        <div class="mb-3"><label class="form-label">Justificativa / observação do fechamento</label><textarea name="justificativa_fechamento" class="form-control" rows="4"></textarea></div>
+        {% if can_force_close %}<div class="form-check"><input class="form-check-input" type="checkbox" name="forcar" value="1" id="forcar"><label class="form-check-label" for="forcar">Permitir fechamento mesmo com bloqueios críticos</label></div>{% endif %}
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success">Confirmar fechamento</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="modalReabertura" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'rdc-workflow' rdc.pk %}" class="modal-content">{% csrf_token %}
+      <input type="hidden" name="acao" value="reabrir">
+      <div class="modal-header"><h5 class="modal-title">Reabrir RDC</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Motivo da reabertura</label><textarea name="justificativa_reabertura" class="form-control" rows="4" required></textarea></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-warning">Confirmar reabertura</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function() {
+    const hash = window.location.hash;
+    if (hash) {
+        const trigger = document.querySelector(`[data-bs-target="${hash}"]`);
+        if (trigger) bootstrap.Tab.getOrCreateInstance(trigger).show();
+    }
+    document.querySelectorAll('[data-check-all]').forEach(function(master){
+        master.addEventListener('change', function(){
+            const table = document.querySelector(master.dataset.checkAll);
+            if (!table) return;
+            table.querySelectorAll('tbody input[type="checkbox"][name="ids"]').forEach(cb => cb.checked = master.checked);
+        });
+    });
+
+    const canEdit = {{ can_edit_rdc|yesno:'true,false' }};
+    if (!canEdit) return;
+
+    function csrfToken(){ return document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''; }
+    function createEditor(cell, oldText) {
+        const field = cell.dataset.field;
+        if (['comentarios', 'observacao', 'mensagem', 'referencia'].includes(field)) {
+            const textarea = document.createElement('textarea');
+            textarea.className = 'form-control form-control-sm';
+            textarea.rows = 3;
+            textarea.value = oldText;
+            return textarea;
+        }
+        if (['ativa_no_dia', 'presente_catraca', 'confirmado_supervisor'].includes(field)) {
+            const select = document.createElement('select');
+            select.className = 'form-select form-select-sm';
+            [['true','Sim'],['false','Não']].forEach(([val,label]) => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                if ((oldText || '').toLowerCase() === label.toLowerCase()) opt.selected = true;
+                select.appendChild(opt);
+            });
+            return select;
+        }
+        if (field === 'status') {
+            const select = document.createElement('select');
+            select.className = 'form-select form-select-sm';
+            [['info','Info'],['alerta','Alerta'],['bloqueio','Bloqueio']].forEach(([val,label]) => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                if ((oldText || '').toLowerCase() === val) opt.selected = true;
+                select.appendChild(opt);
+            });
+            return select;
+        }
+        const input = document.createElement('input');
+        input.className = 'form-control form-control-sm';
+        input.value = oldText;
+        return input;
+    }
+
+    document.querySelectorAll('.inline-editable').forEach(cell => {
+        cell.addEventListener('dblclick', async () => {
+            if (cell.querySelector('input,textarea,select')) return;
+            const oldText = cell.innerText.trim() === '-' ? '' : cell.innerText.trim();
+            const editor = createEditor(cell, oldText);
+            cell.dataset.old = cell.innerHTML;
+            cell.innerHTML = '';
+            cell.appendChild(editor);
+            editor.focus();
+
+            const restore = () => { cell.innerHTML = cell.dataset.old; };
+            editor.addEventListener('keydown', ev => {
+                if (ev.key === 'Escape') restore();
+                if (ev.key === 'Enter' && editor.tagName !== 'TEXTAREA') editor.blur();
+            });
+            editor.addEventListener('blur', async () => {
+                const newValue = editor.value;
+                if (newValue === oldText) { restore(); return; }
+                cell.classList.add('inline-saving');
+                
+                const body = new URLSearchParams({field: cell.dataset.field, value: newValue});
+                const resp = await fetch(url, {method:'POST', headers:{'X-CSRFToken': csrfToken(), 'Content-Type':'application/x-www-form-urlencoded'}, body});
+                const data = await resp.json();
+                cell.classList.remove('inline-saving');
+                if (data.ok){
+                    cell.textContent = data.display || newValue || '-';
+                    cell.classList.add('inline-saved');
+                    setTimeout(() => cell.classList.remove('inline-saved'), 1200);
+                    if (data.hh_total) {
+                        const hhCell = document.querySelector(`.hh-cell[data-id="${cell.dataset.id}"]`);
+                        if (hhCell) hhCell.textContent = data.hh_total;
+                    }
+                }
+                else { alert(data.message || 'Não foi possível atualizar.'); restore(); }
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,527 @@
+﻿{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  .rdc-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 30px;
+    padding: 1.65rem;
+    background: linear-gradient(135deg, #0f172a 0%, #123c72 48%, #2563eb 100%);
+    color: #fff;
+    box-shadow: 0 24px 52px rgba(15, 23, 42, .22);
+  }
+  .rdc-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255,255,255,.16), transparent 34%);
+    pointer-events: none;
+  }
+  .rdc-hero > * { position: relative; z-index: 1; }
+  .rdc-hero-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; line-height: 1; }
+  .rdc-hero-subtitle { color: rgba(255,255,255,.84); max-width: 840px; }
+  .hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .68rem .95rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.11);
+    border: 1px solid rgba(255,255,255,.12);
+    color: #fff;
+    font-weight: 700;
+    font-size: .92rem;
+  }
+  .kpi-rdc {
+    border-radius: 22px;
+    border: 1px solid rgba(15,23,42,.06);
+    background: linear-gradient(135deg,#ffffff 0%,#f8fbff 100%);
+    box-shadow: 0 16px 34px rgba(15,23,42,.08);
+    padding: 1rem 1.05rem;
+    height: 100%;
+  }
+  .kpi-rdc-label { font-size: .78rem; color:#64748b; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
+  .kpi-rdc-value { font-size: 1.95rem; font-weight: 900; line-height: 1; color:#0f172a; }
+  .kpi-rdc-desc { font-size: .84rem; color:#64748b; }
+  .kpi-rdc .icon-wrap {
+    width: 44px; height: 44px; border-radius: 14px; display:flex; align-items:center; justify-content:center;
+    background:#eef4ff; color:#1d4ed8; font-size:1.15rem;
+  }
+  .filter-panel {
+    border-radius: 24px;
+    border: 1px solid rgba(15,23,42,.06);
+    background: #fff;
+    box-shadow: 0 16px 34px rgba(15,23,42,.06);
+    padding: 1.15rem;
+  }
+  .filter-title { font-weight: 900; color:#0f172a; }
+  .toolbar-inline { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+  .view-toggle .btn { border-radius: 12px; }
+  .filter-chip {
+    display:inline-flex; align-items:center; gap:.45rem; padding:.55rem .8rem; border-radius:999px;
+    background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; text-decoration:none; font-weight:700; font-size:.85rem;
+  }
+  .filter-chip-muted {
+    background:#f8fafc; border-color:#e2e8f0; color:#475569;
+  }
+  .summary-strip {
+    display:flex; gap:.7rem; flex-wrap:wrap; align-items:center;
+  }
+  .summary-badge {
+    display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+    border-radius:999px; padding:.4rem .75rem; font-weight:800; font-size:.82rem;
+  }
+  .summary-badge.primary { background:#dbeafe; color:#1d4ed8; }
+  .summary-badge.success { background:#dcfce7; color:#166534; }
+  .summary-badge.warning { background:#fef3c7; color:#92400e; }
+  .summary-badge.secondary { background:#e2e8f0; color:#334155; }
+  .summary-badge.danger { background:#fee2e2; color:#b91c1c; }
+  .rdc-card {
+    border-radius: 24px;
+    border: 1px solid rgba(15,23,42,.06);
+    background: #fff;
+    box-shadow: 0 18px 34px rgba(15,23,42,.06);
+    overflow: hidden;
+    height: 100%;
+  }
+  .rdc-card-header {
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid rgba(15,23,42,.06);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  }
+  .rdc-card-body { padding: 1rem 1.1rem 1.1rem; }
+  .rdc-card-id { font-size: 1.15rem; font-weight: 900; color:#0f172a; text-decoration:none; }
+  .rdc-card-id:hover { color:#1d4ed8; }
+  .rdc-main-title { font-weight: 800; color:#0f172a; }
+  .rdc-muted { color:#64748b; }
+  .rdc-meta-grid {
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+  }
+  .rdc-meta-item {
+    padding: .8rem .85rem;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+  .rdc-meta-label { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color:#64748b; font-weight: 800; }
+  .rdc-meta-value { font-weight: 700; color:#0f172a; margin-top: .15rem; }
+  .rdc-footer-actions { display:flex; gap:.55rem; flex-wrap:wrap; }
+  .status-pill {
+    display:inline-flex; align-items:center; gap:.42rem; padding:.48rem .72rem; border-radius:999px; font-weight:800; font-size:.82rem;
+  }
+  .status-pill.success { background:#dcfce7; color:#166534; }
+  .status-pill.warning { background:#fef3c7; color:#92400e; }
+  .status-pill.primary { background:#dbeafe; color:#1d4ed8; }
+  .status-pill.secondary { background:#e2e8f0; color:#334155; }
+  .status-pill.danger { background:#fee2e2; color:#b91c1c; }
+
+  .table-shell {
+    border-radius: 24px;
+    border: 1px solid rgba(15,23,42,.06);
+    background: #fff;
+    box-shadow: 0 18px 34px rgba(15,23,42,.06);
+    overflow: hidden;
+  }
+  .table-shell-header {
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid rgba(15,23,42,.06);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  }
+  .empty-state {
+    border-radius: 24px;
+    border: 1px dashed #cbd5e1;
+    background: linear-gradient(135deg,#ffffff 0%,#f8fbff 100%);
+    padding: 2rem;
+    text-align:center;
+  }
+  .pager-shell {
+    border-radius: 18px;
+    padding: .85rem 1rem;
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.06);
+    box-shadow: 0 10px 20px rgba(15,23,42,.04);
+  }
+  @media (max-width: 991.98px) {
+    .rdc-meta-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 767.98px) {
+    .rdc-hero { padding: 1.2rem; }
+    .rdc-hero-title { font-size: 2rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rdc-hero mb-4">
+  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+    <div>
+      <div class="subtle-label mb-2">D€™OR@NGE Control · módulo RDC</div>
+      <div class="rdc-hero-title mb-2">RDCs</div>
+      <div class="rdc-hero-subtitle">
+        Painel operacional de registros diários com filtros avançados, visão gerencial por status,
+        modos de Visualização e entrada rápida para Criação e acompanhamento dos RDCs.
+      </div>
+    </div>
+    <div class="toolbar-inline">
+      <a class="btn btn-outline-light" href="{% url 'rdc-consolidado' %}">
+        <i class="bi bi-bar-chart-line me-1"></i> Painel consolidado
+      </a>
+      <a class="btn btn-light" href="{% url 'rdc-create' %}">
+        <i class="bi bi-plus-circle me-1"></i> Novo RDC
+      </a>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <span class="hero-chip">
+      <i class="bi bi-funnel"></i>
+      Filtros ativos: {% if has_active_filters %}Sim{% else %}Não{% endif %}
+    </span>
+    <span class="hero-chip">
+      <i class="bi bi-collection"></i>
+      Total encontrado: {{ kpis.total }}
+    </span>
+    <span class="hero-chip">
+      <i class="bi bi-calendar2-check"></i>
+      Hoje: {{ kpis.hoje }}
+    </span>
+    <span class="hero-chip">
+      <i class="bi bi-list-ul"></i>
+      Página {{ page_obj.number|default:1 }}{% if page_obj.paginator.num_pages %} de {{ page_obj.paginator.num_pages }}{% endif %}
+    </span>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-rdc">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <div class="kpi-rdc-label">Total</div>
+          <div class="kpi-rdc-value">{{ kpis.total }}</div>
+        </div>
+        <div class="icon-wrap"><i class="bi bi-collection"></i></div>
+      </div>
+      <div class="kpi-rdc-desc">Registros disponíveis com os filtros atuais.</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-rdc">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <div class="kpi-rdc-label">Em revisão</div>
+          <div class="kpi-rdc-value">{{ kpis.em_revisao }}</div>
+        </div>
+        <div class="icon-wrap"><i class="bi bi-hourglass-split"></i></div>
+      </div>
+      <div class="kpi-rdc-desc">RDCs aguardando fechamento ou Validação.</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-rdc">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <div class="kpi-rdc-label">Fechados</div>
+          <div class="kpi-rdc-value">{{ kpis.fechados }}</div>
+        </div>
+        <div class="icon-wrap"><i class="bi bi-lock"></i></div>
+      </div>
+      <div class="kpi-rdc-desc">Documentos encerrados e auditáveis.</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-rdc">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <div class="kpi-rdc-label">Pré-preenchidos</div>
+          <div class="kpi-rdc-value">{{ kpis.pre_preenchidos }}</div>
+        </div>
+        <div class="icon-wrap"><i class="bi bi-stars"></i></div>
+      </div>
+      <div class="kpi-rdc-desc">Base pronta para conferência e avanço.</div>
+    </div>
+  </div>
+</div>
+
+<div class="filter-panel mb-4">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+    <div>
+      <div class="filter-title">Filtros e Visualização</div>
+      <div class="text-muted">Refine por projeto, disciplina, turno, período e status.</div>
+    </div>
+    <div class="toolbar-inline">
+      <div class="view-toggle btn-group" role="group">
+        <a class="btn {% if view_mode == 'cards' %}btn-dark{% else %}btn-outline-dark{% endif %}"
+           href="?q={{ filter_values.q }}&status={{ filter_values.status }}&turno={{ filter_values.turno }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&quick={{ filter_values.quick }}&view=cards">
+          <i class="bi bi-grid-3x3-gap me-1"></i> Cards
+        </a>
+        <a class="btn {% if view_mode == 'table' %}btn-dark{% else %}btn-outline-dark{% endif %}"
+           href="?q={{ filter_values.q }}&status={{ filter_values.status }}&turno={{ filter_values.turno }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&quick={{ filter_values.quick }}&view=table">
+          <i class="bi bi-table me-1"></i> Tabela
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-strip mb-3">
+    <span class="summary-badge secondary"><i class="bi bi-pencil-square"></i> Rascunho {{ status_summary.rascunho }}</span>
+    <span class="summary-badge secondary"><i class="bi bi-stars"></i> Pré-preenchido {{ status_summary.pre_preenchido }}</span>
+    <span class="summary-badge warning"><i class="bi bi-hourglass-split"></i> Em revisão {{ status_summary.em_revisao }}</span>
+    <span class="summary-badge success"><i class="bi bi-check-circle"></i> Aprovado {{ status_summary.aprovado }}</span>
+    <span class="summary-badge primary"><i class="bi bi-lock"></i> Fechado {{ status_summary.fechado }}</span>
+  </div>
+
+  <form method="get" class="row g-3">
+    <input type="hidden" name="view" value="{{ view_mode }}">
+    <div class="col-lg-3">
+      <label class="form-label">Busca</label>
+      <input class="form-control" type="text" name="q" value="{{ filter_values.q }}" placeholder="Projeto, disciplina, área, observação...">
+    </div>
+    <div class="col-md-6 col-lg-2">
+      <label class="form-label">Status</label>
+      <select class="form-select" name="status">
+        <option value="">Todos os status</option>
+        <option value="rascunho" {% if filter_values.status == 'rascunho' %}selected{% endif %}>Rascunho</option>
+        <option value="pre_preenchido" {% if filter_values.status == 'pre_preenchido' %}selected{% endif %}>Pré-preenchido</option>
+        <option value="em_revisao" {% if filter_values.status == 'em_revisao' %}selected{% endif %}>Em revisão</option>
+        <option value="aprovado" {% if filter_values.status == 'aprovado' %}selected{% endif %}>Aprovado</option>
+        <option value="fechado" {% if filter_values.status == 'fechado' %}selected{% endif %}>Fechado</option>
+      </select>
+    </div>
+    <div class="col-md-6 col-lg-2">
+      <label class="form-label">Turno</label>
+      <select class="form-select" name="turno">
+        <option value="">Todos</option>
+        <option value="manha" {% if filter_values.turno == 'manha' %}selected{% endif %}>Manhã</option>
+        <option value="tarde" {% if filter_values.turno == 'tarde' %}selected{% endif %}>Tarde</option>
+        <option value="noite" {% if filter_values.turno == 'noite' %}selected{% endif %}>Noite</option>
+        <option value="integral" {% if filter_values.turno == 'integral' %}selected{% endif %}>Integral</option>
+      </select>
+    </div>
+    <div class="col-md-6 col-lg-2">
+      <label class="form-label">Projeto</label>
+      <select class="form-select" name="projeto">
+        <option value="">Todos</option>
+        {% for item in projetos_filtro %}
+          <option value="{{ item.projeto_id }}" {% if filter_values.projeto == item.projeto_id|stringformat:"s" %}selected{% endif %}>
+            {{ item.projeto__codigo }} - {{ item.projeto__nome }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <label class="form-label">Disciplina</label>
+      <select class="form-select" name="disciplina">
+        <option value="">Todas</option>
+        {% for item in disciplinas_filtro %}
+          <option value="{{ item.disciplina_id }}" {% if filter_values.disciplina == item.disciplina_id|stringformat:"s" %}selected{% endif %}>
+            {{ item.disciplina__nome }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6 col-lg-2">
+      <label class="form-label">Data inicial</label>
+      <input class="form-control" type="date" name="data_ini" value="{{ filter_values.data_ini }}">
+    </div>
+    <div class="col-md-6 col-lg-2">
+      <label class="form-label">Data final</label>
+      <input class="form-control" type="date" name="data_fim" value="{{ filter_values.data_fim }}">
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <label class="form-label">Atalho rápido</label>
+      <select class="form-select" name="quick">
+        <option value="">Nenhum</option>
+        {% for key, item in quick_filters.items %}
+          <option value="{{ key }}" {% if filter_values.quick == key %}selected{% endif %}>{{ item.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6 col-lg-2 d-grid">
+      <label class="form-label invisible">Ação</label>
+      <button class="btn btn-dark"><i class="bi bi-funnel me-1"></i> Filtrar</button>
+    </div>
+    <div class="col-lg-3 d-grid">
+      <label class="form-label invisible">Ação</label>
+      <a class="btn btn-outline-secondary" href="{% url 'rdc-list' %}">
+        <i class="bi bi-arrow-clockwise me-1"></i> Limpar filtros
+      </a>
+    </div>
+    <div class="col-12">
+      <div class="toolbar-inline mt-1">
+        <a class="filter-chip filter-chip-muted" href="{% url 'rdc-list' %}?quick=hoje&view={{ view_mode }}"><i class="bi bi-calendar-event"></i> Hoje</a>
+        <a class="filter-chip filter-chip-muted" href="{% url 'rdc-list' %}?quick=ontem&view={{ view_mode }}"><i class="bi bi-calendar-minus"></i> Ontem</a>
+        <a class="filter-chip filter-chip-muted" href="{% url 'rdc-list' %}?quick=semana&view={{ view_mode }}"><i class="bi bi-calendar-week"></i> Esta semana</a>
+        <a class="filter-chip" href="{% url 'rdc-list' %}?status=pre_preenchido&view={{ view_mode }}"><i class="bi bi-stars"></i> Pré-preenchidos</a>
+        <a class="filter-chip" href="{% url 'rdc-list' %}?status=em_revisao&view={{ view_mode }}"><i class="bi bi-hourglass-split"></i> Em revisão</a>
+        <a class="filter-chip" href="{% url 'rdc-list' %}?status=fechado&view={{ view_mode }}"><i class="bi bi-lock"></i> Fechados</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% if rdcs %}
+  {% if view_mode == 'table' %}
+    <div id="rdc-table-view" class="table-shell mb-4">
+      <div class="table-shell-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <div>
+          <div class="filter-title mb-1">Visão tabular</div>
+          <div class="text-muted">Leitura mais gerencial para Comparação rápida entre RDCs.</div>
+        </div>
+        <div class="small text-muted">Itens nesta página: {{ kpis.pagina }}</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>RDC</th>
+              <th>Data</th>
+              <th>Projeto</th>
+              <th>Disciplina</th>
+              <th>Área/local</th>
+              <th>Turno</th>
+              <th>Supervisor</th>
+              <th>Status</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rdc in rdcs %}
+              <tr>
+                <td><a class="fw-bold text-decoration-none" href="{% url 'rdc-detail' rdc.pk %}">#{{ rdc.id }}</a></td>
+                <td>{{ rdc.data|date:'d/m/Y' }}</td>
+                <td>{{ rdc.projeto }}</td>
+                <td>{{ rdc.disciplina }}</td>
+                <td>{{ rdc.area_local }}</td>
+                <td>{{ rdc.get_turno_display }}</td>
+                <td>{{ rdc.supervisor|default:'-' }}</td>
+                <td>
+                  {% if rdc.status == 'aprovado' %}
+                    <span class="status-pill success"><i class="bi bi-check-circle"></i> {{ rdc.get_status_display }}</span>
+                  {% elif rdc.status == 'em_revisao' %}
+                    <span class="status-pill warning"><i class="bi bi-hourglass-split"></i> {{ rdc.get_status_display }}</span>
+                  {% elif rdc.status == 'fechado' %}
+                    <span class="status-pill primary"><i class="bi bi-lock"></i> {{ rdc.get_status_display }}</span>
+                  {% elif rdc.status == 'pre_preenchido' %}
+                    <span class="status-pill secondary"><i class="bi bi-stars"></i> {{ rdc.get_status_display }}</span>
+                  {% else %}
+                    <span class="status-pill danger"><i class="bi bi-pencil-square"></i> {{ rdc.get_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <a class="btn btn-outline-primary" href="{% url 'rdc-detail' rdc.pk %}">Abrir</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'rdc-update' rdc.pk %}">Editar</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div id="rdc-cards-view" class="row g-4 mb-4">
+      {% for rdc in rdcs %}
+      <div class="col-xl-4 col-lg-6">
+        <div class="rdc-card">
+          <div class="rdc-card-header d-flex justify-content-between align-items-start gap-2 flex-wrap">
+            <div>
+              <a class="rdc-card-id" href="{% url 'rdc-detail' rdc.pk %}">RDC #{{ rdc.id }}</a>
+              <div class="rdc-muted small mt-1">{{ rdc.data|date:'d/m/Y' }} · {{ rdc.get_turno_display }}</div>
+            </div>
+            {% if rdc.status == 'aprovado' %}
+              <span class="status-pill success"><i class="bi bi-check-circle"></i> {{ rdc.get_status_display }}</span>
+            {% elif rdc.status == 'em_revisao' %}
+              <span class="status-pill warning"><i class="bi bi-hourglass-split"></i> {{ rdc.get_status_display }}</span>
+            {% elif rdc.status == 'fechado' %}
+              <span class="status-pill primary"><i class="bi bi-lock"></i> {{ rdc.get_status_display }}</span>
+            {% elif rdc.status == 'pre_preenchido' %}
+              <span class="status-pill secondary"><i class="bi bi-stars"></i> {{ rdc.get_status_display }}</span>
+            {% else %}
+              <span class="status-pill danger"><i class="bi bi-pencil-square"></i> {{ rdc.get_status_display }}</span>
+            {% endif %}
+          </div>
+          <div class="rdc-card-body">
+            <div class="rdc-main-title mb-1">{{ rdc.projeto }}</div>
+            <div class="rdc-muted mb-3">{{ rdc.disciplina }} · {{ rdc.area_local }}</div>
+
+            <div class="rdc-meta-grid mb-3">
+              <div class="rdc-meta-item">
+                <div class="rdc-meta-label">Projeto</div>
+                <div class="rdc-meta-value">{{ rdc.projeto }}</div>
+              </div>
+              <div class="rdc-meta-item">
+                <div class="rdc-meta-label">Disciplina</div>
+                <div class="rdc-meta-value">{{ rdc.disciplina }}</div>
+              </div>
+              <div class="rdc-meta-item">
+                <div class="rdc-meta-label">Área/local</div>
+                <div class="rdc-meta-value">{{ rdc.area_local }}</div>
+              </div>
+              <div class="rdc-meta-item">
+                <div class="rdc-meta-label">Supervisor</div>
+                <div class="rdc-meta-value">{{ rdc.supervisor|default:'-' }}</div>
+              </div>
+            </div>
+
+            <div class="rdc-footer-actions">
+              <a class="btn btn-primary btn-sm" href="{% url 'rdc-detail' rdc.pk %}">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Abrir
+              </a>
+              <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-update' rdc.pk %}">
+                <i class="bi bi-pencil-square me-1"></i> Editar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if is_paginated %}
+  <div class="pager-shell d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="text-muted small">
+      Mostrando página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} · total {{ paginator.count }} registros
+    </div>
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ filter_values.q }}&status={{ filter_values.status }}&turno={{ filter_values.turno }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&quick={{ filter_values.quick }}&view={{ view_mode }}">Anterior</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ filter_values.q }}&status={{ filter_values.status }}&turno={{ filter_values.turno }}&data_ini={{ filter_values.data_ini }}&data_fim={{ filter_values.data_fim }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&quick={{ filter_values.quick }}&view={{ view_mode }}">Próxima</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+{% else %}
+<div class="empty-state">
+  <div class="display-6 mb-2">Nenhum RDC encontrado</div>
+  <p class="text-muted mb-3">Revise os filtros aplicados ou crie um novo registro para iniciar a Operação diária.</p>
+  <div class="d-flex justify-content-center gap-2 flex-wrap">
+    <a class="btn btn-outline-dark" href="{% url 'rdc-list' %}">Limpar filtros</a>
+    <a class="btn btn-primary" href="{% url 'rdc-create' %}">Novo RDC</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+
+

@@ -1,0 +1,91 @@
+﻿from decimal import Decimal
+import csv
+
+from django.db.models import Q, Count
+from django.http import HttpResponse
+from django.utils import timezone
+
+
+def _safe_decimal(valor):
+    return valor if isinstance(valor, Decimal) else Decimal(str(valor or "0"))
+
+
+def _apply_text_filter(queryset, termo, campos):
+    termo = (termo or "").strip()
+    if not termo:
+        return queryset
+
+    filtros = Q()
+    for campo in campos:
+        filtros |= Q(**{f"{campo}__icontains": termo})
+    return queryset.filter(filtros)
+
+
+def _apply_bool_filter(queryset, valor, campo):
+    valor = (valor or "").strip().lower()
+    if not valor:
+        return queryset
+    if valor in {"1", "true", "sim", "yes"}:
+        return queryset.filter(**{campo: True})
+    if valor in {"0", "false", "nao", "nÃ£o", "no"}:
+        return queryset.filter(**{campo: False})
+    return queryset
+
+
+def _apply_exact_filter(queryset, valor, campo):
+    valor = (valor or "").strip()
+    if not valor:
+        return queryset
+    return queryset.filter(**{campo: valor})
+
+
+def _make_csv_response(filename, headers, rows):
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response.write("\ufeff")
+
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow(headers)
+    for row in rows:
+        writer.writerow(row)
+
+    return response
+
+
+def _resumo_validacoes(rdc):
+    validacoes = rdc.validacoes.all()
+    alertas = validacoes.filter(status__iexact="alerta").count()
+    bloqueios = validacoes.filter(status__iexact="bloqueio").count()
+    infos = validacoes.filter(status__iexact="info").count()
+
+    if bloqueios:
+        nivel = "danger"
+        rotulo = "CrÃ­tico"
+    elif alertas:
+        nivel = "warning"
+        rotulo = "AtenÃ§Ã£o"
+    else:
+        nivel = "success"
+        rotulo = "Pronto"
+
+        status_geral = "ok"
+    if bloqueios > 0:
+        status_geral = "critico"
+    elif alertas > 0:
+        status_geral = "atencao"
+
+    return {
+        "atividades_planejamento": atividades_planejamento,
+        "atividades_cronograma": atividades_cronograma,
+        "atividades_total": atividades_total,
+        "funcionarios_total": funcionarios_total,
+        "funcionarios_com_catraca": funcionarios_com_catraca,
+        "funcionarios_sem_catraca": funcionarios_sem_catraca,
+        "funcionarios_nao_elegiveis": funcionarios_nao_elegiveis,
+        "alertas": alertas,
+        "bloqueios": bloqueios,
+        "infos": infos,
+        "status_geral": status_geral,
+    }
+
+

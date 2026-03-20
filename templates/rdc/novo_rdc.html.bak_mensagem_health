@@ -1,0 +1,471 @@
+﻿{% extends "base.html" %}
+{% load static %}
+{% block title %}Novo RDC Guiado €¢ D€™OR@NGE Control{% endblock %}
+{% block content %}
+<div class="workspace-shell dorange-create-page">
+  <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+    <div class="page-title-brand">
+      <img class="page-title-logo" src="{% static 'img/dorange-logo.png' %}" alt="D€™OR@NGE">
+      <div>
+        <div class="subtle-label">D€™OR@NGE Control</div>
+        <h1 class="mb-1">Novo RDC guiado</h1>
+        <div class="text-muted">Monte um RDC com base em semana, equipe, alocAção e programAção operacional.</div>
+      </div>
+    </div>
+    <div class="panel-toolbar dorange-toolbar-actions">
+      <a class="btn btn-outline-secondary" href="{% url 'rdc-list' %}">Voltar</a>
+      {% for item in atalhos_admin %}
+        <a class="btn {% if forloop.first %}btn-outline-primary{% else %}btn-dark{% endif %}" href="{{ item.url }}">{{ item.label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <section class="hero-panel dorange-create-hero mb-4">
+    <div class="row g-4 align-items-end">
+      <div class="col-xl-8">
+        <div class="subtle-label text-white-50">Montagem operacional assistida</div>
+        <h2 class="mb-2 text-white">{{ resumo_guiado.projeto }} · {{ resumo_guiado.disciplina }}</h2>
+        <p class="text-white-50 mb-3 dorange-hero-copy">{{ contexto_guiado.mensagem_contexto }}</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-light text-dark">Encarregado: {{ resumo_guiado.encarregado }}</span>
+          <span class="badge bg-light text-dark">Equipe: {{ resumo_guiado.equipe }}</span>
+          <span class="badge bg-light text-dark">Área: {{ resumo_guiado.area_local }}</span>
+          <span class="badge bg-light text-dark">Semana: {{ resumo_guiado.semana_codigo }}</span>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <div class="hero-kpi-card dorange-hero-side-card">
+          <span class="subtle-label">Prontidão da montagem</span>
+          <div class="metric-value">{{ montagem_health.score }}/4</div>
+          <div class="mt-2">
+            <span class="summary-badge {{ montagem_health.nivel }}">{{ montagem_health.rotulo }}</span>
+          </div>
+          <div class="text-white-50 small mt-2">{{ resumo_guiado.intervalo_semana }}</div>
+          <div class="text-white-50 small">{{ resumo_guiado.origem_semana }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="metric-box h-100 dorange-metric-box">
+        <div class="mini-muted">Equipe sugerida</div>
+        <div class="metric-value">{{ resumo_guiado.colaboradores }}</div>
+        <div class="mini-muted">colaborador(es) válidos no dia</div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="metric-box h-100 dorange-metric-box">
+        <div class="mini-muted">ProgramAção semanal</div>
+        <div class="metric-value">{{ resumo_guiado.atividades }}</div>
+        <div class="mini-muted">atividade(s) sugerida(s)</div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="metric-box h-100 dorange-metric-box">
+        <div class="mini-muted">Histograma do dia</div>
+        <div class="metric-value">{{ resumo_guiado.histograma }}</div>
+        <div class="mini-muted">registro(s) planejados</div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="metric-box h-100 dorange-metric-box">
+        <div class="mini-muted">Perfil operacional</div>
+        <div class="metric-value">{% if contexto_guiado.perfil %}Ativo{% else %}Pendente{% endif %}</div>
+        <div class="mini-muted">{% if contexto_guiado.perfil %}usuário vinculado ao funcionário{% else %}cadastre no admin{% endif %}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-4 align-items-start">
+    <div class="col-xl-4">
+      <div class="table-card dorange-build-card sticky-xl-top" style="top: 1rem;">
+        <div class="dorange-card-header">
+          <div>
+            <div class="subtle-label">Passo 1</div>
+            <div class="section-title mb-1">Montagem do RDC</div>
+            <div class="mini-muted">Defina o contexto e monte automaticamente a base do diário.</div>
+          </div>
+          <span class="badge rounded-pill text-bg-light">Assistido</span>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mt-3 mb-3">
+          {% for item in date_shortcuts %}
+            <a class="filter-chip {% if item.active %}active{% endif %}" href="?data={{ item.value }}">{{ item.label }}</a>
+          {% endfor %}
+        </div>
+
+        {% if montagem_health.score <= 1 %}
+  <div class="alert alert-danger border-0 shadow-sm mb-3">
+    <div class="fw-semibold mb-1">Montagem bloqueada</div>
+    <div class="small">O sistema identificou contexto insuficiente para criar o RDC com segurança. Ajuste os dados antes de continuar.</div>
+  </div>
+{% endif %}
+
+{% if montagem_health.alertas %}
+          <div class="alert alert-warning border-0 shadow-sm mb-3">
+            <div class="fw-semibold mb-1">Pontos de atenção</div>
+            <ul class="mb-0 ps-3 small">
+              {% for alerta in montagem_health.alertas %}
+                <li>{{ alerta }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+
+        <div class="dorange-callout mb-3">
+          <div class="fw-semibold mb-2">Leitura assistida de cadastro</div>
+          <div class="row g-2 mb-2">
+            <div class="col-sm-6"><div class="context-box py-3"><div class="context-box__label">Áreas relacionadas</div><div class="context-box__value"><span id="assist-area-rel">{{ assistencia_cadastro.areas_relacionadas }}</span> / {{ assistencia_cadastro.areas_total }}</div></div></div>
+            <div class="col-sm-6"><div class="context-box py-3"><div class="context-box__label">Equipes relacionadas</div><div class="context-box__value"><span id="assist-equipe-rel">{{ assistencia_cadastro.equipes_relacionadas }}</span> / {{ assistencia_cadastro.equipes_total }}</div></div></div>
+          </div>
+          {% if assistencia_cadastro.alertas %}
+            <div class="alert alert-light border mb-2">
+              <div class="fw-semibold mb-1">Avisos de consistência</div>
+              <ul class="mb-0 ps-3 small" id="assist-alert-list">
+                {% for alerta in assistencia_cadastro.alertas %}<li>{{ alerta }}</li>{% endfor %}
+              </ul>
+            </div>
+          {% else %}
+            <div class="alert alert-success border mb-2 small" id="assist-alert-box">Contexto sem alertas críticos de cadastro no momento.</div>
+            <ul class="mb-0 ps-3 small d-none" id="assist-alert-list"></ul>
+          {% endif %}
+          <ul class="mb-0 ps-3 small text-muted">
+            {% for orientacao in assistencia_cadastro.orientacoes %}<li>{{ orientacao }}</li>{% endfor %}
+          </ul>
+        </div>
+
+        <form method="post" class="mt-3 dorange-form-grid">
+          {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger border-0 shadow-sm mb-3">
+            <div class="fw-semibold mb-1">Não foi possível montar o RDC</div>
+            <ul class="mb-0 ps-3 small">
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+          <div class="row g-3">
+            {% for field in form %}
+              <div class="col-12">
+                <label class="form-label fw-semibold">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="dorange-callout mt-3">
+            <div class="fw-semibold mb-1">O que a montagem faz</div>
+            <ul class="mb-0 small text-muted ps-3">
+              <li>Cria o cabeçalho do RDC com o contexto escolhido</li>
+              <li>Busca equipe válida para a data</li>
+              <li>Sugere atividades da programAção semanal</li>
+              <li>Prepara o diário para refinamento no detalhe</li>
+            </ul>
+          </div>
+
+          <div class="mt-4 d-grid gap-2">
+            {% if montagem_health.score <= 1 %}
+  <button class="btn btn-secondary btn-lg" type="submit" disabled>Montagem bloqueada</button>
+{% else %}
+  <button class="btn btn-success btn-lg" type="submit">Montar RDC automaticamente</button>
+{% endif %}
+            <div class="mini-muted mt-2">Ao montar, o sistema tenta criar a base do RDC com atividades, equipe e apontamentos iniciais.</div>
+            <small class="text-muted text-center">Após a montagem, você seguirá para ajustes finos e fechamento operacional.</small>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-xl-8">
+      <div class="dorange-stack-gap">
+        <div class="table-card dorange-suggestion-card">
+          <div class="dorange-card-header">
+            <div>
+              <div class="subtle-label">Passo 2</div>
+              <div class="section-title mb-1">Leitura de contexto</div>
+              <div class="mini-muted">Entenda o que o sistema localizou antes de montar.</div>
+            </div>
+            <span class="badge rounded-pill text-bg-secondary">{{ data_referencia|date:"d/m/Y" }}</span>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <div class="context-box">
+                <div class="context-box__label">Contexto mínimo</div>
+                <div class="context-box__value">{% if tem_contexto_minimo %}Disponível{% else %}Insuficiente{% endif %}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="context-box">
+                <div class="context-box__label">Semana de planejamento</div>
+                <div class="context-box__value">{{ resumo_guiado.semana_codigo }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="context-box">
+                <div class="context-box__label">Equipe sugerida</div>
+                <div class="context-box__value">{{ resumo_guiado.equipe }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="context-box">
+                <div class="context-box__label">Área operacional</div>
+                <div class="context-box__value">{{ resumo_guiado.area_local }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card dorange-suggestion-card">
+          <div class="dorange-card-header">
+            <div>
+              <div class="subtle-label">Passo 3</div>
+              <div class="section-title mb-1">Atividades sugeridas da semana</div>
+              <div class="mini-muted">Base usada para montar o diário inicial.</div>
+            </div>
+            <span class="badge rounded-pill text-bg-primary">{{ resumo_guiado.atividades }} atividade(s)</span>
+          </div>
+
+          {% if contexto_guiado.atividades_sugeridas %}
+            <div class="table-responsive mt-3">
+              <table class="table table-sm align-middle mb-0 dorange-data-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Qtd.</th>
+                    <th>HH previsto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for a in contexto_guiado.atividades_sugeridas %}
+                    <tr>
+                      <td><span class="badge text-bg-light">{{ a.codigo_atividade }}</span></td>
+                      <td>
+                        <div class="fw-semibold">{{ a.descr_atividade }}</div>
+                        {% if a.descr_subatividade %}<div class="mini-muted">{{ a.codigo_subatividade }} · {{ a.descr_subatividade }}</div>{% endif %}
+                      </td>
+                      <td>{{ a.qtd_prevista }}</td>
+                      <td>{{ a.hh_previsto }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-warning mt-3 mb-0">Nenhuma programAção semanal encontrada para o contexto atual. Você pode seguir manualmente ou cadastrar/importar a programAção da semana.</div>
+          {% endif %}
+        </div>
+
+        <div class="table-card dorange-suggestion-card">
+          <div class="dorange-card-header">
+            <div>
+              <div class="subtle-label">Passo 4</div>
+              <div class="section-title mb-1">Equipe sugerida / alocAção válida</div>
+              <div class="mini-muted">Profissionais encontrados para compor o diário.</div>
+            </div>
+            <span class="badge rounded-pill text-bg-secondary">{{ resumo_guiado.colaboradores }} colaborador(es)</span>
+          </div>
+
+          {% if contexto_guiado.alocados %}
+            <div class="table-responsive mt-3">
+              <table class="table table-sm align-middle mb-0 dorange-data-table">
+                <thead>
+                  <tr>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Função</th>
+                    <th>Equipe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for a in contexto_guiado.alocados|slice:':18' %}
+                    <tr>
+                      <td>{{ a.funcionario.matricula }}</td>
+                      <td class="fw-semibold">{{ a.funcionario.nome }}</td>
+                      <td>{{ a.funcionario.funcao.nome }}</td>
+                      <td>{{ a.equipe.nome|default:'-' }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-secondary mt-3 mb-0">Nenhuma alocAção válida localizada para o contexto atual.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+{{ assistencia_cadastro.catalogo_areas|json_script:"catalogo-areas-rdc" }}
+{{ assistencia_cadastro.catalogo_equipes|json_script:"catalogo-equipes-rdc" }}
+<script>
+(function() {
+  const projeto = document.getElementById('id_projeto');
+  const area = document.getElementById('id_area_local');
+  const disciplina = document.getElementById('id_disciplina');
+  const equipe = document.getElementById('id_equipe');
+  const areaCount = document.getElementById('assist-area-rel');
+  const equipeCount = document.getElementById('assist-equipe-rel');
+  const alertList = document.getElementById('assist-alert-list');
+  const alertBox = document.getElementById('assist-alert-box');
+  if (!projeto || !area || !disciplina || !equipe) return;
+
+  const catalogoAreas = JSON.parse(document.getElementById('catalogo-areas-rdc').textContent || '[]');
+  const catalogoEquipes = JSON.parse(document.getElementById('catalogo-equipes-rdc').textContent || '[]');
+  const areaOriginal = Array.from(area.options).map(o => ({value: o.value, text: o.text, selected: o.selected}));
+  const equipeOriginal = Array.from(equipe.options).map(o => ({value: o.value, text: o.text, selected: o.selected}));
+
+  function fillSelect(select, original, items, valueKey='id') {
+    const current = select.value;
+    select.innerHTML = '';
+    original.filter(o => !o.value).forEach(o => {
+      const option = document.createElement('option');
+      option.value = o.value;
+      option.textContent = o.text;
+      select.appendChild(option);
+    });
+    items.forEach(item => {
+      const option = document.createElement('option');
+      option.value = String(item[valueKey]);
+      option.textContent = item.label;
+      if (String(item[valueKey]) === String(current)) option.selected = true;
+      select.appendChild(option);
+    });
+  }
+
+  function refreshAssist() {
+    const projetoId = projeto.value;
+    const disciplinaId = disciplina.value;
+    const areasRelacionadas = projetoId ? catalogoAreas.filter(item => String(item.projeto_id || '') === String(projetoId)) : [];
+    const equipesRelacionadas = disciplinaId ? catalogoEquipes.filter(item => String(item.disciplina_id || '') === String(disciplinaId)) : [];
+    fillSelect(area, areaOriginal, areasRelacionadas.length ? areasRelacionadas : catalogoAreas);
+    fillSelect(equipe, equipeOriginal, equipesRelacionadas.length ? equipesRelacionadas : catalogoEquipes);
+    if (areaCount) areaCount.textContent = areasRelacionadas.length || catalogoAreas.length;
+    if (equipeCount) equipeCount.textContent = equipesRelacionadas.length || catalogoEquipes.length;
+
+    const avisos = [];
+    if (projetoId && !areasRelacionadas.length) avisos.push('Projeto sem áreas vinculadas diretamente no cadastro. Lista ampla mantida para não travar a operAção.');
+    if (disciplinaId && !equipesRelacionadas.length) avisos.push('Disciplina sem equipes vinculadas diretamente. Lista ampla mantida para operAção assistida.');
+    const areaAtual = catalogoAreas.find(item => String(item.id) === String(area.value));
+    if (projetoId && areaAtual && areaAtual.projeto_id && String(areaAtual.projeto_id) !== String(projetoId)) avisos.push('A área selecionada pertence a outro projeto no cadastro e merece revisão posterior.');
+    const equipeAtual = catalogoEquipes.find(item => String(item.id) === String(equipe.value));
+    if (disciplinaId && equipeAtual && equipeAtual.disciplina_id && String(equipeAtual.disciplina_id) !== String(disciplinaId)) avisos.push('A equipe selecionada está vinculada a outra disciplina no cadastro.');
+
+    if (alertList) {
+      alertList.innerHTML = '';
+      avisos.forEach(msg => {
+        const li = document.createElement('li');
+        li.textContent = msg;
+        alertList.appendChild(li);
+      });
+      alertList.classList.toggle('d-none', !avisos.length);
+    }
+    if (alertBox) {
+      alertBox.classList.toggle('d-none', !!avisos.length);
+    }
+  }
+
+  [projeto, disciplina, area, equipe].forEach(el => el && el.addEventListener('change', refreshAssist));
+  refreshAssist();
+})();
+</script>
+
+<style>
+.dorange-create-page .dorange-toolbar-actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+.dorange-create-hero {
+  border-radius: 28px;
+  background: linear-gradient(135deg, #0f172a 0%, #0d6efd 55%, #3b82f6 100%);
+  box-shadow: 0 24px 50px rgba(13, 110, 253, .18);
+}
+.dorange-hero-copy { max-width: 760px; }
+.dorange-hero-side-card {
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 20px;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(6px);
+}
+.dorange-metric-box {
+  border-radius: 20px;
+  border: 1px solid rgba(15, 23, 42, .06);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, .05);
+}
+.dorange-build-card,
+.dorange-suggestion-card {
+  border-radius: 24px;
+  padding: 1.25rem;
+  border: 1px solid rgba(15, 23, 42, .06);
+  box-shadow: 0 16px 28px rgba(15, 23, 42, .06);
+}
+.dorange-card-header {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+.dorange-stack-gap { display:grid; gap:1rem; }
+.dorange-form-grid .form-control,
+.dorange-form-grid .form-select {
+  border-radius: 14px;
+  min-height: 48px;
+}
+.dorange-callout {
+  border-radius: 18px;
+  padding: 1rem;
+  background: linear-gradient(135deg,#f8fafc 0%,#eff6ff 100%);
+  border: 1px solid #dbeafe;
+}
+.filter-chip {
+  display:inline-flex; align-items:center; gap:.45rem; padding:.55rem .8rem; border-radius:999px;
+  background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; text-decoration:none; font-weight:700; font-size:.85rem;
+}
+.filter-chip.active {
+  background:#1d4ed8; border-color:#1d4ed8; color:#fff;
+}
+.summary-badge {
+  display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:.4rem .75rem; font-weight:800; font-size:.82rem;
+}
+.summary-badge.success { background:#dcfce7; color:#166534; }
+.summary-badge.warning { background:#fef3c7; color:#92400e; }
+.summary-badge.danger { background:#fee2e2; color:#b91c1c; }
+.context-box {
+  border-radius: 18px;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  height: 100%;
+}
+.context-box__label {
+  font-size: .78rem;
+  color:#64748b;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 800;
+}
+.context-box__value {
+  margin-top: .35rem;
+  font-weight: 800;
+  color:#0f172a;
+}
+@media (max-width: 991.98px) {
+  .sticky-xl-top { position: static !important; }
+}
+</style>
+{% endblock %}
+
+
+
+
+

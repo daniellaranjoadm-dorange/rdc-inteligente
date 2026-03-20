@@ -1,0 +1,198 @@
+﻿{% extends "base.html" %}
+{% block title %}Dashboard executivo | D'ORANGE Control{% endblock %}
+{% block content %}
+<div class="hero-panel mb-4">
+  <div class="row g-4 align-items-center">
+    <div class="col-xl-7">
+      <div class="subtle-label">Dashboard executivo</div>
+      <h1 class="display-6 fw-bold mb-2">Operação do dia em uma única tela</h1>
+      <p class="mb-3 text-white-50">Acompanhe RDCs de hoje, HH, efetivo, alertas operacionais e entre direto no detalhe do que precisa de Ação.</p>
+      <div class="d-flex flex-wrap gap-2">
+        {% for action in quick_actions %}
+          <a class="btn btn-{{ action.style }}" href="{{ action.url }}">{{ action.label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-xl-5">
+      <div class="row g-3">
+        <div class="col-6"><div class="hero-kpi-card"><span class="subtle-label">RDCs hoje</span><div class="metric-value">{{ total_rdcs_hoje }}</div><div class="text-white-50 small">{{ rdcs_fechados_hoje }} fechados no dia</div></div></div>
+        <div class="col-6"><div class="hero-kpi-card"><span class="subtle-label">HH hoje</span><div class="metric-value">{{ hh_hoje|floatformat:2 }}</div><div class="text-white-50 small">Î” {{ delta_hh|floatformat:2 }} vs ontem</div></div></div>
+        <div class="col-6"><div class="hero-kpi-card"><span class="subtle-label">Efetivo presente</span><div class="metric-value">{{ presentes_hoje }}</div><div class="text-white-50 small">{{ bloqueados_hoje }} bloqueados</div></div></div>
+        <div class="col-6"><div class="hero-kpi-card"><span class="subtle-label">Saúde do dia</span><div class="metric-value">{{ rdcs_saudaveis_hoje }}</div><div class="text-white-50 small">{{ rdcs_alerta_hoje }} alerta / {{ rdcs_criticos_hoje }} críticos</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-primary h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">RDCs da semana</div><div class="kpi-number">{{ total_rdcs_semana }}</div></div><div class="kpi-icon">#</div></div><div class="kpi-desc">{{ total_rdcs }} RDCs cadastrados no total.</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">Atividades com execução</div><div class="kpi-number">{{ atividades_execucao_hoje }}</div></div><div class="kpi-icon">A</div></div><div class="kpi-desc">Apontamentos hoje: {{ apontamentos_hoje }}.</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">ObservAções críticas</div><div class="kpi-number">{{ apontamentos_obs_hoje }}</div></div><div class="kpi-icon">!</div></div><div class="kpi-desc">Registros com observação no dia.</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-danger h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">Desvios monitorados</div><div class="kpi-number">{{ rdcs_alerta_hoje|add:rdcs_criticos_hoje }}</div></div><div class="kpi-icon">Î”</div></div><div class="kpi-desc">Alertas e bloqueios ativos hoje.</div></div></div></div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-xl-8">
+    <div class="table-card p-3 p-lg-4 h-100">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <div class="section-title mb-1">Agenda operacional de hoje</div>
+          <div class="mini-muted">RDCs que exigem acompanhamento imediato no dia {{ hoje|date:"d/m/Y" }}.</div>
+        </div>
+        <a class="filter-chip" href="/rdc/">Abrir lista completa</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead><tr><th>RDC</th><th>Projeto</th><th>Disciplina</th><th>Turno</th><th>Status</th><th class="text-end">Ação</th></tr></thead>
+          <tbody>
+            {% for rdc in agenda_hoje %}
+              <tr>
+                <td class="fw-semibold">#{{ rdc.pk }}</td>
+                <td>{{ rdc.projeto.codigo|default:rdc.projeto }}</td>
+                <td>{{ rdc.disciplina.nome|default:rdc.disciplina }}</td>
+                <td>{{ rdc.get_turno_display|default:rdc.turno }}</td>
+                <td><span class="summary-badge secondary">{{ rdc.get_status_display }}</span></td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="/rdc/{{ rdc.pk }}/">Abrir</a></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" class="text-center text-muted py-4">Nenhum RDC criado para hoje.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="table-card p-3 p-lg-4 h-100">
+      <div class="section-title mb-1">Fila de atenção</div>
+      <div class="mini-muted mb-3">RDCs com bloqueio ou alerta que merecem Ação mais rápida.</div>
+      <div class="d-flex flex-column gap-3">
+        {% for item in fila_atencao %}
+          <div class="metric-box">
+            <div class="d-flex justify-content-between gap-2 mb-2">
+              <div class="fw-semibold">#{{ item.pk }} · {{ item.projeto.codigo|default:item.projeto }}</div>
+              <span class="summary-badge {% if item.bloqueios %}danger{% elif item.alertas %}warning{% else %}success{% endif %}">{{ item.bloqueios }} bloqueios / {{ item.alertas }} alertas</span>
+            </div>
+            <div class="small text-muted mb-2">{{ item.disciplina.nome|default:item.disciplina }} · {{ item.area_local.descricao|default:item.area_local }}</div>
+            <a class="btn btn-sm btn-outline-primary" href="/rdc/{{ item.pk }}/">Ir para detalhe</a>
+          </div>
+        {% empty %}
+          <div class="metric-box"><div class="fw-semibold text-success">Sem pendências críticas hoje.</div><div class="small text-muted">Os RDCs do dia estão sem bloqueios ou alertas relevantes.</div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="table-card p-3 p-lg-4 h-100">
+      <div class="section-title mb-3">Semáforo do dia</div>
+      <div class="d-flex flex-column gap-3">
+        <div class="executive-card exec-success"><div class="exec-label">Saudáveis</div><div class="exec-number">{{ rdcs_saudaveis_hoje }}</div><div class="exec-desc">RDCs sem alertas críticos ativos.</div></div>
+        <div class="executive-card exec-warning"><div class="exec-label">Em alerta</div><div class="exec-number">{{ rdcs_alerta_hoje }}</div><div class="exec-desc">Necessitam monitoramento operacional.</div></div>
+        <div class="executive-card exec-danger"><div class="exec-label">Críticos</div><div class="exec-number">{{ rdcs_criticos_hoje }}</div><div class="exec-desc">Existe bloqueio ou inconsistência relevante.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="table-card p-3 p-lg-4 h-100">
+      <div class="section-title mb-3">Projetos com mais RDCs na semana</div>
+      <div class="d-flex flex-column gap-3">
+        {% for item in projeto_stats %}
+          <div class="metric-box">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <div>
+                <div class="fw-semibold">{{ item.projeto__codigo|default:"Sem código" }}</div>
+                <div class="small text-muted">{{ item.projeto__nome|default:"Projeto" }}</div>
+              </div>
+              <span class="summary-badge primary">{{ item.total }} RDCs</span>
+            </div>
+          </div>
+        {% empty %}
+          <div class="metric-box text-muted">Sem dados suficientes na semana atual.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="table-card p-3 p-lg-4 h-100">
+      <div class="section-title mb-3">HH por disciplina na semana</div>
+      <div class="d-flex flex-column gap-3">
+        {% for item in disciplina_hh %}
+          <div class="metric-box">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <div class="fw-semibold">{{ item.rdc__disciplina__nome|default:"Sem disciplina" }}</div>
+              <span class="summary-badge success">{{ item.total|floatformat:2 }} HH</span>
+            </div>
+          </div>
+        {% empty %}
+          <div class="metric-box text-muted">Sem HH acumulada no período.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="table-card p-3 p-lg-4 h-100">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <div class="section-title mb-1">Últimos RDCs movimentados</div>
+          <div class="mini-muted">Acesso rápido aos registros mais recentes do sistema.</div>
+        </div>
+        <a class="filter-chip filter-chip-muted" href="/rdc/consolidado/">Abrir consolidado</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle table-sm">
+          <thead><tr><th>ID</th><th>Projeto</th><th>Área</th><th>Data</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for rdc in ultimos_rdcs %}
+              <tr>
+                <td class="fw-semibold">#{{ rdc.pk }}</td>
+                <td>{{ rdc.projeto.codigo|default:rdc.projeto }}</td>
+                <td>{{ rdc.area_local.descricao|default:rdc.area_local }}</td>
+                <td>{{ rdc.data|date:"d/m/Y" }}</td>
+                <td>{{ rdc.get_status_display }}</td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="/rdc/{{ rdc.pk }}/">Detalhe</a></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" class="text-center text-muted py-4">Sem RDCs cadastrados ainda.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="table-card p-3 p-lg-4 h-100">
+      <div class="section-title mb-3">Desvios mais recorrentes de hoje</div>
+      <div class="d-flex flex-column gap-3 mb-4">
+        {% for item in top_alertas %}
+          <div class="metric-box">
+            <div class="d-flex justify-content-between align-items-center gap-2">
+              <div class="fw-semibold">{{ item.label|default:item.tipo|default:"Sem tipo" }}</div>
+              <span class="summary-badge warning">{{ item.total }}</span>
+            </div>
+          </div>
+        {% empty %}
+          <div class="metric-box text-success">Sem desvios relevantes registrados hoje.</div>
+        {% endfor %}
+      </div>
+      <div class="section-title mb-3">Resumo de status da semana</div>
+      <div class="filter-chip-group">
+        <a class="summary-badge secondary text-decoration-none" href="/rdc/?status=rascunho">Rascunho {{ status_summary.rascunho }}</a>
+        <a class="summary-badge secondary text-decoration-none" href="/rdc/?status=pre_preenchido">Pré {{ status_summary.pre_preenchido }}</a>
+        <a class="summary-badge warning text-decoration-none" href="/rdc/?status=em_revisao">Revisão {{ status_summary.em_revisao }}</a>
+        <a class="summary-badge success text-decoration-none" href="/rdc/?status=aprovado">Aprovado {{ status_summary.aprovado }}</a>
+        <a class="summary-badge primary text-decoration-none" href="/rdc/?status=fechado">Fechado {{ status_summary.fechado }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+

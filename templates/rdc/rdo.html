@@ -1,0 +1,149 @@
+﻿
+{% extends "base.html" %}
+{% load static %}
+{% block title %}RDO €¢ D'ORANGE Control{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="page-title-brand">
+        <img class="page-title-logo" src="{% static 'img/dorange-logo.png' %}" alt="D'ORANGE">
+        <div>
+            <h1 class="mb-0">RDO</h1>
+            <div class="text-muted">Relatório diário de obra consolidado a partir dos RDCs do dia.</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap panel-toolbar">
+        <a class="btn btn-outline-secondary" href="{% url 'rdc-consolidado' %}">Voltar ao painel</a>
+        <a class="btn btn-outline-success" href="{% url 'rdc-rdo-exportar' 'excel' %}?data={{ filter_values.data }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&q={{ filter_values.q|urlencode }}{% for id in ids_selecionados %}&ids={{ id }}{% endfor %}">Excel</a>
+        <a class="btn btn-outline-danger" href="{% url 'rdc-rdo-exportar' 'pdf' %}?data={{ filter_values.data }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&q={{ filter_values.q|urlencode }}{% for id in ids_selecionados %}&ids={{ id }}{% endfor %}">PDF</a>
+        <a class="btn btn-outline-primary" href="{% url 'rdc-rdo-exportar' 'csv' %}?data={{ filter_values.data }}&projeto={{ filter_values.projeto }}&disciplina={{ filter_values.disciplina }}&q={{ filter_values.q|urlencode }}{% for id in ids_selecionados %}&ids={{ id }}{% endfor %}">CSV</a>
+    </div>
+</div>
+
+<div class="table-card p-3 mb-3">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">Data</label>
+            <input type="date" name="data" value="{{ filter_values.data }}" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Projeto</label>
+            <select name="projeto" class="form-select">
+                <option value="">Todos</option>
+                {% for p in projetos %}
+                    <option value="{{ p.id }}" {% if filter_values.projeto == p.id|stringformat:'s' %}selected{% endif %}>{{ p.codigo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Disciplina</label>
+            <select name="disciplina" class="form-select">
+                <option value="">Todas</option>
+                {% for d in disciplinas %}
+                    <option value="{{ d.id }}" {% if filter_values.disciplina == d.id|stringformat:'s' %}selected{% endif %}>{{ d.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Busca</label>
+            <input type="text" name="q" value="{{ filter_values.q }}" class="form-control" placeholder="Projeto, disciplina, área ou observação">
+        </div>
+        <div class="col-md-2 d-grid">
+            <button class="btn btn-dark">Filtrar</button>
+        </div>
+        {% for id in ids_selecionados %}
+            <input type="hidden" name="ids" value="{{ id }}">
+        {% endfor %}
+    </form>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-2 col-6"><div class="card kpi-card-strong kpi-primary"><div class="card-body"><div class="kpi-label">RDCs</div><div class="kpi-number">{{ totais.rdcs }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi-card-strong kpi-primary"><div class="card-body"><div class="kpi-label">Atividades</div><div class="kpi-number">{{ totais.atividades }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi-card-strong kpi-secondary"><div class="card-body"><div class="kpi-label">Funcionários</div><div class="kpi-number">{{ totais.funcionarios }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi-card-strong kpi-secondary"><div class="card-body"><div class="kpi-label">Apontamentos</div><div class="kpi-number">{{ totais.apontamentos }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi-card-strong kpi-success"><div class="card-body"><div class="kpi-label">HH total</div><div class="kpi-number">{{ totais.hh_total }}</div></div></div></div>
+    <div class="col-md-2 col-6"><div class="card kpi-card-strong {% if totais.bloqueios %}kpi-danger{% else %}kpi-warning{% endif %}"><div class="card-body"><div class="kpi-label">Alertas/Bloqueios</div><div class="kpi-number">{{ totais.alertas }}/{{ totais.bloqueios }}</div></div></div></div>
+</div>
+
+<div class="table-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">RDCs disponíveis no dia</h5>
+        <div class="mini-muted">Os RDCs filtrados já entram automaticamente no RDO e nas exportAções.</div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>RDC</th>
+                    <th>Data</th>
+                    <th>Projeto</th>
+                    <th>Disciplina</th>
+                    <th>Área</th>
+                    <th>Turno</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rdcs_disponiveis %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.data|date:'d/m/Y' }}</td>
+                        <td>{{ r.projeto.codigo }}</td>
+                        <td>{{ r.disciplina.nome }}</td>
+                        <td>{{ r.area_local.descricao }}</td>
+                        <td>{{ r.get_turno_display }}</td>
+                        <td>{{ r.get_status_display }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7">Sem RDCs para a data/filtro informados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="soft-card p-3 h-100">
+            <div class="section-title">Resumo por disciplina</div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Disciplina</th>
+                            <th>Atividades</th>
+                            <th>Escopo</th>
+                            <th>Executado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in resumo_disciplina %}
+                            <tr>
+                                <td>{{ item.rdc__disciplina__nome }}</td>
+                                <td>{{ item.atividades }}</td>
+                                <td>{{ item.escopo|default:'0' }}</td>
+                                <td>{{ item.executado|default:'0' }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4">Sem dados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="soft-card p-3 h-100">
+            <div class="section-title">ObservAções consolidadas</div>
+            {% for obs in observacoes_consolidadas %}
+                <div class="metric-box mb-2">{{ obs }}</div>
+            {% empty %}
+                <div class="text-muted">Sem observAções consolidadas.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+

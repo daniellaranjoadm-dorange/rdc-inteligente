@@ -1,0 +1,301 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="container px-0" style="max-width: 1100px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>{{ object_label }} - RDC #{{ rdc.id }}</h1>
+        <a class="btn btn-outline-secondary" href="{{ cancel_url }}">Voltar</a>
+    </div>
+
+    <style>
+.search-results{max-height:280px;overflow:auto;border-radius:.5rem}
+.search-item{cursor:pointer}
+.search-item.active,.search-item:hover{background:#eef4ff}
+.autofill-target{background:#f8fbff}
+.field-hint-badge{font-size:.72rem}
+.rdc-context-card{border:1px solid #e2e8f0;border-radius:20px;background:linear-gradient(135deg,#fff 0%,#f8fbff 100%);box-shadow:0 10px 24px rgba(15,23,42,.06)}
+.rdc-context-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.75rem}
+.rdc-context-item{padding:.85rem .9rem;border-radius:16px;background:#fff;border:1px solid #e2e8f0}
+.rdc-context-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;font-weight:800}
+.rdc-context-value{margin-top:.2rem;font-weight:800;color:#0f172a}
+@media (max-width: 991.98px){.rdc-context-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media (max-width: 575.98px){.rdc-context-grid{grid-template-columns:1fr;}}
+</style>
+<div class="card shadow-sm border-0 rdc-context-card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                <div>
+                    <div class="text-uppercase text-muted small fw-bold">Contexto operacional</div>
+                    <div class="fs-5 fw-bold">{{ object_label }} vinculado ao RDC #{{ rdc.id }}</div>
+                </div>
+                <span class="badge text-bg-light border">Status: {{ rdc_resumo_operacional.status|default:rdc.status }}</span>
+            </div>
+            <div class="rdc-context-grid">
+                <div class="rdc-context-item"><div class="rdc-context-label">Projeto</div><div class="rdc-context-value">{{ rdc_resumo_operacional.projeto }}</div></div>
+                <div class="rdc-context-item"><div class="rdc-context-label">Área/local</div><div class="rdc-context-value">{{ rdc_resumo_operacional.area_local }}</div></div>
+                <div class="rdc-context-item"><div class="rdc-context-label">Disciplina</div><div class="rdc-context-value">{{ rdc_resumo_operacional.disciplina }}</div></div>
+                <div class="rdc-context-item"><div class="rdc-context-label">Data</div><div class="rdc-context-value">{{ rdc_resumo_operacional.data|date:"d/m/Y" }}</div></div>
+                <div class="rdc-context-item"><div class="rdc-context-label">Turno</div><div class="rdc-context-value">{{ rdc_resumo_operacional.turno }}</div></div>
+            </div>
+        </div>
+    </div>
+
+    {% if not can_edit_rdc %}
+    <div class="alert alert-warning border shadow-sm">
+        <strong>RDC fechado para edição.</strong> Seu perfil não pode alterar este documento neste momento.
+    </div>
+    {% endif %}
+
+<div class="card shadow-sm border-0">
+        <div class="card-body">
+            {% if object_label == "Atividade" %}
+            <div class="alert alert-light border mb-3">
+                <strong>Busca premium de atividade:</strong> digite código, descrição ou subatividade. Ao selecionar, o sistema preenche código, descrição, subatividade e escopo automaticamente.
+            </div>
+            <div class="mb-3 position-relative">
+                <label class="form-label" for="busca-atividade">Busca rápida</label>
+                <input type="text" id="busca-atividade" class="form-control" autocomplete="off" placeholder="Ex.: A1170, painel, iluminAção, cabo">
+                <div id="busca-atividade-lista" class="list-group position-absolute w-100 shadow search-results" style="z-index: 20;"></div>
+            </div>
+            {% endif %}
+
+            {% if object_label == "Funcionário" %}
+            <div class="alert alert-light border mb-3">
+                <strong>Busca premium de funcionário:</strong> pesquise por matrícula ou nome. Ao selecionar, o sistema preenche matrícula, nome, função, equipe, horas padrão e presença de catraca.
+            </div>
+            <div class="mb-3 position-relative">
+                <label class="form-label" for="busca-funcionario">Busca rápida</label>
+                <input type="text" id="busca-funcionario" class="form-control" autocomplete="off" placeholder="Ex.: 707, Daniel, Alves, Laranjo">
+                <div id="busca-funcionario-lista" class="list-group position-absolute w-100 shadow search-results" style="z-index: 20;"></div>
+            </div>
+            {% endif %}
+
+
+    {% if assistencia_item.titulo %}
+    <div class="alert alert-light border shadow-sm mb-3">
+        <div class="fw-semibold mb-2">{{ assistencia_item.titulo }}</div>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+            {% for chip in assistencia_item.chips %}<span class="badge text-bg-light border">{{ chip }}</span>{% endfor %}
+        </div>
+        {% if assistencia_item.alertas %}
+            <ul class="mb-2 ps-3 small text-warning-emphasis">
+                {% for alerta in assistencia_item.alertas %}<li>{{ alerta }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% if assistencia_item.orientacoes %}
+            <ul class="mb-0 ps-3 small text-muted">
+                {% for item in assistencia_item.orientacoes %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <div class="row g-3">
+                    {% for field in form %}
+                        <div class="col-md-{% if field.name == 'observacoes' or field.name == 'mensagem' or field.name == 'motivo_bloqueio' %}12{% else %}6{% endif %}">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mt-3 mb-0">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="d-flex gap-2 mt-4">
+                    {% if can_edit_rdc %}
+                        <button type="submit" class="btn btn-primary">Salvar alterAções</button>
+                    {% endif %}
+                    <a href="{{ cancel_url }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    function byId(id) { return document.getElementById(id); }
+    function qs(sel) { return document.querySelector(sel); }
+    function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
+    function setValueIfExists(id, value) {
+        const el = byId(id);
+        if (!el) return;
+        if (el.type === 'checkbox') {
+            el.checked = !!value;
+        } else {
+            el.value = value == null ? '' : value;
+        }
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    function clearList(boxId) {
+        const box = byId(boxId);
+        if (box) {
+            box.innerHTML = '';
+            box.dataset.activeIndex = '-1';
+        }
+    }
+    function highlight(text, q) {
+        if (!q) return text;
+        const safe = q.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+        return String(text).replace(new RegExp(`(${safe})`, 'ig'), '<mark>$1</mark>');
+    }
+    function renderResults(boxId, results, q, onPick) {
+        const box = byId(boxId);
+        if (!box) return;
+        box.innerHTML = '';
+        box.dataset.activeIndex = '-1';
+        if (!results.length) return;
+        results.forEach((item, index) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action search-item';
+            btn.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div>
+                        <div class="fw-semibold">${highlight(item.texto || '', q)}</div>
+                        ${item.meta ? `<div class="small text-muted">${highlight(item.meta, q)}</div>` : ''}
+                    </div>
+                    ${item.badge ? `<span class="badge text-bg-light border field-hint-badge">${item.badge}</span>` : ''}
+                </div>`;
+            btn.addEventListener('click', function() {
+                onPick(item);
+                clearList(boxId);
+            });
+            box.appendChild(btn);
+        });
+    }
+    function activateItem(box, index) {
+        const items = Array.from(box.querySelectorAll('.search-item'));
+        if (!items.length) return;
+        if (index < 0) index = items.length - 1;
+        if (index >= items.length) index = 0;
+        items.forEach(el => el.classList.remove('active'));
+        items[index].classList.add('active');
+        items[index].scrollIntoView({ block: 'nearest' });
+        box.dataset.activeIndex = String(index);
+    }
+    function bindKeyboard(inputId, boxId, onEnterFallback) {
+        const input = byId(inputId);
+        const box = byId(boxId);
+        if (!input || !box) return;
+        input.addEventListener('keydown', function(e) {
+            const items = Array.from(box.querySelectorAll('.search-item'));
+            if (!items.length) {
+                if (e.key === 'Enter' && onEnterFallback) onEnterFallback();
+                return;
+            }
+            const current = parseInt(box.dataset.activeIndex || '-1', 10);
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activateItem(box, current + 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activateItem(box, current - 1);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const target = items[current >= 0 ? current : 0];
+                if (target) target.click();
+            } else if (e.key === 'Escape') {
+                clearList(boxId);
+            }
+        });
+    }
+    async function doSearch(inputId, boxId, url, onPick) {
+        const input = byId(inputId);
+        if (!input) return;
+        const q = input.value.trim();
+        if (q.length < 2) {
+            clearList(boxId);
+            return;
+        }
+        try {
+            const resp = await fetch(url + '?q=' + encodeURIComponent(q), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await resp.json();
+            renderResults(boxId, data.results || [], q, onPick);
+        } catch (e) {
+            clearList(boxId);
+        }
+    }
+    function recalcHH() {
+        const hn = parseFloat((byId('id_hora_normal')?.value || '0').replace(',', '.')) || 0;
+        const he = parseFloat((byId('id_hora_extra')?.value || '0').replace(',', '.')) || 0;
+        const total = (hn + he).toFixed(2).replace('.', ',');
+        setValueIfExists('id_hh_total', total);
+    }
+
+    const atividadeBusca = byId('busca-atividade');
+    if (atividadeBusca) {
+        const url = "{% url 'rdc-atividade-busca' rdc.pk %}";
+        let timer;
+        atividadeBusca.addEventListener('input', function() {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                doSearch('busca-atividade', 'busca-atividade-lista', url, function(item) {
+                    setValueIfExists('id_atividade_cronograma', item.id);
+                    setValueIfExists('id_codigo_atividade', item.codigo_atividade);
+                    setValueIfExists('id_descr_atividade', item.descr_atividade);
+                    setValueIfExists('id_codigo_subatividade', item.codigo_subatividade);
+                    setValueIfExists('id_descr_subatividade', item.descr_subatividade);
+                    setValueIfExists('id_qtd_escopo', item.qtd_escopo);
+                    setValueIfExists('id_obrigatoria', true);
+                    setValueIfExists('id_ativa_no_dia', true);
+                    atividadeBusca.value = item.texto;
+                });
+            }, 180);
+        });
+        bindKeyboard('busca-atividade', 'busca-atividade-lista');
+    }
+
+    const funcionarioBusca = byId('busca-funcionario');
+    if (funcionarioBusca) {
+        const url = "{% url 'rdc-funcionario-busca' rdc.pk %}";
+        let timer;
+        funcionarioBusca.addEventListener('input', function() {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                doSearch('busca-funcionario', 'busca-funcionario-lista', url, function(item) {
+                    setValueIfExists('id_funcionario', item.id);
+                    setValueIfExists('id_matricula', item.matricula);
+                    setValueIfExists('id_nome', item.nome);
+                    if (item.funcao_id) setValueIfExists('id_funcao', item.funcao_id);
+                    if (item.equipe_id) setValueIfExists('id_equipe', item.equipe_id);
+                    setValueIfExists('id_presente_catraca', item.presente_catraca);
+                    setValueIfExists('id_hora_normal', item.hora_normal);
+                    setValueIfExists('id_hora_extra', item.hora_extra);
+                    setValueIfExists('id_hh_total', item.hh_total);
+                    setValueIfExists('id_elegivel', item.elegivel);
+                    setValueIfExists('id_motivo_bloqueio', item.motivo_bloqueio || '');
+                    funcionarioBusca.value = item.texto;
+                    recalcHH();
+                });
+            }, 180);
+        });
+        bindKeyboard('busca-funcionario', 'busca-funcionario-lista');
+    }
+
+    ['id_hora_normal', 'id_hora_extra'].forEach(function(id) {
+        const el = byId(id);
+        if (el) el.addEventListener('input', recalcHH);
+    });
+    recalcHH();
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#busca-atividade') && !e.target.closest('#busca-atividade-lista')) clearList('busca-atividade-lista');
+        if (!e.target.closest('#busca-funcionario') && !e.target.closest('#busca-funcionario-lista')) clearList('busca-funcionario-lista');
+    });
+})();
+</script>
+{% endblock %}
+
+
+

@@ -1,0 +1,69 @@
+﻿{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dorange-admin-home">
+    <div class="dorange-admin-hero">
+        <div>
+            <div class="dorange-kicker">D'ORANGE Control</div>
+            <h1>Centro de administração</h1>
+            <p>Cadastros, importAções, planejamento e governança do sistema em um só lugar.</p>
+        </div>
+        <div class="dorange-hero-actions">
+            <a class="button" href="/">Voltar ao sistema</a>
+            <a class="button" href="/rdc/consolidado/">Painel RDC</a>
+            <a class="button" href="/rdc/">RDCs</a>
+        </div>
+    </div>
+
+    <div class="dorange-admin-quick-grid">
+        <a class="dorange-quick-card" href="/rdc/consolidado/">
+            <span class="label">Painel</span>
+            <strong>Painel RDC</strong>
+            <small>Visão gerencial, gráficos e exportAções</small>
+        </a>
+        <a class="dorange-quick-card" href="/rdc/novo/">
+            <span class="label">Operação</span>
+            <strong>Novo RDC</strong>
+            <small>Lançamento rápido do documento diário</small>
+        </a>
+        <a class="dorange-quick-card" href="/importacoes/">
+            <span class="label">Carga</span>
+            <strong>ImportAções</strong>
+            <small>Cronograma, catraca e arquivos auxiliares</small>
+        </a>
+        <a class="dorange-quick-card" href="/cadastros/projetos/">
+            <span class="label">Base</span>
+            <strong>Cadastros</strong>
+            <small>Projetos, equipes, funções e disciplinas</small>
+        </a>
+    </div>
+
+    <div class="dorange-admin-content-grid">
+        <div class="dorange-admin-main">
+            {{ block.super }}
+        </div>
+        <aside class="dorange-admin-side">
+            <div class="dorange-side-card">
+                <h3>Navegação rápida</h3>
+                <ul>
+                    <li><a href="/admin/auth/user/">Usuários</a></li>
+                    <li><a href="/admin/auth/group/">Grupos</a></li>
+                    <li><a href="/admin/rdc/rdc/">RDCs</a></li>
+                    <li><a href="/admin/importacoes/importacaoarquivo/">ImportAções</a></li>
+                </ul>
+            </div>
+            <div class="dorange-side-card">
+                <h3>Dica</h3>
+                <p>Use o admin para ajustes estruturais e o painel RDC para Operação diária e leitura gerencial.</p>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+

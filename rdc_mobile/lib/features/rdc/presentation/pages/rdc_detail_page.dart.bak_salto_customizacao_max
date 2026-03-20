@@ -1,0 +1,1162 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../home/data/services/base_operacional_service.dart';
+import '../../data/services/rdc_detail_service.dart';
+import '../../data/services/rdc_update_service.dart';
+
+class RdcDetailPage extends StatefulWidget {
+  final int rdcId;
+
+  const RdcDetailPage({super.key, required this.rdcId});
+
+  @override
+  State<RdcDetailPage> createState() => _RdcDetailPageState();
+}
+
+class _RdcDetailPageState extends State<RdcDetailPage> {
+  final _updateService = RdcUpdateService();
+  final _baseOperacionalService = BaseOperacionalService();
+
+  final _observacoesController = TextEditingController();
+  final _horarioInicioController = TextEditingController();
+  final _horarioFimController = TextEditingController();
+  final _condicaoAreaController = TextEditingController();
+  final _climaManhaController = TextEditingController();
+  final _climaTardeController = TextEditingController();
+  final _climaNoiteController = TextEditingController();
+  final _dataController = TextEditingController();
+  final _diaSemanaController = TextEditingController();
+  final _statusController = TextEditingController();
+
+  bool _isEditing = false;
+  bool _isSaving = false;
+  bool _initialized = false;
+
+  String? _turno;
+
+  int? _projetoId;
+  int? _areaLocalId;
+  int? _disciplinaId;
+  int? _supervisorId;
+
+  List<Map<String, dynamic>> _projetos = const [];
+  List<Map<String, dynamic>> _areas = const [];
+  List<Map<String, dynamic>> _disciplinas = const [];
+  List<Map<String, dynamic>> _funcionarios = const [];
+
+  late Future<RdcDetailResult> _detailFuture;
+  late Future<BaseOperacionalResult> _baseFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _detailFuture = RdcDetailService().getDetail(widget.rdcId);
+    _baseFuture = _baseOperacionalService.getBaseOperacional();
+  }
+
+  @override
+  void dispose() {
+    _observacoesController.dispose();
+    _horarioInicioController.dispose();
+    _horarioFimController.dispose();
+    _condicaoAreaController.dispose();
+    _climaManhaController.dispose();
+    _climaTardeController.dispose();
+    _climaNoiteController.dispose();
+    _dataController.dispose();
+    _diaSemanaController.dispose();
+    _statusController.dispose();
+    super.dispose();
+  }
+
+  String _displayField(dynamic value, {String fallback = '-'}) {
+    if (value == null) return fallback;
+    final text = value.toString().trim();
+    return text.isEmpty ? fallback : text;
+  }
+
+  String _displayNested(Map<String, dynamic>? map, List<String> keys) {
+    if (map == null) return '-';
+    for (final key in keys) {
+      final value = map[key];
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value.toString().trim();
+      }
+    }
+    return '-';
+  }
+
+  String? _emptyToNull(String? value) {
+    if (value == null) return null;
+    final text = value.trim();
+    return text.isEmpty ? null : text;
+  }
+
+  Future<void> _pickDate() async {
+    final currentText = _dataController.text.trim();
+    DateTime initialDate = DateTime.now();
+
+    if (currentText.isNotEmpty) {
+      final parts = currentText.split('-');
+      if (parts.length == 3) {
+        final year = int.tryParse(parts[0]);
+        final month = int.tryParse(parts[1]);
+        final day = int.tryParse(parts[2]);
+        if (year != null && month != null && day != null) {
+          initialDate = DateTime(year, month, day);
+        }
+      }
+    }
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      final y = picked.year.toString().padLeft(4, '0');
+      final m = picked.month.toString().padLeft(2, '0');
+      final d = picked.day.toString().padLeft(2, '0');
+      _dataController.text = '--';
+      setState(() {});
+    }
+  }
+
+  Future<void> _pickTime(TextEditingController controller) async {
+    TimeOfDay initialTime = const TimeOfDay(hour: 7, minute: 0);
+
+    final currentText = controller.text.trim();
+    final parts = currentText.split(':');
+    if (parts.length >= 2) {
+      final hour = int.tryParse(parts[0]);
+      final minute = int.tryParse(parts[1]);
+      if (hour != null && minute != null) {
+        initialTime = TimeOfDay(hour: hour, minute: minute);
+      }
+    }
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
+
+    if (picked != null) {
+      final h = picked.hour.toString().padLeft(2, '0');
+      final m = picked.minute.toString().padLeft(2, '0');
+      controller.text = ':';
+      setState(() {});
+    }
+  }
+
+  int? _extractId(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is Map<String, dynamic>) {
+      final id = value['id'];
+      if (id is int) return id;
+      if (id != null) return int.tryParse(id.toString());
+    }
+    return int.tryParse(value.toString());
+  }
+
+  Map<String, dynamic>? _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  List<Map<String, dynamic>> _asMapList(dynamic value) {
+    if (value is List) {
+      return value
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+    return const [];
+  }
+
+  void _fillBase(Map<String, dynamic> raw) {
+    _projetos = _asMapList(raw['projetos']);
+    _areas = _asMapList(raw['areas']);
+    _disciplinas = _asMapList(raw['disciplinas']);
+    _funcionarios = _asMapList(raw['funcionarios']);
+  }
+
+  void _fillForm(Map<String, dynamic> data) {
+    if (_initialized) return;
+    _initialized = true;
+
+    _turno = data['turno']?.toString();
+
+    _projetoId = _extractId(data['projeto']);
+    _areaLocalId = _extractId(data['area_local']);
+    _disciplinaId = _extractId(data['disciplina']);
+    _supervisorId = _extractId(data['supervisor']);
+
+    _condicaoAreaController.text = (data['condicao_area'] ?? '').toString();
+    _climaManhaController.text = (data['clima_manha'] ?? '').toString();
+    _climaTardeController.text = (data['clima_tarde'] ?? '').toString();
+    _climaNoiteController.text = (data['clima_noite'] ?? '').toString();
+    _horarioInicioController.text = (data['horario_inicio'] ?? '').toString();
+    _horarioFimController.text = (data['horario_fim'] ?? '').toString();
+    _observacoesController.text = (data['observacoes'] ?? '').toString();
+    _dataController.text = (data['data'] ?? '').toString();
+    _diaSemanaController.text = (data['dia_semana'] ?? '').toString();
+    _statusController.text = (data['status'] ?? '').toString();
+  }
+
+  String _optionLabel(Map<String, dynamic> item) {
+    final codigo = item['codigo']?.toString().trim() ?? '';
+    final nome =
+        item['nome']?.toString().trim() ??
+        item['descricao']?.toString().trim() ??
+        item['username']?.toString().trim() ??
+        '';
+    if (codigo.isNotEmpty && nome.isNotEmpty) return '$codigo - $nome';
+    if (nome.isNotEmpty) return nome;
+    if (codigo.isNotEmpty) return codigo;
+    return item['id']?.toString() ?? '-';
+  }
+
+  List<DropdownMenuItem<int>> _itemsFrom(List<Map<String, dynamic>> source) {
+    return source
+        .where((item) => item['id'] != null)
+        .map(
+          (item) => DropdownMenuItem<int>(
+            value: _extractId(item['id']),
+            child: Text(_optionLabel(item)),
+          ),
+        )
+        .toList();
+  }
+
+  List<Map<String, dynamic>> _filteredAreas() {
+    if (_projetoId == null) return _areas;
+    final filtered = _areas.where((item) {
+      final projeto = item['projeto'];
+      final projetoId = item['projeto_id'];
+      return _extractId(projeto) == _projetoId ||
+          _extractId(projetoId) == _projetoId;
+    }).toList();
+
+    return filtered.isEmpty ? _areas : filtered;
+  }
+
+  List<Map<String, dynamic>> _filteredSupervisores() {
+    if (_disciplinaId == null) return _funcionarios;
+
+    final filtered = _funcionarios.where((item) {
+      final disciplina = item['disciplina'];
+      final disciplinaId = item['disciplina_id'];
+      final funcao = (item['funcao_nome'] ?? '').toString().toLowerCase();
+      final cargo = (item['cargo'] ?? '').toString().toLowerCase();
+
+      final matchDisciplina =
+          _extractId(disciplina) == _disciplinaId ||
+          _extractId(disciplinaId) == _disciplinaId;
+
+      final matchPerfil =
+          funcao.contains('supervisor') || cargo.contains('supervisor');
+
+      return matchDisciplina || matchPerfil;
+    }).toList();
+
+    return filtered.isEmpty ? _funcionarios : filtered;
+  }
+
+  void _sanitizeDependentSelections() {
+    final areaIds = _filteredAreas()
+        .map((e) => _extractId(e['id']))
+        .whereType<int>()
+        .toSet();
+    final supervisorIds = _filteredSupervisores()
+        .map((e) => _extractId(e['id']))
+        .whereType<int>()
+        .toSet();
+
+    if (_areaLocalId != null && !areaIds.contains(_areaLocalId)) {
+      _areaLocalId = null;
+    }
+
+    if (_supervisorId != null && !supervisorIds.contains(_supervisorId)) {
+      _supervisorId = null;
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    final payload = <String, dynamic>{
+      'projeto': _projetoId,
+      'area_local': _areaLocalId,
+      'disciplina': _disciplinaId,
+      'supervisor': _supervisorId,
+      'turno': _turno,
+      'data': _emptyToNull(_dataController.text),
+      'dia_semana': _emptyToNull(_diaSemanaController.text),
+      'condicao_area': _emptyToNull(_condicaoAreaController.text),
+      'clima_manha': _emptyToNull(_climaManhaController.text),
+      'clima_tarde': _emptyToNull(_climaTardeController.text),
+      'clima_noite': _emptyToNull(_climaNoiteController.text),
+      'horario_inicio': _emptyToNull(_horarioInicioController.text),
+      'horario_fim': _emptyToNull(_horarioFimController.text),
+      'status': _emptyToNull(_statusController.text),
+      'observacoes': _observacoesController.text.trim(),
+    };
+
+    final result = await _updateService.updateRdc(
+      rdcId: widget.rdcId,
+      payload: payload,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(result.message)));
+
+    if (result.success) {
+      setState(() {
+        _isEditing = false;
+        _initialized = false;
+        _detailFuture = RdcDetailService().getDetail(widget.rdcId);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('RDC #${widget.rdcId}'),
+        actions: [
+          IconButton(
+            tooltip: _isEditing ? 'Cancelar edição' : 'Editar',
+            onPressed: _isSaving
+                ? null
+                : () {
+                    setState(() {
+                      _isEditing = !_isEditing;
+                    });
+                  },
+            icon: Icon(_isEditing ? Icons.close : Icons.edit),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: FutureBuilder<List<dynamic>>(
+          future: Future.wait([_detailFuture, _baseFuture]),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (!snapshot.hasData || snapshot.data == null) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Não foi possível carregar os dados da tela.',
+                    style: TextStyle(color: Colors.redAccent, fontSize: 16),
+                  ),
+                ),
+              );
+            }
+
+            final detailResult = snapshot.data![0] as RdcDetailResult;
+            final baseResult = snapshot.data![1] as BaseOperacionalResult;
+
+            if (!detailResult.success || detailResult.data == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    detailResult.message,
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            if (baseResult.success && baseResult.rawData != null) {
+              _fillBase(baseResult.rawData!);
+            }
+
+            final data = detailResult.data!;
+            _fillForm(data);
+            _sanitizeDependentSelections();
+
+            final projeto = _asMap(data['projeto']);
+            final disciplina = _asMap(data['disciplina']);
+            final areaLocal = _asMap(data['area_local']);
+            final supervisor = _asMap(data['supervisor']);
+
+            final funcionarios = (data['funcionarios'] as List?) ?? const [];
+            final atividades = (data['atividades'] as List?) ?? const [];
+            final apontamentos = (data['apontamentos'] as List?) ?? const [];
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Detalhe do RDC',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'RDC #${_displayField(data['id'])}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [
+                          _InfoCard(
+                            title: 'Projeto',
+                            value: _displayNested(projeto, ['codigo', 'nome']),
+                            subtitle: projeto == null
+                                ? '-'
+                                : '${_displayField(projeto['codigo'])} - ${_displayField(projeto['nome'])}',
+                          ),
+                          _InfoCard(
+                            title: 'Disciplina',
+                            value: _displayNested(disciplina, ['nome']),
+                            subtitle: _displayField(
+                              disciplina?['codigo'],
+                              fallback: '',
+                            ),
+                          ),
+                          _InfoCard(
+                            title: 'Área/local',
+                            value: _displayNested(areaLocal, [
+                              'descricao',
+                              'nome',
+                            ]),
+                            subtitle: areaLocal == null
+                                ? '-'
+                                : '${_displayField(areaLocal['codigo'])} - ${_displayField(areaLocal['descricao'])}',
+                          ),
+                          _InfoCard(
+                            title: 'Supervisor',
+                            value: _displayNested(supervisor, [
+                              'nome',
+                              'username',
+                            ]),
+                            subtitle: _displayField(
+                              supervisor?['matricula'],
+                              fallback: '',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      'Dados gerais',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  if (_isEditing)
+                                    SizedBox(
+                                      width: 180,
+                                      child: ElevatedButton(
+                                        onPressed: _isSaving ? null : _save,
+                                        child: _isSaving
+                                            ? const SizedBox(
+                                                height: 20,
+                                                width: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2.2,
+                                                    ),
+                                              )
+                                            : const Text('Salvar alterações'),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              _ResponsiveFields(
+                                children: [
+                                  _isEditing
+                                      ? DropdownButtonFormField<int>(
+                                          value: _projetoId,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Projeto',
+                                          ),
+                                          items: _itemsFrom(_projetos),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _projetoId = value;
+                                              _sanitizeDependentSelections();
+                                            });
+                                          },
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Projeto',
+                                          value: projeto == null
+                                              ? '-'
+                                              : '${_displayField(projeto['codigo'])} - ${_displayField(projeto['nome'])}',
+                                        ),
+                                  _isEditing
+                                      ? DropdownButtonFormField<int>(
+                                          value: _areaLocalId,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Área/local',
+                                          ),
+                                          items: _itemsFrom(_filteredAreas()),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _areaLocalId = value;
+                                            });
+                                          },
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Área/local',
+                                          value: areaLocal == null
+                                              ? '-'
+                                              : '${_displayField(areaLocal['codigo'])} - ${_displayField(areaLocal['descricao'])}',
+                                        ),
+                                  _isEditing
+                                      ? DropdownButtonFormField<int>(
+                                          value: _disciplinaId,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Disciplina',
+                                          ),
+                                          items: _itemsFrom(_disciplinas),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _disciplinaId = value;
+                                              _sanitizeDependentSelections();
+                                            });
+                                          },
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Disciplina',
+                                          value: disciplina == null
+                                              ? '-'
+                                              : '${_displayField(disciplina['codigo'], fallback: '')} ${_displayField(disciplina['nome'])}'
+                                                    .trim(),
+                                        ),
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _dataController,
+                                          readOnly: true,
+                                          onTap: _pickDate,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Data',
+                                            suffixIcon: Icon(
+                                              Icons.calendar_today,
+                                            ),
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Data',
+                                          value: _displayField(data['data']),
+                                        ),
+                                  _isEditing
+                                      ? DropdownButtonFormField<String>(
+                                          value: _turno,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Turno',
+                                          ),
+                                          items: const [
+                                            DropdownMenuItem(
+                                              value: 'manha',
+                                              child: Text('Manhã'),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 'tarde',
+                                              child: Text('Tarde'),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 'noite',
+                                              child: Text('Noite'),
+                                            ),
+                                            DropdownMenuItem(
+                                              value: 'integral',
+                                              child: Text('Integral'),
+                                            ),
+                                          ],
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _turno = value;
+                                            });
+                                          },
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Turno',
+                                          value: _displayField(data['turno']),
+                                        ),
+                                  _isEditing
+                                      ? DropdownButtonFormField<int>(
+                                          value: _supervisorId,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Supervisor',
+                                          ),
+                                          items: _itemsFrom(
+                                            _filteredSupervisores(),
+                                          ),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _supervisorId = value;
+                                            });
+                                          },
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Supervisor',
+                                          value: _displayNested(supervisor, [
+                                            'nome',
+                                            'username',
+                                          ]),
+                                        ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Condições do dia',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _ResponsiveFields(
+                                children: [
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _diaSemanaController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Dia da semana',
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Dia da semana',
+                                          value: _displayField(
+                                            data['dia_semana'],
+                                          ),
+                                        ),
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _condicaoAreaController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Condição da área',
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Condição da área',
+                                          value: _displayField(
+                                            data['condicao_area'],
+                                          ),
+                                        ),
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _climaManhaController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Clima manhã',
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Clima manhã',
+                                          value: _displayField(
+                                            data['clima_manha'],
+                                          ),
+                                        ),
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _climaTardeController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Clima tarde',
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Clima tarde',
+                                          value: _displayField(
+                                            data['clima_tarde'],
+                                          ),
+                                        ),
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _climaNoiteController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Clima noite',
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Clima noite',
+                                          value: _displayField(
+                                            data['clima_noite'],
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Jornada',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _ResponsiveFields(
+                                children: [
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _horarioInicioController,
+                                          readOnly: true,
+                                          onTap: () => _pickTime(
+                                            _horarioInicioController,
+                                          ),
+                                          decoration: const InputDecoration(
+                                            labelText: 'Horário início',
+                                            suffixIcon: Icon(Icons.access_time),
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Horário início',
+                                          value: _displayField(
+                                            data['horario_inicio'],
+                                          ),
+                                        ),
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _horarioFimController,
+                                          readOnly: true,
+                                          onTap: () =>
+                                              _pickTime(_horarioFimController),
+                                          decoration: const InputDecoration(
+                                            labelText: 'Horário fim',
+                                            suffixIcon: Icon(Icons.access_time),
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Horário fim',
+                                          value: _displayField(
+                                            data['horario_fim'],
+                                          ),
+                                        ),
+                                  _isEditing
+                                      ? TextFormField(
+                                          controller: _statusController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Status',
+                                          ),
+                                        )
+                                      : _ReadOnlyField(
+                                          label: 'Status',
+                                          value: _displayField(data['status']),
+                                        ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Observações',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _isEditing
+                                  ? TextFormField(
+                                      controller: _observacoesController,
+                                      minLines: 6,
+                                      maxLines: 8,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Observações',
+                                        alignLabelWithHint: true,
+                                      ),
+                                    )
+                                  : _ReadOnlyMultilineField(
+                                      label: 'Observações',
+                                      value: _displayField(data['observacoes']),
+                                    ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [
+                          _SummaryCard(
+                            title: 'Funcionários',
+                            value: funcionarios.length.toString(),
+                            icon: Icons.groups_outlined,
+                          ),
+                          _SummaryCard(
+                            title: 'Atividades',
+                            value: atividades.length.toString(),
+                            icon: Icons.assignment_outlined,
+                          ),
+                          _SummaryCard(
+                            title: 'Apontamentos',
+                            value: apontamentos.length.toString(),
+                            icon: Icons.schedule_outlined,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _SectionCard(
+                        title: 'Funcionários',
+                        emptyMessage: 'Nenhum funcionário lançado neste RDC.',
+                        items: funcionarios,
+                        itemBuilder: (item) {
+                          final map = Map<String, dynamic>.from(item as Map);
+                          return _SimpleListTile(
+                            title: _displayField(map['nome']),
+                            subtitle: [
+                              _displayField(map['matricula'], fallback: ''),
+                              _displayField(map['funcao_nome'], fallback: ''),
+                            ].where((e) => e.isNotEmpty).join(' • '),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _SectionCard(
+                        title: 'Atividades',
+                        emptyMessage: 'Nenhuma atividade lançada neste RDC.',
+                        items: atividades,
+                        itemBuilder: (item) {
+                          final map = Map<String, dynamic>.from(item as Map);
+                          return _SimpleListTile(
+                            title: _displayField(map['descricao']),
+                            subtitle: [
+                              _displayField(
+                                map['codigo_atividade'],
+                                fallback: '',
+                              ),
+                              _displayField(
+                                map['codigo_subatividade'],
+                                fallback: '',
+                              ),
+                            ].where((e) => e.isNotEmpty).join(' • '),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _SectionCard(
+                        title: 'Apontamentos',
+                        emptyMessage: 'Nenhum apontamento lançado neste RDC.',
+                        items: apontamentos,
+                        itemBuilder: (item) {
+                          final map = Map<String, dynamic>.from(item as Map);
+                          return _SimpleListTile(
+                            title: _displayField(map['descricao']),
+                            subtitle: _displayField(map['quantidade']),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ResponsiveFields extends StatelessWidget {
+  final List<Widget> children;
+
+  const _ResponsiveFields({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: children
+          .map((child) => SizedBox(width: 280, child: child))
+          .toList(),
+    );
+  }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ReadOnlyField({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 16,
+        ),
+      ),
+      child: Text(value, style: const TextStyle(fontSize: 15)),
+    );
+  }
+}
+
+class _ReadOnlyMultilineField extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ReadOnlyMultilineField({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        alignLabelWithHint: true,
+        contentPadding: const EdgeInsets.all(12),
+      ),
+      child: Text(value, style: const TextStyle(fontSize: 15)),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String subtitle;
+
+  const _InfoCard({
+    required this.title,
+    required this.value,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 280,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (subtitle.trim().isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+
+  const _SummaryCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 240,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 34,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(title, style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final String emptyMessage;
+  final List items;
+  final Widget Function(dynamic item) itemBuilder;
+
+  const _SectionCard({
+    required this.title,
+    required this.emptyMessage,
+    required this.items,
+    required this.itemBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: items.isEmpty
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    emptyMessage,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$title (${items.length})',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...items.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: itemBuilder(item),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _SimpleListTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _SimpleListTile({required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        title: Text(title),
+        subtitle: subtitle.trim().isEmpty ? null : Text(subtitle),
+      ),
+    );
+  }
+}

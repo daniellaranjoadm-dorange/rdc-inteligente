@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h4 mb-3">Apontamento RDC</h1>
+
+  {% if funcionario and not funcionario.pode_apontar %}
+    <div class="alert alert-danger" role="alert">
+      <strong>Apontamento bloqueado.</strong>
+      O funcionário está sem catraca e sem liberAção manual no momento.
+    </div>
+  {% elif funcionario and funcionario.liberado_sem_catraca and not funcionario.presente_catraca %}
+    <div class="alert alert-info" role="alert">
+      Funcionário liberado manualmente por {{ funcionario.liberado_por }} em {{ funcionario.liberado_em|date:"d/m/Y H:i" }}.
+      O apontamento está habilitado normalmente.
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary" {% if funcionario and not funcionario.pode_apontar %}disabled{% endif %}>Salvar apontamento</button>
+  </form>
+</div>
+{% endblock %}

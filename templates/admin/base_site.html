@@ -1,0 +1,29 @@
+﻿{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}D'ORANGE Control | AdministrAção{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="dorange-admin-brand">
+    <img src="{% static 'img/dorange-logo.png' %}" alt="D'ORANGE" class="dorange-admin-logo">
+    <div class="dorange-admin-brand-text">
+        <h1 id="site-name"><a href="{% url 'admin:index' %}">D'ORANGE Control</a></h1>
+        <div class="dorange-admin-subtitle">AdministrAção, cadastros e governança</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<div class="dorange-admin-links">
+    <a href="/">Voltar ao sistema</a>
+    <a href="/rdc/consolidado/">Painel RDC</a>
+    <span style="opacity:.6; cursor:not-allowed;">RDO</span>
+    <a href="/rdc/">Lista de RDCs</a>
+</div>
+{% endblock %}
+

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">{{ titulo }}</h1>
+  {% if botao_novo_url %}<a class="btn btn-primary" href="{{ botao_novo_url }}">Novo</a>{% endif %}
+</div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-5"><input class="form-control" type="text" name="q" value="{{ termo_busca }}" placeholder="Buscar..."></div>
+  <div class="col-auto"><button class="btn btn-outline-secondary" type="submit">Buscar</button></div>
+</form>
+<div class="p-3 table-card">
+<table class="table table-striped">
+    <tbody>
+        {% for objeto in objetos %}
+            <tr><td>{{ objeto }}</td></tr>
+        {% empty %}
+            <tr><td>Nenhum registro encontrado.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

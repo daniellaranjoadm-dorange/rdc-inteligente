@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="container px-0" style="max-width: 760px;">
+    <div class="card border-danger shadow-sm">
+        <div class="card-header bg-danger text-white">
+            Confirmar exclusão
+        </div>
+        <div class="card-body">
+            <h4 class="mb-3">Deseja excluir o RDC #{{ rdc.id }}?</h4>
+            <p><strong>Projeto:</strong> {{ rdc.projeto }}</p>
+            <p><strong>Área:</strong> {{ rdc.area_local }}</p>
+            <p><strong>Disciplina:</strong> {{ rdc.disciplina }}</p>
+            <p><strong>Data:</strong> {{ rdc.data|date:"d/m/Y" }}</p>
+
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Sim, excluir</button>
+                <a href="{% url 'rdc-detail' rdc.pk %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

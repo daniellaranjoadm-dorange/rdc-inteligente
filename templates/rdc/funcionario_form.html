@@ -1,0 +1,75 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h4 mb-3">Cadastro de Funcionário RDC</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="form-check mb-3">
+      {{ form.presente_catraca }}
+      <label class="form-check-label" for="{{ form.presente_catraca.id_for_label }}">
+        {{ form.presente_catraca.label }}
+      </label>
+    </div>
+
+    <div class="form-check mb-3" id="bloco-liberacao-manual">
+      {{ form.liberado_sem_catraca }}
+      <label class="form-check-label" for="{{ form.liberado_sem_catraca.id_for_label }}">
+        {{ form.liberado_sem_catraca.label }}
+      </label>
+    </div>
+
+    <div class="mb-3" id="bloco-justificativa">
+      <label class="form-label" for="{{ form.justificativa_liberacao.id_for_label }}">
+        {{ form.justificativa_liberacao.label }}
+      </label>
+      {{ form.justificativa_liberacao }}
+      {% if form.justificativa_liberacao.errors %}
+        <div class="text-danger small mt-1">{{ form.justificativa_liberacao.errors }}</div>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Salvar</button>
+  </form>
+</div>
+
+<script>
+  (function () {
+    const presenteCatraca = document.getElementById("id_presente_catraca");
+    const liberadoSemCatraca = document.getElementById("id_liberado_sem_catraca");
+    const justificativa = document.getElementById("id_justificativa_liberacao");
+    const blocoLiberacao = document.getElementById("bloco-liberacao-manual");
+    const blocoJustificativa = document.getElementById("bloco-justificativa");
+
+    function atualizarEstadoCampos() {
+      const comCatraca = !!presenteCatraca.checked;
+      const liberadoManual = !!liberadoSemCatraca.checked;
+
+      blocoLiberacao.style.display = comCatraca ? "none" : "block";
+      liberadoSemCatraca.disabled = comCatraca;
+
+      if (comCatraca) {
+        liberadoSemCatraca.checked = false;
+      }
+
+      const mostrarJustificativa = !comCatraca && liberadoManual;
+      blocoJustificativa.style.display = mostrarJustificativa ? "block" : "none";
+      justificativa.disabled = !mostrarJustificativa;
+
+      if (!mostrarJustificativa) {
+        justificativa.value = "";
+      }
+    }
+
+    presenteCatraca.addEventListener("change", atualizarEstadoCampos);
+    liberadoSemCatraca.addEventListener("change", atualizarEstadoCampos);
+    atualizarEstadoCampos();
+  })();
+</script>
+{% endblock %}
