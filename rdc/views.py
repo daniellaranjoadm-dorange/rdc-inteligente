@@ -1844,7 +1844,7 @@ class RDCExportarModeloView(AuthenticatedTemplateMixin, RoleRequiredMixin, View)
         )
 
 
-class RDCNestedBaseMixin(AuthenticatedTemplateMixin):
+class RDCNestedBaseMixin(AuthenticatedTemplateMixin, RDCEditableMixin):
     parent_context_name = "rdc"
     parent_pk_url_kwarg = "pk"
     anchor = ""
@@ -2492,10 +2492,6 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
             or request.POST.get("justificativa_reabertura")
             or ""
         ).strip()
-
-        print("DEBUG WORKFLOW POST:", dict(request.POST))
-        print("DEBUG WORKFLOW ACTION:", action)
-        print("DEBUG WORKFLOW OBS:", observacao)
 
         rdc = get_object_or_404(RDC, pk=rdc_id)
 
