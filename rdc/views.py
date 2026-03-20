@@ -881,6 +881,22 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
             context["montagem_excepcional"] = True
             context["justificativa_excepcional"] = rdc.observacoes
 
+        logs = AuditLog.objects.filter(
+            target_model="RDC",
+            target_id=str(rdc.pk),
+        ).select_related("user")[:20]
+
+        context["auditorias"] = [
+            {
+                "data": log.created_at,
+                "usuario": log.user.username if log.user else "Sistema",
+                "acao": log.action,
+                "detalhe": log.detail,
+                "resumo": (log.action or "").replace("_", " ").title(),
+            }
+            for log in logs
+        ]
+
         return context
 
 
