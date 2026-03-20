@@ -36,6 +36,7 @@ from rdc.forms import (
     RDCValidacaoForm,
 )
 from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao, RDCApontamento
+from rdc.services.rdc_auditoria_export_service import exportar_auditoria_rdc_para_excel
 from rdc.services.rdc_service import (
     exportar_rdc_para_modelo_excel,
 )
@@ -2392,6 +2393,33 @@ class RDCImportarFuncionariosAlocacaoView(AuthenticatedTemplateMixin, View):
 
 class RDCExportView(RDCExportarModeloView):
     pass
+
+class RDCAuditoriaExportView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def get(self, request, pk):
+        rdc = get_object_or_404(RDC, pk=pk)
+        logs = AuditLog.objects.filter(
+            target_model="RDC",
+            target_id=str(rdc.pk),
+        ).select_related("user").order_by("-created_at")
+
+        arquivo = exportar_auditoria_rdc_para_excel(rdc, logs)
+
+        registrar_auditoria(
+            user=request.user,
+            action="exportar_auditoria_rdc",
+            target_model="RDC",
+            target_id=rdc.pk,
+            detail=f"Exportou auditoria do RDC {rdc.pk}",
+        )
+
+        return FileResponse(
+            open(arquivo, "rb"),
+            as_attachment=True,
+            filename=arquivo.name,
+        )
+
 
 
 

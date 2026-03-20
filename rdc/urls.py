@@ -1,6 +1,7 @@
 ﻿from django.urls import path
 
 from rdc.views import (
+    RDCAuditoriaExportView,
     RDCAtividadeBuscaView,
     RDCAtividadeCreateView,
     RDCAtividadeDeleteView,
@@ -60,6 +61,11 @@ urlpatterns = [
         "<int:pk>/exportar-modelo/",
         RDCExportarModeloView.as_view(),
         name="rdc-exportar-modelo",
+    ),
+    path(
+        "<int:pk>/auditoria/exportar/",
+        RDCAuditoriaExportView.as_view(),
+        name="rdc-auditoria-exportar",
     ),
     path("<int:pk>/exportar/<str:tipo>/", RDCExportView.as_view(), name="rdc-export"),
     path(

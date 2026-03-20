@@ -17,6 +17,7 @@
         <form method="post" action="{% url 'rdc-revalidar' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary">Revalidar</button></form>
         {% if can_edit_rdc %}<a class="btn btn-outline-dark" href="{% url 'rdc-update' rdc.pk %}">Editar RDC</a>{% endif %}
         <a class="btn btn-outline-primary" href="{% url 'rdc-exportar-modelo' rdc.pk %}">Modelo Excel</a>
+        <a class="btn btn-outline-secondary" href="{% url 'rdc-auditoria-exportar' rdc.pk %}">Auditoria Excel</a>
         {% if not rdc.is_fechado %}
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFechamento">Fechar RDC</button>
         {% elif can_reopen_rdc %}
