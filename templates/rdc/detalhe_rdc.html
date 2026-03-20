@@ -532,41 +532,11 @@
     }
 
     document.querySelectorAll('.inline-editable').forEach(cell => {
-        cell.addEventListener('dblclick', async () => {
-            if (cell.querySelector('input,textarea,select')) return;
-            const oldText = cell.innerText.trim() === '-' ? '' : cell.innerText.trim();
-            const editor = createEditor(cell, oldText);
-            cell.dataset.old = cell.innerHTML;
-            cell.innerHTML = '';
-            cell.appendChild(editor);
-            editor.focus();
-
-            const restore = () => { cell.innerHTML = cell.dataset.old; };
-            editor.addEventListener('keydown', ev => {
-                if (ev.key === 'Escape') restore();
-                if (ev.key === 'Enter' && editor.tagName !== 'TEXTAREA') editor.blur();
-            });
-            editor.addEventListener('blur', async () => {
-                const newValue = editor.value;
-                if (newValue === oldText) { restore(); return; }
-                cell.classList.add('inline-saving');
-                
-                const body = new URLSearchParams({field: cell.dataset.field, value: newValue});
-                const resp = await fetch(url, {method:'POST', headers:{'X-CSRFToken': csrfToken(), 'Content-Type':'application/x-www-form-urlencoded'}, body});
-                const data = await resp.json();
-                cell.classList.remove('inline-saving');
-                if (data.ok){
-                    cell.textContent = data.display || newValue || '-';
-                    cell.classList.add('inline-saved');
-                    setTimeout(() => cell.classList.remove('inline-saved'), 1200);
-                    if (data.hh_total) {
-                        const hhCell = document.querySelector(`.hh-cell[data-id="${cell.dataset.id}"]`);
-                        if (hhCell) hhCell.textContent = data.hh_total;
-                    }
-                }
-                else { alert(data.message || 'Não foi possível atualizar.'); restore(); }
-            });
-        });
+        cell.classList.remove('inline-editable');
+        cell.removeAttribute('data-section');
+        cell.removeAttribute('data-id');
+        cell.removeAttribute('data-field');
+        cell.title = 'Edi??o r?pida temporariamente indispon?vel nesta vers?o.';
     });
 })();
 </script>

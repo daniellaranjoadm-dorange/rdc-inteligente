@@ -1,0 +1,60 @@
+
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.urls import reverse
+
+from accounts.models import PerfilAcesso
+from cadastros.models import Projeto, AreaLocal, Disciplina
+from core.choices import TurnoChoices
+from rdc.models import RDC
+
+
+User = get_user_model()
+
+
+class RDCDetailInlineGuardUITests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="supervisor_inline_guard",
+            password="123",
+            is_staff=True,
+        )
+        PerfilAcesso.objects.create(user=self.user, role="supervisor")
+
+        self.projeto = Projeto.objects.create(
+            codigo="PRJIGUI",
+            nome="Projeto Inline Guard UI",
+            cliente="Cliente Inline Guard UI",
+        )
+
+        self.disciplina = Disciplina.objects.create(
+            codigo="DISIGUI",
+            nome="Disciplina Inline Guard UI",
+        )
+
+        self.area = AreaLocal.objects.create(
+            projeto=self.projeto,
+            codigo="AREAIGUI",
+            descricao="?rea Inline Guard UI",
+            disciplina_padrao=self.disciplina,
+        )
+
+        self.rdc = RDC.objects.create(
+            projeto=self.projeto,
+            area_local=self.area,
+            disciplina=self.disciplina,
+            data=timezone.now().date(),
+            turno=TurnoChoices.MANHA,
+            status="rascunho",
+            criado_por=self.user,
+        )
+
+        self.client.login(username="supervisor_inline_guard", password="123")
+
+    def test_detalhe_nao_renderiza_fetch_com_url_indefinida(self):
+        url = reverse("rdc-detail", kwargs={"pk": self.rdc.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "fetch(url")
+        self.assertContains(response, "Edi??o r?pida temporariamente indispon?vel nesta vers?o.")
