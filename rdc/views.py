@@ -857,6 +857,26 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
         context["funcionarios_filtrados"] = funcionarios_qs
         context["apontamentos_filtrados"] = apontamentos_qs
         context["validacoes_filtradas"] = validacoes_qs
+
+        context["atividades_stats"] = {
+            "total": atividades.count(),
+            "ativas": atividades.filter(ativa_no_dia=True).count(),
+            "inativas": atividades.filter(ativa_no_dia=False).count(),
+        }
+        context["funcionarios_stats"] = {
+            "total": funcionarios_qs.count(),
+            "presentes": funcionarios_qs.filter(presente_catraca=True).count(),
+            "bloqueados": funcionarios_qs.filter(elegivel=False).count(),
+        }
+        context["apontamentos_stats"] = {
+            "total": apontamentos_qs.count(),
+            "horas": apontamentos_qs.aggregate(total=Sum("horas"))["total"] or Decimal("0.00"),
+        }
+        context["validacoes_stats"] = {
+            "total": validacoes_qs.count(),
+            "alertas": validacoes_qs.filter(status="alerta").count(),
+            "bloqueios": validacoes_qs.filter(status="bloqueio").count(),
+        }
         context["filter_values"] = {
             k: self.request.GET.get(k, "")
             for k in [

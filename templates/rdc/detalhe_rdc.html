@@ -316,6 +316,33 @@
 
 <div class="tab-content">
 <div class="tab-pane fade show active" id="atividades">
+    <div class="row g-2 mb-3">
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Atividades filtradas</div><div class="metric-value">{{ atividades_stats.total }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Ativas</div><div class="metric-value text-success">{{ atividades_stats.ativas }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Inativas</div><div class="metric-value text-secondary">{{ atividades_stats.inativas }}</div></div></div>
+    </div>
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4"><input type="text" name="afq" value="{{ filter_values.afq }}" class="form-control form-control-sm" placeholder="Buscar c?digo ou descri??o"></div>
+        <div class="col-md-3">
+            <select name="astatus" class="form-select form-select-sm">
+                <option value="">Status da atividade</option>
+                <option value="true" {% if filter_values.astatus == "true" %}selected{% endif %}>Ativa</option>
+                <option value="false" {% if filter_values.astatus == "false" %}selected{% endif %}>Inativa</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="aorigem" class="form-select form-select-sm">
+                <option value="">Origem</option>
+                <option value="manual" {% if filter_values.aorigem == "manual" %}selected{% endif %}>Manual</option>
+                <option value="cronograma" {% if filter_values.aorigem == "cronograma" %}selected{% endif %}>Cronograma</option>
+                <option value="planejamento" {% if filter_values.aorigem == "planejamento" %}selected{% endif %}>Planejamento</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm w-100">Filtrar</button>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-detail' rdc.pk %}#atividades">Limpar</a>
+        </div>
+    </form>
     <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-atividade-create' rdc.pk %}">Incluir atividade</a><form method="post" action="{% url 'rdc-importar-atividades-cronograma' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm">Importar do cronograma</button></form>{% endif %}</div>
     <form method="post" action="{% url 'rdc-atividade-lote' rdc.pk %}">{% csrf_token %}
     <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">Ação em lote</option><option value="ativar">Ativar</option><option value="inativar">Inativar</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
@@ -324,33 +351,91 @@
     </tbody></table></div></form>
 </div>
 
+
 <div class="tab-pane fade" id="funcionarios">
-    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-funcionario-create' rdc.pk %}">Incluir funcionário</a><form method="post" action="{% url 'rdc-importar-funcionarios-alocacao' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm">Importar da alocação</button></form>{% endif %}</div>
+    <div class="row g-2 mb-3">
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Funcion?rios filtrados</div><div class="metric-value">{{ funcionarios_stats.total }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Presentes na catraca</div><div class="metric-value text-success">{{ funcionarios_stats.presentes }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Bloqueados</div><div class="metric-value text-danger">{{ funcionarios_stats.bloqueados }}</div></div></div>
+    </div>
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4"><input type="text" name="ffq" value="{{ filter_values.ffq }}" class="form-control form-control-sm" placeholder="Buscar matr?cula, nome, fun??o"></div>
+        <div class="col-md-3">
+            <select name="felegivel" class="form-select form-select-sm">
+                <option value="">Elegibilidade</option>
+                <option value="true" {% if filter_values.felegivel == "true" %}selected{% endif %}>Eleg?vel</option>
+                <option value="false" {% if filter_values.felegivel == "false" %}selected{% endif %}>Bloqueado</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="fcatraca" class="form-select form-select-sm">
+                <option value="">Catraca</option>
+                <option value="true" {% if filter_values.fcatraca == "true" %}selected{% endif %}>Presente</option>
+                <option value="false" {% if filter_values.fcatraca == "false" %}selected{% endif %}>Ausente</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm w-100">Filtrar</button>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-detail' rdc.pk %}#funcionarios">Limpar</a>
+        </div>
+    </form>
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-funcionario-create' rdc.pk %}">Incluir funcion?rio</a><form method="post" action="{% url 'rdc-importar-funcionarios-alocacao' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm">Importar da aloca??o</button></form>{% endif %}</div>
     <form method="post" action="{% url 'rdc-funcionario-lote' rdc.pk %}">{% csrf_token %}
-    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:260px"><option value="">Ação em lote</option><option value="confirmar_supervisor">Confirmar supervisor</option><option value="liberar">Liberar</option><option value="bloquear_sem_catraca">Bloquear sem catraca</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
-    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-funcionarios"><thead><tr><th><input type="checkbox" data-check-all="#tabela-funcionarios"></th><th>Matrícula</th><th>Nome</th><th>Equipe</th><th>Função</th><th>Catraca</th><th>Elegível</th><th>HN</th><th>HE</th><th>HH</th><th>Bloqueio</th></tr></thead><tbody>
-    {% for item in funcionarios_filtrados %}<tr class="{% if item.liberado_sem_catraca %}table-warning{% elif item.motivo_bloqueio %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.matricula }}</td><td>{{ item.nome }}</td><td>{{ item.equipe|default:'-' }}</td><td>{{ item.funcao|default:'-' }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="presente_catraca">{% if item.presente_catraca %}Sim{% else %}Não{% endif %}</td><td>{% if item.presente_catraca %}<span class="badge text-bg-success">Presente na catraca</span>{% elif item.liberado_sem_catraca %}<span class="badge text-bg-warning">Liberado manualmente</span>{% else %}<span class="badge text-bg-danger">Bloqueado</span>{% endif %}<div class="small text-muted mt-1">{% if item.liberado_sem_catraca %}Sem catraca, mas apto para apontamento.{% elif item.motivo_bloqueio %}{{ item.motivo_bloqueio|truncatechars:55 }}{% else %}Apto para apontamento.{% endif %}</div>{% if item.liberado_sem_catraca and item.liberado_por %}<div class="small text-muted">Por {{ item.liberado_por }}{% if item.liberado_em %} em {{ item.liberado_em|date:'d/m/Y H:i' }}{% endif %}</div>{% endif %}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_normal">{{ item.hora_normal }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_extra">{{ item.hora_extra }}</td><td class="hh-cell" data-id="{{ item.pk }}">{{ item.hh_total }}</td><td>{% if item.liberado_sem_catraca %}{{ item.justificativa_liberacao|default:'-'|truncatechars:35 }}{% else %}{{ item.motivo_bloqueio|default:'-'|truncatechars:35 }}{% endif %}</td></tr>{% empty %}<tr><td colspan="11">Sem funcionários.</td></tr>{% endfor %}
+    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:260px"><option value="">A??o em lote</option><option value="confirmar_supervisor">Confirmar supervisor</option><option value="liberar">Liberar</option><option value="bloquear_sem_catraca">Bloquear sem catraca</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-funcionarios"><thead><tr><th><input type="checkbox" data-check-all="#tabela-funcionarios"></th><th>Matr?cula</th><th>Nome</th><th>Equipe</th><th>Fun??o</th><th>Catraca</th><th>Eleg?vel</th><th>HN</th><th>HE</th><th>HH</th><th>Bloqueio</th></tr></thead><tbody>
+    {% for item in funcionarios_filtrados %}<tr class="{% if item.liberado_sem_catraca %}table-warning{% elif item.motivo_bloqueio %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.matricula }}</td><td>{{ item.nome }}</td><td>{{ item.equipe|default:'-' }}</td><td>{{ item.funcao|default:'-' }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="presente_catraca">{% if item.presente_catraca %}Sim{% else %}N?o{% endif %}</td><td>{% if item.presente_catraca %}<span class="badge text-bg-success">Presente na catraca</span>{% elif item.liberado_sem_catraca %}<span class="badge text-bg-warning">Liberado manualmente</span>{% else %}<span class="badge text-bg-danger">Bloqueado</span>{% endif %}<div class="small text-muted mt-1">{% if item.liberado_sem_catraca %}Sem catraca, mas apto para apontamento.{% elif item.motivo_bloqueio %}{{ item.motivo_bloqueio|truncatechars:55 }}{% else %}Apto para apontamento.{% endif %}</div>{% if item.liberado_sem_catraca and item.liberado_por %}<div class="small text-muted">Por {{ item.liberado_por }}{% if item.liberado_em %} em {{ item.liberado_em|date:'d/m/Y H:i' }}{% endif %}</div>{% endif %}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_normal">{{ item.hora_normal }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_extra">{{ item.hora_extra }}</td><td class="hh-cell" data-id="{{ item.pk }}">{{ item.hh_total }}</td><td>{% if item.liberado_sem_catraca %}{{ item.justificativa_liberacao|default:'-'|truncatechars:35 }}{% else %}{{ item.motivo_bloqueio|default:'-'|truncatechars:35 }}{% endif %}</td></tr>{% empty %}<tr><td colspan="11">Sem funcion?rios.</td></tr>{% endfor %}
     </tbody></table></div></form>
 </div>
 
 <div class="tab-pane fade" id="apontamentos">
+    <div class="row g-2 mb-3">
+        <div class="col-md-6 col-6"><div class="metric-box"><div class="mini-muted">Apontamentos filtrados</div><div class="metric-value">{{ apontamentos_stats.total }}</div></div></div>
+        <div class="col-md-6 col-6"><div class="metric-box"><div class="mini-muted">Horas totais</div><div class="metric-value text-success">{{ apontamentos_stats.horas }}</div></div></div>
+    </div>
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-10"><input type="text" name="apq" value="{{ filter_values.apq }}" class="form-control form-control-sm" placeholder="Buscar funcion?rio, atividade ou observa??o"></div>
+        <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm w-100">Filtrar</button>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-detail' rdc.pk %}#apontamentos">Limpar</a>
+        </div>
+    </form>
     <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-apontamento-create' rdc.pk %}">Incluir apontamento</a>{% endif %}</div>
     <form method="post" action="{% url 'rdc-apontamento-lote' rdc.pk %}">{% csrf_token %}
-    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">Ação em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
-    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-apontamentos"><thead><tr><th><input type="checkbox" data-check-all="#tabela-apontamentos"></th><th>Funcionário</th><th>Atividade</th><th>Horas</th><th>observação</th></tr></thead><tbody>
+    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">A??o em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-apontamentos"><thead><tr><th><input type="checkbox" data-check-all="#tabela-apontamentos"></th><th>Funcion?rio</th><th>Atividade</th><th>Horas</th><th>observa??o</th></tr></thead><tbody>
     {% for item in apontamentos_filtrados %}<tr><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.rdc_funcionario }}</td><td>{{ item.rdc_atividade }}</td><td class="inline-editable" data-section="apontamento" data-id="{{ item.pk }}" data-field="horas">{{ item.horas }}</td><td class="inline-editable" data-section="apontamento" data-id="{{ item.pk }}" data-field="observacao">{{ item.observacao|default:'-'|truncatechars:70 }}</td></tr>{% empty %}<tr><td colspan="5">Sem apontamentos.</td></tr>{% endfor %}
     </tbody></table></div></form>
 </div>
 
 <div class="tab-pane fade" id="validacoes">
-    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-validacao-create' rdc.pk %}">Incluir Validação</a>{% endif %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-validacoes' rdc.pk %}">Ver tela dedicada</a></div>
+    <div class="row g-2 mb-3">
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Valida??es filtradas</div><div class="metric-value">{{ validacoes_stats.total }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Alertas</div><div class="metric-value text-warning-emphasis">{{ validacoes_stats.alertas }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Bloqueios</div><div class="metric-value text-danger">{{ validacoes_stats.bloqueios }}</div></div></div>
+    </div>
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-6"><input type="text" name="vq" value="{{ filter_values.vq }}" class="form-control form-control-sm" placeholder="Buscar tipo, mensagem ou refer?ncia"></div>
+        <div class="col-md-4">
+            <select name="vstatus" class="form-select form-select-sm">
+                <option value="">Status da valida??o</option>
+                <option value="info" {% if filter_values.vstatus == "info" %}selected{% endif %}>Info</option>
+                <option value="alerta" {% if filter_values.vstatus == "alerta" %}selected{% endif %}>Alerta</option>
+                <option value="bloqueio" {% if filter_values.vstatus == "bloqueio" %}selected{% endif %}>Bloqueio</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm w-100">Filtrar</button>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-detail' rdc.pk %}#validacoes">Limpar</a>
+        </div>
+    </form>
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-validacao-create' rdc.pk %}">Incluir Valida??o</a>{% endif %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-validacoes' rdc.pk %}">Ver tela dedicada</a></div>
     <form method="post" action="{% url 'rdc-validacao-lote' rdc.pk %}">{% csrf_token %}
-    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">Ação em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
-    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-validacoes"><thead><tr><th><input type="checkbox" data-check-all="#tabela-validacoes"></th><th>Tipo</th><th>Status</th><th>Mensagem</th><th>Referência</th></tr></thead><tbody>
-    {% for item in validacoes_filtradas %}<tr class="{% if item.status == 'bloqueio' %}table-danger{% elif item.status == 'alerta' %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.get_tipo_display }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="status">{{ item.status }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="mensagem">{{ item.mensagem|truncatechars:70 }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="referencia">{{ item.referencia|default:'-' }}</td></tr>{% empty %}<tr><td colspan="5">Sem validAções.</td></tr>{% endfor %}
+    <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">A??o em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+    <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-validacoes"><thead><tr><th><input type="checkbox" data-check-all="#tabela-validacoes"></th><th>Tipo</th><th>Status</th><th>Mensagem</th><th>Refer?ncia</th></tr></thead><tbody>
+    {% for item in validacoes_filtradas %}<tr class="{% if item.status == 'bloqueio' %}table-danger{% elif item.status == 'alerta' %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.get_tipo_display }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="status">{{ item.status }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="mensagem">{{ item.mensagem|truncatechars:70 }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="referencia">{{ item.referencia|default:'-' }}</td></tr>{% empty %}<tr><td colspan="5">Sem valida??es.</td></tr>{% endfor %}
     </tbody></table></div></form>
 </div>
-</div>
+
 
 <div class="modal fade" id="modalFechamento" tabindex="-1">
   <div class="modal-dialog">
