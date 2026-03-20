@@ -23,3 +23,33 @@ class RoleRequiredMixin:
             raise PermissionDenied("Você não tem permissão para acessar esta página.")
 
         return super().dispatch(request, *args, **kwargs)
+
+class RDCEditableMixin:
+    """
+    Bloqueia altera??es se o RDC estiver fechado.
+    Prioridade:
+    1. self.rdc
+    2. self.get_object()
+    3. obj.rdc
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        rdc = getattr(self, "rdc", None)
+        obj = None
+
+        if not rdc and hasattr(self, "get_object"):
+            try:
+                obj = self.get_object()
+            except Exception:
+                obj = None
+
+            if obj is not None:
+                if getattr(obj, "is_fechado", False):
+                    rdc = obj
+                elif hasattr(obj, "rdc"):
+                    rdc = getattr(obj, "rdc", None)
+
+        if rdc and getattr(rdc, "is_fechado", False):
+            raise PermissionDenied("RDC est? fechado e n?o pode ser alterado.")
+
+        return super().dispatch(request, *args, **kwargs)
