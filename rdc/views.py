@@ -1696,19 +1696,18 @@ class RDOExportView(AuthenticatedTemplateMixin, View):
 
 class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, UpdateView):
     allowed_roles = ["admin", "supervisor"]
+
     model = RDC
     form_class = RDCForm
-    template_name = "rdc/editar_rdc.html"
-    context_object_name = "rdc"
 
+    @audit_action(
+        action="update_rdc",
+        target_model="RDC",
+        get_target_id=lambda self, request, *a, **k: self.get_object().pk,
+        detail_func=lambda self, request, *a, **k: "RDC atualizado",
+    )
     def form_valid(self, form):
-        messages.success(self.request, "RDC atualizado com sucesso.")
         return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse("rdc-detail", kwargs={"pk": self.object.pk})
-
-
 class RDCDeleteView(AuthenticatedTemplateMixin, RoleRequiredMixin, DeleteView):
     allowed_roles = ["admin"]
 
@@ -2348,4 +2347,5 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
         process_rdc_workflow_action(rdc, action, request.user)
 
         return redirect(request.META.get("HTTP_REFERER", "/"))
+
 
