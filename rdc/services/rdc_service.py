@@ -1,10 +1,7 @@
 ﻿from collections import Counter, defaultdict
 from decimal import Decimal
 from pathlib import Path
-from urllib.parse import urlencode
-from urllib.request import urlopen
 from datetime import datetime
-import json
 
 from django.conf import settings
 from django.db import transaction
@@ -26,18 +23,12 @@ from planejamento.models import AtividadeCronograma
 from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao
 from .rdc_excel_layout_service import (
     CIDADE_OBRA,
-    LATITUDE_OBRA,
-    LONGITUDE_OBRA,
-    TIMEZONE_OBRA,
     HORARIO_INICIO_PADRAO,
     HORARIO_INTERVALO_INICIO_PADRAO,
     HORARIO_INTERVALO_FIM_PADRAO,
     HORARIO_TERMINO_PADRAO,
     SUPERVISOR_PADRAO_NOME,
     EQUIPE_TESTE_PRIORITARIA,
-    FILL_SOL,
-    FILL_NUBLADO,
-    FILL_CHUVA,
     FILL_INFO,
     FILL_ALERTA,
     FILL_DESTAQUE,
