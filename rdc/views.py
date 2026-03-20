@@ -1844,7 +1844,8 @@ class RDCExportarModeloView(AuthenticatedTemplateMixin, RoleRequiredMixin, View)
         )
 
 
-class RDCNestedBaseMixin(AuthenticatedTemplateMixin, RDCEditableMixin):
+class RDCNestedBaseMixin(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin):
+    allowed_roles = ["admin", "supervisor"]
     parent_context_name = "rdc"
     parent_pk_url_kwarg = "pk"
     anchor = ""
