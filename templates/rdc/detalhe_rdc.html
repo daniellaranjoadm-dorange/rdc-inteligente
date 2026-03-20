@@ -322,6 +322,7 @@
         <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Inativas</div><div class="metric-value text-secondary">{{ atividades_stats.inativas }}</div></div></div>
     </div>
     <form method="get" class="row g-2 mb-3">
+        <input type="hidden" name="tab" value="atividades">
         <div class="col-md-4"><input type="text" name="afq" value="{{ filter_values.afq }}" class="form-control form-control-sm" placeholder="Buscar c?digo ou descri??o"></div>
         <div class="col-md-3">
             <select name="astatus" class="form-select form-select-sm">
@@ -359,6 +360,7 @@
         <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Bloqueados</div><div class="metric-value text-danger">{{ funcionarios_stats.bloqueados }}</div></div></div>
     </div>
     <form method="get" class="row g-2 mb-3">
+        <input type="hidden" name="tab" value="funcionarios">
         <div class="col-md-4"><input type="text" name="ffq" value="{{ filter_values.ffq }}" class="form-control form-control-sm" placeholder="Buscar matr?cula, nome, fun??o"></div>
         <div class="col-md-3">
             <select name="felegivel" class="form-select form-select-sm">
@@ -393,6 +395,7 @@
         <div class="col-md-6 col-6"><div class="metric-box"><div class="mini-muted">Horas totais</div><div class="metric-value text-success">{{ apontamentos_stats.horas }}</div></div></div>
     </div>
     <form method="get" class="row g-2 mb-3">
+        <input type="hidden" name="tab" value="apontamentos">
         <div class="col-md-10"><input type="text" name="apq" value="{{ filter_values.apq }}" class="form-control form-control-sm" placeholder="Buscar funcion?rio, atividade ou observa??o"></div>
         <div class="col-md-2 d-flex gap-2">
             <button class="btn btn-outline-primary btn-sm w-100">Filtrar</button>
@@ -414,6 +417,7 @@
         <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Bloqueios</div><div class="metric-value text-danger">{{ validacoes_stats.bloqueios }}</div></div></div>
     </div>
     <form method="get" class="row g-2 mb-3">
+        <input type="hidden" name="tab" value="validacoes">
         <div class="col-md-6"><input type="text" name="vq" value="{{ filter_values.vq }}" class="form-control form-control-sm" placeholder="Buscar tipo, mensagem ou refer?ncia"></div>
         <div class="col-md-4">
             <select name="vstatus" class="form-select form-select-sm">
@@ -468,8 +472,12 @@
 <script>
 (function() {
     const hash = window.location.hash;
-    if (hash) {
-        const trigger = document.querySelector(`[data-bs-target="${hash}"]`);
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromQuery = urlParams.get('tab');
+    const targetTab = hash || (tabFromQuery ? `#${tabFromQuery}` : '');
+
+    if (targetTab) {
+        const trigger = document.querySelector(`[data-bs-target="${targetTab}"]`);
         if (trigger) bootstrap.Tab.getOrCreateInstance(trigger).show();
     }
     document.querySelectorAll('[data-check-all]').forEach(function(master){
