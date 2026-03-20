@@ -6,7 +6,7 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db import connection
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, Max
 from django.http import FileResponse, Http404, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -2429,6 +2429,39 @@ class RDCDashboardHomeView(AuthenticatedTemplateMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(build_rdc_dashboard_home_context())
+        return context
+
+
+
+class RDCAuditoriaDashboardView(AuthenticatedTemplateMixin, RoleRequiredMixin, TemplateView):
+    allowed_roles = ["admin", "supervisor"]
+    template_name = "rdc/auditoria_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        logs = AuditLog.objects.filter(target_model="RDC").select_related("user")
+
+        context["total_eventos"] = logs.count()
+
+        context["acoes_top"] = list(
+            logs.values("action")
+            .annotate(total=Count("id"))
+            .order_by("-total", "action")[:10]
+        )
+
+        context["usuarios_top"] = list(
+            logs.values("user__username")
+            .annotate(total=Count("id"))
+            .order_by("-total", "user__username")[:10]
+        )
+
+        context["rdcs_top"] = list(
+            logs.values("target_id")
+            .annotate(total=Count("id"), ultima_data=Max("created_at"))
+            .order_by("-total", "-ultima_data")[:10]
+        )
+
         return context
 
 

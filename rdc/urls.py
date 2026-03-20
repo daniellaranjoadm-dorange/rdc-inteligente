@@ -10,6 +10,7 @@ from rdc.views import (
     RDCConsolidadoExportView,
     RDCConsolidadoView,
     RDCDeleteView,
+    RDCAuditoriaDashboardView,
     RDCDashboardHomeView,
     RDCDetailView,
     RDCExportView,
@@ -41,6 +42,7 @@ from rdc.views import (
 
 urlpatterns = [
     path("dashboard/", RDCDashboardHomeView.as_view(), name="rdc-dashboard"),
+    path("auditoria/dashboard/", RDCAuditoriaDashboardView.as_view(), name="rdc-auditoria-dashboard"),
     path("", RDCListView.as_view(), name="rdc-list"),
     path("novo/", RDCMontagemView.as_view(), name="rdc-create"),
     path("consolidado/", RDCConsolidadoView.as_view(), name="rdc-consolidado"),
