@@ -2025,7 +2025,13 @@ class RDCValidacaoDeleteView(RDCNestedDeleteView):
     pk_url_kwarg = "pk2"
 
 
-class RDCRevalidarView(AuthenticatedTemplateMixin, View):
+class RDCRevalidarView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         _atualizar_validacoes_automaticas(rdc)
