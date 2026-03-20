@@ -217,7 +217,7 @@
                             <div class="audit-dot"></div>
                             <div class="audit-content">
                                 <div class="d-flex justify-content-between gap-2 flex-wrap">
-                                    <strong>{{ evento.resumo }}</strong>
+                                    <span class="badge bg-{{ evento.cor }} me-2">{{ evento.resumo }}</span>
                                     <span class="mini-muted">{{ evento.created_at|date:'d/m/Y H:i' }}</span>
                                 </div>
                                 <div class="mini-muted">{{ evento.usuario|default:'Sistema' }} · {{ evento.acao }}{% if evento.secao %} · {{ evento.secao }}{% endif %}</div>
