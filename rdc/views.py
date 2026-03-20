@@ -1710,13 +1710,22 @@ class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, UpdateView):
 
 class RDCDeleteView(AuthenticatedTemplateMixin, RoleRequiredMixin, DeleteView):
     allowed_roles = ["admin"]
-    model = RDC
-    template_name = "rdc/excluir_rdc.html"
-    context_object_name = "rdc"
 
-    def form_valid(self, form):
-        messages.success(self.request, "RDC excluído com sucesso.")
-        return super().form_valid(form)
+    model = RDC
+    success_url = "/rdc/"
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        registrar_auditoria(
+            user=request.user,
+            action="delete_rdc",
+            target_model="RDC",
+            target_id=obj.pk,
+            detail=f"RDC {obj.pk} excluído",
+        )
+
+        return super().delete(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse("rdc-list")
@@ -2322,26 +2331,26 @@ class RDCDashboardHomeView(AuthenticatedTemplateMixin, TemplateView):
 
 class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin", "supervisor"]
-    def post(self, request, *args, **kwargs):
-        rdc = get_object_or_404(RDC, pk=kwargs["pk"])
-        acao = (request.POST.get("acao") or "").strip()
-        observacao = (request.POST.get("observacao") or "").strip()
 
-        resultado = process_rdc_workflow_action(
-            rdc,
-            action=acao,
+    def post(self, request, *args, **kwargs):
+        rdc_id = request.POST.get("rdc_id")
+        action = request.POST.get("action")
+
+        rdc = get_object_or_404(RDC, pk=rdc_id)
+
+        process_rdc_workflow_action(rdc, action, request.user)
+
+        registrar_auditoria(
             user=request.user,
-            observacao=observacao,
+            action="workflow_rdc",
+            target_model="RDC",
+            target_id=rdc.pk,
+            detail=f"Ação '{action}' aplicada no RDC {rdc.pk}",
         )
 
-        if resultado["ok"]:
-            messages.success(request, resultado["message"])
-        else:
-            messages.warning(request, resultado["message"])
+        return redirect(request.META.get("HTTP_REFERER", "/"))
 
-        if observacao and not resultado["ok"]:
-            messages.info(request, f"ObservAção: {observacao}")
-        return redirect("rdc-detail", pk=rdc.pk)
+
 
 
 
