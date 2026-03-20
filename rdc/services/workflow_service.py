@@ -76,9 +76,13 @@ def process_rdc_workflow_action(rdc: RDC, *, action: str, user=None, observacao:
             _registrar_auditoria(rdc, user, "reabrir", "RDC reaberto.", observacao)
 
         elif action == "fechar":
+            if not rdc.usuario_pode_fechar(user):
+                return {"ok": False, "level": "warning", "message": "Usu?rio sem permiss?o para fechar este RDC."}
+
             bloqueios = rdc.validacoes.filter(status="bloqueio").count()
             if bloqueios and not rdc.usuario_pode_forcar_fechamento(user):
-                return {"ok": False, "level": "warning", "message": "Existem bloqueios ativos. Somente usuário autorizado pode forçar o fechamento."}
+                return {"ok": False, "level": "warning", "message": "Existem bloqueios ativos. Somente usu?rio autorizado pode for?ar o fechamento."}
+
             rdc.status = "fechado"
             if hasattr(rdc, "fechado_em"):
                 rdc.fechado_em = timezone.now()
