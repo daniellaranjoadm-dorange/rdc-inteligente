@@ -9,7 +9,8 @@ from core.choices import TipoImportacaoChoices, TurnoChoices
 from importacoes.models import ImportacaoArquivo
 from importacoes.services import executar_importacao
 from planejamento.models import AtividadeCronograma
-from rdc.services.rdc_service import exportar_rdc_para_modelo_excel, montar_rdc_simulado_por_cronograma
+from rdc.services.rdc_service import exportar_rdc_para_modelo_excel
+from rdc.services.rdc_montagem_service import montar_rdc_simulado_por_cronograma
 
 
 class Command(BaseCommand):
@@ -89,6 +90,7 @@ class Command(BaseCommand):
         if not modelo_path.exists():
             raise CommandError(f"Modelo RDC não encontrado: {modelo_path}")
         settings.RDC_TEMPLATE_PATH = modelo_path
+
 
 
 

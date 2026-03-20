@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rdc.forms import RDCMontagemForm
 from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao
 from rdc.serializers import RDCAtividadeSerializer, RDCFuncionarioSerializer, RDCSerializer, RDCValidacaoSerializer
-from rdc.services.rdc_service import montar_rdc_pre_preenchido
+from rdc.services.rdc_montagem_service import montar_rdc_pre_preenchido
 
 
 class BaseViewSet(viewsets.ModelViewSet):
@@ -47,4 +47,5 @@ class RDCMontagemAPIView(generics.GenericAPIView):
             user=request.user,
         )
         return Response(RDCSerializer(rdc, context={"request": request}).data)
+
 

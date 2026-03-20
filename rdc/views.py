@@ -34,6 +34,9 @@ from rdc.forms import (
 from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao, RDCApontamento
 from rdc.services.rdc_service import (
     exportar_rdc_para_modelo_excel,
+)
+
+from rdc.services.rdc_montagem_service import (
     montar_rdc_pre_preenchido,
 )
 
@@ -2318,6 +2321,7 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, View):
         if observacao and not resultado["ok"]:
             messages.info(request, f"ObservAção: {observacao}")
         return redirect("rdc-detail", pk=rdc.pk)
+
 
 
 

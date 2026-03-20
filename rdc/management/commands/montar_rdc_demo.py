@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from cadastros.models import AreaLocal, Disciplina, Projeto
 from rdc.models import RDC
-from rdc.services.rdc_service import montar_rdc_pre_preenchido
+from rdc.services.rdc_montagem_service import montar_rdc_pre_preenchido
 
 
 class Command(BaseCommand):
@@ -58,6 +58,7 @@ class Command(BaseCommand):
             user=usuario,
         )
         self.stdout.write(self.style.SUCCESS(f"RDC criado com sucesso: #{rdc.pk}"))
+
 
 
 
