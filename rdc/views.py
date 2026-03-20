@@ -1735,13 +1735,27 @@ class RDCValidacoesView(AuthenticatedTemplateMixin, TemplateView):
 
 class RDCExportarModeloView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin", "supervisor"]
+
     def get(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         try:
             arquivo = exportar_rdc_para_modelo_excel(rdc)
         except FileNotFoundError as exc:
             raise Http404(str(exc))
-        return FileResponse(open(arquivo, "rb"), as_attachment=True, filename=arquivo.name)
+
+        registrar_auditoria(
+            user=request.user,
+            action="exportar_rdc_modelo",
+            target_model="RDC",
+            target_id=rdc.pk,
+            detail=f"Exportou modelo Excel do RDC {rdc.pk}",
+        )
+
+        return FileResponse(
+            open(arquivo, "rb"),
+            as_attachment=True,
+            filename=arquivo.name,
+        )
 
 
 class RDCNestedBaseMixin(AuthenticatedTemplateMixin):
@@ -2328,6 +2342,7 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
         if observacao and not resultado["ok"]:
             messages.info(request, f"ObservAção: {observacao}")
         return redirect("rdc-detail", pk=rdc.pk)
+
 
 
 
