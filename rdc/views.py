@@ -10,6 +10,7 @@ from django.db.models import Q, Count, Sum
 from django.http import FileResponse, Http404, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from accounts.models import AuditLog
 from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin
 from core.audit import registrar_auditoria
 from core.audit_decorators import audit_action
@@ -2347,5 +2348,7 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
         process_rdc_workflow_action(rdc, action, request.user)
 
         return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
 
 
