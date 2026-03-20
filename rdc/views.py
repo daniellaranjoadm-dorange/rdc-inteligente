@@ -2033,7 +2033,13 @@ class RDCRevalidarView(AuthenticatedTemplateMixin, View):
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#validacoes")
 
 
-class RDCAtividadeLoteView(AuthenticatedTemplateMixin, View):
+class RDCAtividadeLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
@@ -2057,7 +2063,13 @@ class RDCAtividadeLoteView(AuthenticatedTemplateMixin, View):
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#atividades")
 
 
-class RDCFuncionarioLoteView(AuthenticatedTemplateMixin, View):
+class RDCFuncionarioLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
@@ -2090,7 +2102,13 @@ class RDCFuncionarioLoteView(AuthenticatedTemplateMixin, View):
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#funcionarios")
 
 
-class RDCApontamentoLoteView(AuthenticatedTemplateMixin, View):
+class RDCApontamentoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
@@ -2108,7 +2126,13 @@ class RDCApontamentoLoteView(AuthenticatedTemplateMixin, View):
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#apontamentos")
 
 
-class RDCValidacaoLoteView(AuthenticatedTemplateMixin, View):
+class RDCValidacaoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
