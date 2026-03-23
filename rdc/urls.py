@@ -1,10 +1,10 @@
-﻿from django.urls import path
+from django.urls import path
 
 from rdc.views import (
     RDCAuditoriaExportView,
     RDCAtividadeBuscaView,
     RDCAtividadeCreateView,
-    RDCAtividadeDeleteView,
+    
     RDCAtividadeInlineUpdateView,
     RDCAtividadeLoteView,
     RDCAtividadeUpdateView,
@@ -116,7 +116,7 @@ urlpatterns = [
     ),
     path(
         "<int:pk>/atividades/<int:pk2>/excluir/",
-        RDCAtividadeDeleteView.as_view(),
+        .as_view(),
         name="rdc-atividade-delete",
     ),
     path(
