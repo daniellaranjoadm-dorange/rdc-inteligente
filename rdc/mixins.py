@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
 
-from core.auth import RoleRequiredMixin
+from core.mixins import RoleRequiredMixin
 from rdc.models import RDC
 from rdc.utils import rdc_is_editable
 
