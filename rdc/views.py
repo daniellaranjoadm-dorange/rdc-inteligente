@@ -29,6 +29,7 @@ from django.views.generic import (
 
 from core.mixins import AuthenticatedTemplateMixin
 from rdc.forms import (
+from rdc.mixins import RDCInlineUpdateBaseView
     RDCAtividadeForm,
     RDCApontamentoForm,
     RDCForm,
@@ -1967,142 +1968,55 @@ class RDCAtividadeUpdateView(RDCNestedUpdateView):
 
 
 
-class RDCAtividadeInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
-    allowed_roles = ["admin", "supervisor"]
-
-    def dispatch(self, request, *args, **kwargs):
-        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
-        self.obj = get_object_or_404(RDCAtividade, pk=kwargs["pk2"], rdc=self.rdc)
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, pk, pk2):
-        field = (request.POST.get("field") or "").strip()
-        value = (request.POST.get("value") or "").strip()
-
-        allowed_fields = {"qtd_executada"}
-        if field not in allowed_fields:
-            return JsonResponse(
-                {"ok": False, "message": "Campo n?o permitido para edi??o inline."},
-                status=400,
-            )
-
-        try:
-            if field == "qtd_executada":
-                from decimal import Decimal
-                parsed = Decimal(value or "0")
-                setattr(self.obj, field, parsed)
-
-            self.obj.full_clean()
-            self.obj.save(update_fields=[field, "updated_at", "sync_updated_at"])
-
-            display = f"{getattr(self.obj, field):.2f}" if field == "qtd_executada" else str(getattr(self.obj, field))
-            return JsonResponse(
-                {
-                    "ok": True,
-                    "field": field,
-                    "value": display,
-                    "display": display,
-                }
-            )
-        except Exception as exc:
-            return JsonResponse(
-                {"ok": False, "message": str(exc)},
-                status=400,
-            )
 
 
-class RDCAtividadeDeleteView(RDCNestedDeleteView):
+class RDCAtividadeInlineUpdateView(RDCInlineUpdateBaseView):
     model = RDCAtividade
-    object_label = "Atividade"
-    anchor = "#atividades"
-    pk_url_kwarg = "pk2"
+    allowed_fields = ("qtd_executada", "ativa_no_dia", "comentarios")
+    success_message = "Atividade atualizada com sucesso."
+
+    def get_field_value(self, field, value):
+        if field == "ativa_no_dia":
+            return str(value).lower() == "true"
+        return value
+
+    def post_save(self):
+        _atualizar_validacoes_automaticas(self.rdc)
 
 
-class RDCFuncionarioCreateView(RDCNestedCreateView):
+class RDCFuncionarioInlineUpdateView(RDCInlineUpdateBaseView):
     model = RDCFuncionario
-    form_class = RDCFuncionarioForm
-    object_label = "Funcionário"
-    anchor = "#funcionarios"
+    allowed_fields = ("presente_catraca", "hora_normal", "hora_extra")
+    success_message = "Funcion?rio atualizado com sucesso."
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["rdc"] = self.rdc
-        return kwargs
+    def get_field_value(self, field, value):
+        if field == "presente_catraca":
+            return str(value).lower() == "true"
+        return value
 
+    def post_save(self):
+        _atualizar_validacoes_automaticas(self.rdc)
 
-class RDCFuncionarioUpdateView(RDCNestedUpdateView):
-    model = RDCFuncionario
-    form_class = RDCFuncionarioForm
-    object_label = "Funcionário"
-    anchor = "#funcionarios"
-    pk_url_kwarg = "pk2"
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["rdc"] = self.rdc
-        return kwargs
+    def extra_payload(self):
+        return {"hh_total": str(self.obj.hh_total)}
 
 
-class RDCFuncionarioDeleteView(RDCNestedDeleteView):
-    model = RDCFuncionario
-    object_label = "Funcionário"
-    anchor = "#funcionarios"
-    pk_url_kwarg = "pk2"
-
-
-class RDCApontamentoCreateView(RDCNestedCreateView):
+class RDCApontamentoInlineUpdateView(RDCInlineUpdateBaseView):
     model = RDCApontamento
-    form_class = RDCApontamentoForm
-    object_label = "Apontamento"
-    anchor = "#apontamentos"
+    allowed_fields = ("horas", "observacao")
+    success_message = "Apontamento atualizado com sucesso."
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["rdc"] = self.rdc
-        return kwargs
+    def post_save(self):
+        _atualizar_validacoes_automaticas(self.rdc)
 
 
-class RDCApontamentoUpdateView(RDCNestedUpdateView):
-    model = RDCApontamento
-    form_class = RDCApontamentoForm
-    object_label = "Apontamento"
-    anchor = "#apontamentos"
-    pk_url_kwarg = "pk2"
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["rdc"] = self.rdc
-        return kwargs
-
-
-class RDCApontamentoDeleteView(RDCNestedDeleteView):
-    model = RDCApontamento
-    object_label = "Apontamento"
-    anchor = "#apontamentos"
-    pk_url_kwarg = "pk2"
-
-
-class RDCValidacaoCreateView(RDCNestedCreateView):
+class RDCValidacaoInlineUpdateView(RDCInlineUpdateBaseView):
     model = RDCValidacao
-    form_class = RDCValidacaoForm
-    object_label = "ValidAção"
-    anchor = "#validacoes"
+    allowed_fields = ("status", "mensagem", "referencia")
+    success_message = "Valida??o atualizada com sucesso."
 
-
-class RDCValidacaoUpdateView(RDCNestedUpdateView):
-    model = RDCValidacao
-    form_class = RDCValidacaoForm
-    object_label = "ValidAção"
-    anchor = "#validacoes"
-    pk_url_kwarg = "pk2"
-
-
-class RDCValidacaoDeleteView(RDCNestedDeleteView):
-    model = RDCValidacao
-    object_label = "ValidAção"
-    anchor = "#validacoes"
-    pk_url_kwarg = "pk2"
-
+    def post_save(self):
+        _atualizar_validacoes_automaticas(self.rdc)
 
 class RDCRevalidarView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
     allowed_roles = ["admin", "supervisor"]
@@ -2234,56 +2148,6 @@ class RDCValidacaoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEdi
         _atualizar_validacoes_automaticas(rdc)
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#validacoes")
 
-
-
-class RDCValidacaoInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
-    allowed_roles = ["admin", "supervisor"]
-    allowed_fields = {"status", "mensagem", "referencia"}
-
-    def dispatch(self, request, *args, **kwargs):
-        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, pk, pk2):
-        validacao = get_object_or_404(RDCValidacao, pk=pk2, rdc=self.rdc)
-
-        field = (request.POST.get("field") or "").strip()
-        value = request.POST.get("value", "")
-
-        if field not in self.allowed_fields:
-            return JsonResponse(
-                {"ok": False, "message": "Campo n?o permitido."},
-                status=400,
-            )
-
-        if field == "status" and value not in {"info", "alerta", "bloqueio"}:
-            return JsonResponse(
-                {"ok": False, "message": "Status inv?lido."},
-                status=400,
-            )
-
-        setattr(validacao, field, value)
-
-        try:
-            validacao.save()
-            _atualizar_validacoes_automaticas(self.rdc)
-        except ValidationError as exc:
-            if hasattr(exc, "message_dict"):
-                msg = " ".join(
-                    str(m)
-                    for messages_list in exc.message_dict.values()
-                    for m in messages_list
-                )
-            else:
-                msg = " ".join(str(m) for m in exc.messages)
-            return JsonResponse({"ok": False, "message": msg or "Dados inv?lidos."}, status=400)
-
-        return JsonResponse(
-            {
-                "ok": True,
-                "display": getattr(validacao, field) or "-",
-            }
-        )
 
 
 class RDCAtividadeBuscaView(AuthenticatedTemplateMixin, View):
@@ -2682,80 +2546,3 @@ from decimal import Decimal
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 
-class RDCFuncionarioInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
-    allowed_roles = ["admin", "supervisor"]
-
-    allowed_fields = {"presente_catraca", "hora_normal", "hora_extra", "confirmado_supervisor"}
-
-    def dispatch(self, request, *args, **kwargs):
-        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
-        self.obj = get_object_or_404(RDCFuncionario, pk=kwargs["pk2"], rdc=self.rdc)
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, pk, pk2):
-        field = (request.POST.get("field") or "").strip()
-        value = request.POST.get("value")
-
-        if field not in self.allowed_fields:
-            return JsonResponse({"ok": False, "message": "Campo n?o permitido."}, status=400)
-
-        try:
-            if field in {"presente_catraca", "confirmado_supervisor"}:
-                normalized = str(value).strip().lower()
-                setattr(self.obj, field, normalized in {"true", "1", "sim", "yes", "on"})
-            else:
-                setattr(self.obj, field, Decimal(str(value)))
-        except Exception:
-            return JsonResponse({"ok": False, "message": "Valor inv?lido."}, status=400)
-
-        try:
-            self.obj.full_clean()
-            self.obj.save()
-            _atualizar_validacoes_automaticas(self.rdc)
-        except ValidationError as exc:
-            return JsonResponse({"ok": False, "message": str(exc)}, status=400)
-
-        display = getattr(self.obj, field)
-        if isinstance(display, bool):
-            display = "Sim" if display else "N?o"
-
-        return JsonResponse(
-            {
-                "ok": True,
-                "display": str(display),
-                "hh_total": str(self.obj.hh_total),
-            }
-        )
-
-
-class RDCApontamentoInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
-    allowed_roles = ["admin", "supervisor"]
-
-    def post(self, request, pk, pk2):
-        rdc = get_object_or_404(RDC, pk=pk)
-        apontamento = get_object_or_404(RDCApontamento, pk=pk2, rdc=rdc)
-
-        if rdc.status == "fechado":
-            return JsonResponse({"error": "RDC fechado."}, status=403)
-
-        field = request.POST.get("field")
-        value = request.POST.get("value")
-
-        allowed_fields = ["horas", "observacao"]
-
-        if field not in allowed_fields:
-            return JsonResponse({"error": "Campo n?o permitido."}, status=400)
-
-        try:
-            if field == "horas":
-                from decimal import Decimal
-                value = Decimal(value)
-
-            setattr(apontamento, field, value)
-            apontamento.full_clean()
-            apontamento.save()
-
-            return JsonResponse({"success": True})
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
