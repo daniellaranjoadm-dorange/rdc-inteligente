@@ -17,11 +17,8 @@ from rdc.views import (
     RDCExportView,
     RDCExportarModeloView,
     RDCFuncionarioBuscaView,
-    RDCFuncionarioCreateView,
-    RDCFuncionarioDeleteView,
     RDCFuncionarioInlineUpdateView,
     RDCFuncionarioLoteView,
-    RDCFuncionarioUpdateView,
     RDCImportarAtividadesCronogramaView,
     RDCImportarFuncionariosAlocacaoView,
     RDCListView,
@@ -155,4 +152,3 @@ urlpatterns = [
         name="rdc-validacao-lote",
     ),
 ]
-
