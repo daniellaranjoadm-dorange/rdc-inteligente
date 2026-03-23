@@ -19,6 +19,7 @@ from rdc.views import (
     RDCFuncionarioBuscaView,
     RDCFuncionarioCreateView,
     RDCFuncionarioDeleteView,
+    RDCFuncionarioInlineUpdateView,
     RDCFuncionarioLoteView,
     RDCFuncionarioUpdateView,
     RDCImportarAtividadesCronogramaView,
@@ -27,6 +28,7 @@ from rdc.views import (
     RDCMontagemView,
     RDCApontamentoCreateView,
     RDCApontamentoDeleteView,
+    RDCApontamentoInlineUpdateView,  # 👈 ADICIONA AQUI
     RDCApontamentoLoteView,
     RDCApontamentoUpdateView,
     RDCRevalidarView,
@@ -42,6 +44,16 @@ from rdc.views import (
 )
 
 urlpatterns = [
+    path("<int:pk>/apontamentos/<int:pk2>/inline-update/",
+         RDCApontamentoInlineUpdateView.as_view(),
+         name="rdc-apontamento-inline-update"),
+
+    path(
+        "<int:pk>/funcionarios/<int:pk2>/inline-update/",
+        RDCFuncionarioInlineUpdateView.as_view(),
+        name="rdc-funcionario-inline-update",
+    ),
+
     path("dashboard/", RDCDashboardHomeView.as_view(), name="rdc-dashboard"),
     path("auditoria/dashboard/", RDCAuditoriaDashboardView.as_view(), name="rdc-auditoria-dashboard"),
     path("", RDCListView.as_view(), name="rdc-list"),

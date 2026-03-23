@@ -2625,3 +2625,86 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
                 messages.info(request, msg)
 
         return redirect(request.META.get("HTTP_REFERER", reverse("rdc-detail", kwargs={"pk": rdc.pk})))
+
+
+from decimal import Decimal
+from django.http import JsonResponse
+from django.core.exceptions import ValidationError
+
+class RDCFuncionarioInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    allowed_fields = {"presente_catraca", "hora_normal", "hora_extra", "confirmado_supervisor"}
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        self.obj = get_object_or_404(RDCFuncionario, pk=kwargs["pk2"], rdc=self.rdc)
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk, pk2):
+        field = (request.POST.get("field") or "").strip()
+        value = request.POST.get("value")
+
+        if field not in self.allowed_fields:
+            return JsonResponse({"ok": False, "message": "Campo n?o permitido."}, status=400)
+
+        try:
+            if field in {"presente_catraca", "confirmado_supervisor"}:
+                normalized = str(value).strip().lower()
+                setattr(self.obj, field, normalized in {"true", "1", "sim", "yes", "on"})
+            else:
+                setattr(self.obj, field, Decimal(str(value)))
+        except Exception:
+            return JsonResponse({"ok": False, "message": "Valor inv?lido."}, status=400)
+
+        try:
+            self.obj.full_clean()
+            self.obj.save()
+            _atualizar_validacoes_automaticas(self.rdc)
+        except ValidationError as exc:
+            return JsonResponse({"ok": False, "message": str(exc)}, status=400)
+
+        display = getattr(self.obj, field)
+        if isinstance(display, bool):
+            display = "Sim" if display else "N?o"
+
+        return JsonResponse(
+            {
+                "ok": True,
+                "display": str(display),
+                "hh_total": str(self.obj.hh_total),
+            }
+        )
+
+
+class RDCApontamentoInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+
+    def post(self, request, pk, pk2):
+        rdc = get_object_or_404(RDC, pk=pk)
+        apontamento = get_object_or_404(RDCApontamento, pk=pk2, rdc=rdc)
+
+        if rdc.status == "fechado":
+            return JsonResponse({"error": "RDC fechado."}, status=403)
+
+        field = request.POST.get("field")
+        value = request.POST.get("value")
+
+        allowed_fields = ["horas", "observacao"]
+
+        if field not in allowed_fields:
+            return JsonResponse({"error": "Campo n?o permitido."}, status=400)
+
+        try:
+            if field == "horas":
+                from decimal import Decimal
+                value = Decimal(value)
+
+            setattr(apontamento, field, value)
+            apontamento.full_clean()
+            apontamento.save()
+
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
