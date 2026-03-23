@@ -46,154 +46,113 @@ from rdc.views import (
 
 urlpatterns = [
     path("<int:pk>/apontamentos/<int:pk2>/inline-update/",
-         RDCApontamentoInlineUpdateView.as_view(),
          name="rdc-apontamento-inline-update"),
 
     path(
         "<int:pk>/funcionarios/<int:pk2>/inline-update/",
-        RDCFuncionarioInlineUpdateView.as_view(),
         name="rdc-funcionario-inline-update",
     ),
 
-    path("dashboard/", RDCDashboardHomeView.as_view(), name="rdc-dashboard"),
-    path("auditoria/dashboard/", RDCAuditoriaDashboardView.as_view(), name="rdc-auditoria-dashboard"),
-    path("", RDCListView.as_view(), name="rdc-list"),
-    path("novo/", RDCMontagemView.as_view(), name="rdc-create"),
-    path("consolidado/", RDCConsolidadoView.as_view(), name="rdc-consolidado"),
     path(
         "consolidado/exportar/<str:tipo>/",
-        RDCConsolidadoExportView.as_view(),
         name="rdc-consolidado-export",
     ),
-    path("rdo/", RDOView.as_view(), name="rdc-rdo"),
-    path("rdo/exportar/<str:tipo>/", RDOExportView.as_view(), name="rdc-rdo-exportar"),
-    path("<int:pk>/", RDCDetailView.as_view(), name="rdc-detail"),
-    path("<int:pk>/editar/", RDCUpdateView.as_view(), name="rdc-update"),
-    path("<int:pk>/excluir/", RDCDeleteView.as_view(), name="rdc-delete"),
-    path("<int:pk>/validacoes/", RDCValidacoesView.as_view(), name="rdc-validacoes"),
-    path("<int:pk>/revalidar/", RDCRevalidarView.as_view(), name="rdc-revalidar"),
-    path("<int:pk>/workflow/", RDCWorkflowView.as_view(), name="rdc-workflow"),
     path(
         "<int:pk>/exportar-modelo/",
-        RDCExportarModeloView.as_view(),
         name="rdc-exportar-modelo",
     ),
     path(
         "<int:pk>/auditoria/exportar/",
-        RDCAuditoriaExportView.as_view(),
         name="rdc-auditoria-exportar",
     ),
     path("<int:pk>/exportar/<str:tipo>/", RDCExportView.as_view(), name="rdc-export"),
     path(
         "<int:pk>/buscar-atividades/",
-        RDCAtividadeBuscaView.as_view(),
         name="rdc-atividade-busca",
     ),
     path(
         "<int:pk>/buscar-funcionarios/",
-        RDCFuncionarioBuscaView.as_view(),
         name="rdc-funcionario-busca",
     ),
     path(
         "<int:pk>/importar-atividades-cronograma/",
-        RDCImportarAtividadesCronogramaView.as_view(),
         name="rdc-importar-atividades-cronograma",
     ),
     path(
         "<int:pk>/importar-funcionarios-alocacao/",
-        RDCImportarFuncionariosAlocacaoView.as_view(),
         name="rdc-importar-funcionarios-alocacao",
     ),
     path(
         "<int:pk>/atividades/novo/",
-        RDCAtividadeCreateView.as_view(),
         name="rdc-atividade-create",
     ),
     path(
         "<int:pk>/atividades/<int:pk2>/editar/",
-        RDCAtividadeUpdateView.as_view(),
         name="rdc-atividade-update",
     ),
     path(
         "<int:pk>/atividades/<int:pk2>/excluir/",
-        .as_view(),
         name="rdc-atividade-delete",
     ),
     path(
         "<int:pk>/atividades/<int:pk2>/inline-update/",
-        RDCAtividadeInlineUpdateView.as_view(),
         name="rdc-atividade-inline-update",
     ),
     path(
         "<int:pk>/atividades/lote/",
-        RDCAtividadeLoteView.as_view(),
         name="rdc-atividade-lote",
     ),
     path(
         "<int:pk>/funcionarios/novo/",
-        RDCFuncionarioCreateView.as_view(),
         name="rdc-funcionario-create",
     ),
     path(
         "<int:pk>/funcionarios/<int:pk2>/editar/",
-        RDCFuncionarioUpdateView.as_view(),
         name="rdc-funcionario-update",
     ),
     path(
         "<int:pk>/funcionarios/<int:pk2>/excluir/",
-        RDCFuncionarioDeleteView.as_view(),
         name="rdc-funcionario-delete",
     ),
     path(
         "<int:pk>/funcionarios/lote/",
-        RDCFuncionarioLoteView.as_view(),
         name="rdc-funcionario-lote",
     ),
     path(
         "<int:pk>/apontamentos/novo/",
-        RDCApontamentoCreateView.as_view(),
         name="rdc-apontamento-create",
     ),
     path(
         "<int:pk>/apontamentos/<int:pk2>/editar/",
-        RDCApontamentoUpdateView.as_view(),
         name="rdc-apontamento-update",
     ),
     path(
         "<int:pk>/apontamentos/<int:pk2>/excluir/",
-        RDCApontamentoDeleteView.as_view(),
         name="rdc-apontamento-delete",
     ),
     path(
         "<int:pk>/apontamentos/lote/",
-        RDCApontamentoLoteView.as_view(),
         name="rdc-apontamento-lote",
     ),
     path(
         "<int:pk>/validacoes/nova/",
-        RDCValidacaoCreateView.as_view(),
         name="rdc-validacao-create",
     ),
     path(
         "<int:pk>/validacoes/<int:pk2>/editar/",
-        RDCValidacaoUpdateView.as_view(),
         name="rdc-validacao-update",
     ),
     path(
         "<int:pk>/validacoes/<int:pk2>/excluir/",
-        RDCValidacaoDeleteView.as_view(),
         name="rdc-validacao-delete",
     ),
     path(
         "<int:pk>/validacoes/<int:pk2>/inline-update/",
-        RDCValidacaoInlineUpdateView.as_view(),
         name="rdc-validacao-inline-update",
     ),
     path(
         "<int:pk>/validacoes/lote/",
-        RDCValidacaoLoteView.as_view(),
         name="rdc-validacao-lote",
     ),
 ]
-
 
