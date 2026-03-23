@@ -5,7 +5,6 @@ from django.views import View
 
 from core.mixins import RoleRequiredMixin
 from rdc.models import RDC
-from rdc.utils import rdc_is_editable
 
 
 class RDCInlineUpdateBaseView(RoleRequiredMixin, View):
