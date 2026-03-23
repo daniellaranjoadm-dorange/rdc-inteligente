@@ -2235,6 +2235,58 @@ class RDCValidacaoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEdi
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#validacoes")
 
 
+
+class RDCValidacaoInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    allowed_roles = ["admin", "supervisor"]
+    allowed_fields = {"status", "mensagem", "referencia"}
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk, pk2):
+        validacao = get_object_or_404(RDCValidacao, pk=pk2, rdc=self.rdc)
+
+        field = (request.POST.get("field") or "").strip()
+        value = request.POST.get("value", "")
+
+        if field not in self.allowed_fields:
+            return JsonResponse(
+                {"ok": False, "message": "Campo n?o permitido."},
+                status=400,
+            )
+
+        if field == "status" and value not in {"info", "alerta", "bloqueio"}:
+            return JsonResponse(
+                {"ok": False, "message": "Status inv?lido."},
+                status=400,
+            )
+
+        setattr(validacao, field, value)
+
+        try:
+            validacao.full_clean()
+            validacao.save()
+            _atualizar_validacoes_automaticas(self.rdc)
+        except ValidationError as exc:
+            if hasattr(exc, "message_dict"):
+                msg = " ".join(
+                    str(m)
+                    for messages_list in exc.message_dict.values()
+                    for m in messages_list
+                )
+            else:
+                msg = " ".join(str(m) for m in exc.messages)
+            return JsonResponse({"ok": False, "message": msg or "Dados inv?lidos."}, status=400)
+
+        return JsonResponse(
+            {
+                "ok": True,
+                "display": getattr(validacao, field) or "-",
+            }
+        )
+
+
 class RDCAtividadeBuscaView(AuthenticatedTemplateMixin, View):
     def get(self, request, pk):
         from planejamento.models import AtividadeCronograma

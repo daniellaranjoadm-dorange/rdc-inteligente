@@ -35,6 +35,7 @@ from rdc.views import (
     RDCUpdateView,
     RDCValidacaoCreateView,
     RDCValidacaoDeleteView,
+    RDCValidacaoInlineUpdateView,
     RDCValidacaoLoteView,
     RDCValidacaoUpdateView,
     RDCValidacoesView,
@@ -182,6 +183,11 @@ urlpatterns = [
         "<int:pk>/validacoes/<int:pk2>/excluir/",
         RDCValidacaoDeleteView.as_view(),
         name="rdc-validacao-delete",
+    ),
+    path(
+        "<int:pk>/validacoes/<int:pk2>/inline-update/",
+        RDCValidacaoInlineUpdateView.as_view(),
+        name="rdc-validacao-inline-update",
     ),
     path(
         "<int:pk>/validacoes/lote/",
