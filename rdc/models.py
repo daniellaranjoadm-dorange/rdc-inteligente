@@ -135,6 +135,16 @@ class RDC(SyncableMobileMixin, TimeStampedModel):
     def usuario_pode_reabrir(self, user):
         return self.usuario_pode_forcar_fechamento(user)
 
+    def usuario_pode_fechar(self, user):
+        if not getattr(user, "is_authenticated", False):
+            return False
+
+        perfil = getattr(user, "perfil_acesso", None)
+        if perfil and getattr(perfil, "role", None) in {"admin", "supervisor"}:
+            return True
+
+        return bool(getattr(user, "is_staff", False) or getattr(user, "is_superuser", False))
+
     @property
     def status_workflow_label(self):
         mapa = {

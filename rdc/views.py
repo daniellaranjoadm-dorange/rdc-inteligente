@@ -2265,7 +2265,6 @@ class RDCValidacaoInlineUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin
         setattr(validacao, field, value)
 
         try:
-            validacao.full_clean()
             validacao.save()
             _atualizar_validacoes_automaticas(self.rdc)
         except ValidationError as exc:
