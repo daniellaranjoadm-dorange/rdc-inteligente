@@ -10,3 +10,9 @@ class DashboardView(TemplateView):
         context = super().get_context_data(**kwargs)
         context.update(HomeDashboardService().build())
         return context
+
+from django.shortcuts import render
+
+def handler403(request, exception=None):
+    return render(request, "errors/403.html", status=403)
+
