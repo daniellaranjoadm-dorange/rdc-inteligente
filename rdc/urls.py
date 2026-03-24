@@ -6,7 +6,6 @@ base_patterns = [
     path("", RDCListView.as_view(), name="rdc-list"),
     path("<int:pk>/", RDCDetailView.as_view(), name="rdc-detail"),
     path("novo/", RDCMontagemView.as_view(), name="rdc-create"),  # legado
-    path("create/", RDCMontagemView.as_view(), name="rdc:create"),  # novo padrão
 ]
 
 # ===== RDC CRUD =====
