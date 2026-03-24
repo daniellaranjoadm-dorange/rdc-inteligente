@@ -1,0 +1,17 @@
+[Unit]
+Description=RDC Inteligente Gunicorn
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/rdc_inteligente
+Environment="DJANGO_DEBUG=False"
+Environment="ALLOWED_HOSTS=seu_dominio.com,www.seu_dominio.com"
+ExecStart=/srv/rdc_inteligente/.venv/bin/gunicorn rdc_inteligente.wsgi:application --bind 127.0.0.1:8000 --workers 3 --timeout 120
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
