@@ -28,8 +28,8 @@ from django.views.generic import (
 )
 
 from core.mixins import AuthenticatedTemplateMixin
-from rdc.forms import (
 from rdc.mixins import RDCInlineUpdateBaseView
+from rdc.forms import (
     RDCAtividadeForm,
     RDCApontamentoForm,
     RDCForm,
@@ -2102,6 +2102,9 @@ class RDCFuncionarioLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCE
 
 
 class RDCApontamentoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
+    def get(self, request, *args, **kwargs):
+        from django.http import HttpResponse
+        return HttpResponse('OK')
     allowed_roles = ["admin", "supervisor"]
 
     def dispatch(self, request, *args, **kwargs):
@@ -2545,4 +2548,3 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
 from decimal import Decimal
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
-
