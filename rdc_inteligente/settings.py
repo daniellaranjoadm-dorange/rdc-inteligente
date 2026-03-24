@@ -4,9 +4,18 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'change-me-in-production')
-DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if h.strip()]
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me-in-production")
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
+IS_TEST = "test" in os.sys.argv
+
+raw_allowed_hosts = os.getenv("ALLOWED_HOSTS", "")
+env_allowed_hosts = [h.strip() for h in raw_allowed_hosts.split(",") if h.strip()]
+default_local_hosts = ["127.0.0.1", "localhost", "testserver"]
+
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = env_allowed_hosts or default_local_hosts
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -116,12 +125,31 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# ===== Segurança para produção =====
 
-# ===== Seguran?a para produ??o =====
-SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "True").lower() == "true"
-SESSION_COOKIE_SECURE = os.getenv("DJANGO_SESSION_COOKIE_SECURE", "True").lower() == "true"
-CSRF_COOKIE_SECURE = os.getenv("DJANGO_CSRF_COOKIE_SECURE", "True").lower() == "true"
-SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
-SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", "True").lower() == "true"
-SECURE_HSTS_PRELOAD = os.getenv("DJANGO_SECURE_HSTS_PRELOAD", "True").lower() == "true"
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = (not DEBUG and not IS_TEST) and (
+    os.getenv("DJANGO_SECURE_SSL_REDIRECT", "True").lower() == "true"
+)
+
+SESSION_COOKIE_SECURE = (not DEBUG and not IS_TEST) and (
+    os.getenv("DJANGO_SESSION_COOKIE_SECURE", "True").lower() == "true"
+)
+
+CSRF_COOKIE_SECURE = (not DEBUG and not IS_TEST) and (
+    os.getenv("DJANGO_CSRF_COOKIE_SECURE", "True").lower() == "true"
+)
+
+SECURE_HSTS_SECONDS = 0 if (DEBUG or IS_TEST) else int(
+    os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000")
+)
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = (not DEBUG and not IS_TEST) and (
+    os.getenv("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", "True").lower() == "true"
+)
+
+SECURE_HSTS_PRELOAD = (not DEBUG and not IS_TEST) and (
+    os.getenv("DJANGO_SECURE_HSTS_PRELOAD", "True").lower() == "true"
+)
+
+# Só faz sentido atrás de proxy reverso em produção
+SECURE_PROXY_SSL_HEADER = None if (DEBUG or IS_TEST) else ("HTTP_X_FORWARDED_PROTO", "https")
