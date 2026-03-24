@@ -1,4 +1,5 @@
 from django.urls import path
+app_name = "rdc"
 from rdc.views import *
 
 # ===== BASE =====
