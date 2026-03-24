@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -116,7 +117,7 @@ SIMPLE_JWT = {
 
 RDC_TEMPLATE_PATH = BASE_DIR.parent / "RDC - MODELO.xlsx"
 
-# Limites de upload/formulários
+# Limites de upload/formulÃ¡rios
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 20000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400
 DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
@@ -125,7 +126,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# ===== Segurança para produção =====
+# ===== SeguranÃ§a para produÃ§Ã£o =====
 
 SECURE_SSL_REDIRECT = (not DEBUG and not IS_TEST) and (
     os.getenv("DJANGO_SECURE_SSL_REDIRECT", "True").lower() == "true"
@@ -151,5 +152,8 @@ SECURE_HSTS_PRELOAD = (not DEBUG and not IS_TEST) and (
     os.getenv("DJANGO_SECURE_HSTS_PRELOAD", "True").lower() == "true"
 )
 
-# Só faz sentido atrás de proxy reverso em produção
+# SÃ³ faz sentido atrÃ¡s de proxy reverso em produÃ§Ã£o
 SECURE_PROXY_SSL_HEADER = None if (DEBUG or IS_TEST) else ("HTTP_X_FORWARDED_PROTO", "https")
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
