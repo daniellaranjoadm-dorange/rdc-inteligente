@@ -11,6 +11,8 @@ class RoleRequiredMixin:
     allowed_roles = []
 
     def dispatch(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
         if not request.user.is_authenticated:
             return super().dispatch(request, *args, **kwargs)
 
@@ -34,6 +36,8 @@ class RDCEditableMixin:
     """
 
     def dispatch(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
         rdc = getattr(self, "rdc", None)
         obj = None
 
