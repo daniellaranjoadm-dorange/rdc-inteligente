@@ -1,6 +1,10 @@
 from django.urls import path
 
 from rdc.views import (
+    RDOExportView,
+    RDOView,
+    RDCDashboardHomeView,
+    RDCMontagemView,
     RDCValidacoesView,
     RDCImportarFuncionariosAlocacaoView,
     
@@ -131,4 +135,24 @@ urlpatterns += [
 
 urlpatterns += [
     path("<int:pk>/validacoes/", RDCValidacoesView.as_view(), name="rdc-validacoes"),
+]
+
+
+urlpatterns += [
+    path("novo/", RDCMontagemView.as_view(), name="rdc-create"),
+]
+
+
+urlpatterns += [
+    path("dashboard/", RDCDashboardHomeView.as_view(), name="rdc-dashboard"),
+]
+
+
+urlpatterns += [
+    path("rdo/", RDOView.as_view(), name="rdc-rdo"),
+]
+
+
+urlpatterns += [
+    path("rdo/exportar/<str:tipo>/", RDOExportView.as_view(), name="rdc-rdo-exportar"),
 ]
