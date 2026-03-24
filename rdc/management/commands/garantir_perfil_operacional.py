@@ -10,9 +10,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("username", type=str)
+        parser.add_argument("--funcionario-id", type=int, dest="funcionario_id", default=None)
 
     def handle(self, *args, **options):
         username = options["username"]
+        funcionario_id = options["funcionario_id"]
         User = get_user_model()
 
         try:
@@ -20,7 +22,13 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             raise CommandError(f"Usuario nao encontrado: {username}")
 
-        funcionario = Funcionario.objects.first()
+        if funcionario_id is not None:
+            try:
+                funcionario = Funcionario.objects.get(pk=funcionario_id)
+            except Funcionario.DoesNotExist:
+                raise CommandError(f"Funcionario nao encontrado: {funcionario_id}")
+        else:
+            funcionario = Funcionario.objects.first()
 
         if not funcionario:
             raise CommandError("Nenhum funcionario encontrado no sistema.")
@@ -33,14 +41,23 @@ class Command(BaseCommand):
             },
         )
 
+        campos_para_atualizar = []
+
+        if perfil.funcionario_id != funcionario.id:
+            perfil.funcionario = funcionario
+            campos_para_atualizar.append("funcionario")
+
         if not perfil.ativo:
             perfil.ativo = True
-            perfil.save(update_fields=["ativo"])
+            campos_para_atualizar.append("ativo")
+
+        if campos_para_atualizar:
+            perfil.save(update_fields=campos_para_atualizar)
 
         acao = "criado" if created else "atualizado"
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Perfil operacional {acao} com sucesso para: {username}"
+                f"Perfil operacional {acao} com sucesso para: {username} (funcionario_id={funcionario.id})"
             )
         )
