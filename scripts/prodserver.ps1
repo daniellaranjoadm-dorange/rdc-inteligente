@@ -5,4 +5,4 @@ $env:DJANGO_CSRF_COOKIE_SECURE="False"
 $env:ALLOWED_HOSTS="127.0.0.1,localhost"
 
 python manage.py collectstatic --noinput
-gunicorn rdc_inteligente.wsgi:application --bind 127.0.0.1:8001 --workers 3 --timeout 120
+python -m gunicorn rdc_inteligente.wsgi:application --bind 127.0.0.1:8001 --workers 3 --timeout 120
