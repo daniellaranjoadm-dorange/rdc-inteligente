@@ -1,5 +1,6 @@
 ﻿from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
+
+from core.exceptions import ContextualPermissionDenied
 
 
 class AuthenticatedTemplateMixin(LoginRequiredMixin):
@@ -19,12 +20,19 @@ class RoleRequiredMixin:
         perfil = getattr(request.user, "perfil_acesso", None)
 
         if not perfil:
-            raise PermissionDenied("Usuário sem perfil operacional definido.")
+            raise ContextualPermissionDenied(
+                code="missing_profile",
+                message="Usuário sem perfil operacional definido.",
+            )
 
         if self.allowed_roles and perfil.role not in self.allowed_roles:
-            raise PermissionDenied("Você não tem permissão para acessar esta funcionalidade.")
+            raise ContextualPermissionDenied(
+                code="insufficient_role",
+                message="Você não tem permissão para acessar esta funcionalidade.",
+            )
 
         return super().dispatch(request, *args, **kwargs)
+
 
 class RDCEditableMixin:
     """
@@ -38,6 +46,7 @@ class RDCEditableMixin:
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
+
         rdc = getattr(self, "rdc", None)
         obj = None
 
@@ -54,10 +63,9 @@ class RDCEditableMixin:
                     rdc = getattr(obj, "rdc", None)
 
         if rdc and getattr(rdc, "is_fechado", False):
-            raise PermissionDenied("RDC está fechado e não pode ser alterado.")
+            raise ContextualPermissionDenied(
+                code="rdc_closed",
+                message="RDC está fechado e não pode ser alterado.",
+            )
 
         return super().dispatch(request, *args, **kwargs)
-
-
-
-

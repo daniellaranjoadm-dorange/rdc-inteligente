@@ -1,62 +1,101 @@
 ﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="utf-8">
-    <title>Acesso negado</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo|default:"Acesso negado" }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 40px;
+            margin: 0;
+            padding: 0;
+            background: #f7f7f7;
             color: #222;
-            background: #f5f5f5;
         }
-        .box {
-            max-width: 720px;
+
+        .wrap {
+            max-width: 760px;
+            margin: 60px auto;
             padding: 24px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
+
+        .card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
         h1 {
             margin-top: 0;
             margin-bottom: 16px;
+            font-size: 28px;
         }
+
         p {
             line-height: 1.6;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
-        .mensagem {
-            padding: 12px 16px;
-            background: #fff8e1;
-            border: 1px solid #f0d98c;
+
+        .acao {
+            background: #f3f4f6;
+            border-left: 4px solid #999;
+            padding: 14px 16px;
             border-radius: 6px;
+            margin-top: 20px;
+            margin-bottom: 24px;
         }
-        a {
+
+        .botoes {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .botao {
+            display: inline-block;
             text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            color: #222;
+            background: #fff;
+        }
+
+        .botao:hover {
+            background: #f0f0f0;
+        }
+
+        .codigo {
+            margin-top: 24px;
+            color: #666;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1>Acesso negado</h1>
+    <div class="wrap">
+        <div class="card">
+            <h1>{{ titulo|default:"Acesso negado" }}</h1>
 
-        <p class="mensagem">
-            {{ mensagem|default:"Você não tem permissão para acessar esta área." }}
-        </p>
+            <p>{{ mensagem|default:"Você não tem permissão para acessar esta área." }}</p>
 
-        <p>
-            Verifique se seu usuário possui o perfil e as permissões necessárias para executar esta ação.
-        </p>
+            <div class="acao">
+                <strong>Como resolver:</strong>
+                <div>{{ acao|default:"Verifique se seu usuário possui o perfil e as permissões necessárias para executar esta ação." }}</div>
+            </div>
 
-        <p>
-            Se você acredita que deveria ter acesso, entre em contato com o responsável pelo sistema.
-        </p>
+            <div class="botoes">
+                <a href="javascript:history.back()" class="botao">Voltar</a>
+                <a href="/" class="botao">Ir para o início</a>
+            </div>
 
-        <p>
-            <a href="javascript:history.back()">Voltar para a página anterior</a>
-        </p>
+            {% if code %}
+                <div class="codigo">Código: {{ code }}</div>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>
-
