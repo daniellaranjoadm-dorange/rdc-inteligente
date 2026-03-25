@@ -16,3 +16,12 @@
 
 
 
+
+
+{% if object %}
+<div style="margin-bottom: 16px;">
+    <a href="{% url 'download_erros_importacao' object.pk %}" class="btn btn-danger">
+        ⬇ Baixar erros da importação
+    </a>
+</div>
+{% endif %}

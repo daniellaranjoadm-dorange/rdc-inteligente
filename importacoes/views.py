@@ -47,3 +47,21 @@ def download_modelo_funcionarios(request):
     writer.writerow(['123', 'João Silva', 'Empresa Exemplo', 'Operador'])
 
     return response
+
+
+from django.http import HttpResponse
+from importacoes.models import ImportacaoArquivo
+
+def download_erros_importacao(request, pk):
+    importacao = ImportacaoArquivo.objects.get(pk=pk)
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="erros_importacao_{importacao.pk}.csv"'
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['linha', 'campo', 'mensagem'])
+
+    for erro in importacao.erros.all():
+        writer.writerow([erro.linha, erro.campo, erro.mensagem])
+
+    return response
