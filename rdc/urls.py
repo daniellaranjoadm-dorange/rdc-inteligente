@@ -1,5 +1,6 @@
 ﻿from django.urls import path
 from rdc.views import *
+from rdc.views import RDCApontamentoCreateView
 
 # ===== BASE =====
 base_patterns = [
@@ -55,7 +56,7 @@ funcionario_patterns = [
 
 # ===== APONTAMENTOS =====
 apontamento_patterns = [
-    path("<int:pk>/apontamentos/novo/", RDCApontamentoLoteView.as_view(), name="rdc-apontamento-create"),
+    path("<int:pk>/apontamentos/novo/", RDCApontamentoCreateView.as_view(), name="rdc-apontamento-create"),
     path("<int:pk>/apontamentos/<int:pk2>/inline-update/", RDCApontamentoInlineUpdateView.as_view(), name="rdc-apontamento-inline-update"),
     path("<int:pk>/apontamentos/lote/", RDCApontamentoLoteView.as_view(), name="rdc-apontamento-lote"),
 ]

@@ -1,4 +1,5 @@
 ﻿from django.contrib import messages
+import csv
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -35,3 +36,14 @@ class ImportacaoCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
+
+
+def download_modelo_funcionarios(request):
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="modelo_funcionarios.csv"'
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['matricula', 'nome', 'empresa', 'funcao'])
+    writer.writerow(['123', 'João Silva', 'Empresa Exemplo', 'Operador'])
+
+    return response

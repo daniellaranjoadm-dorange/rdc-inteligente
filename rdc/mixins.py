@@ -12,6 +12,10 @@ from rdc.models import RDC
 
 
 class RDCInlineUpdateBaseView(RoleRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
     allowed_roles = ["admin", "supervisor"]
     model = None
     allowed_fields = ()
@@ -102,3 +106,8 @@ class RDCInlineUpdateBaseView(RoleRequiredMixin, View):
 
 
 
+
+
+    def handle_no_permission(self):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied

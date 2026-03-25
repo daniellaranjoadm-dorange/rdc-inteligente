@@ -4,6 +4,7 @@ from core.exceptions import ContextualPermissionDenied
 
 
 class AuthenticatedTemplateMixin(LoginRequiredMixin):
+    raise_exception = True
     login_url = "/accounts/login/"
     redirect_field_name = "next"
 
@@ -94,3 +95,8 @@ class RDCEditableMixin:
             )
 
         return super().dispatch(request, *args, **kwargs)
+
+
+    def handle_no_permission(self):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied

@@ -719,6 +719,11 @@ class RDCMontagemView(AuthenticatedTemplateMixin, RoleRequiredMixin, FormView):
         ]
         return context
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rdc'] = self.rdc
+        return context
+
     def form_valid(self, form):
         contexto = self._contexto_guiado()
         resumo = resumo_montagem_rdc(contexto)
@@ -1819,6 +1824,11 @@ class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMi
         get_target_id=lambda self, request, *a, **k: self.get_object().pk,
         detail_func=lambda self, request, *a, **k: "RDC atualizado",
     )
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rdc'] = self.rdc
+        return context
+
     def form_valid(self, form):
         return super().form_valid(form)
 class RDCDeleteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, DeleteView):
@@ -1906,6 +1916,11 @@ class RDCNestedBaseMixin(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEdita
 class RDCNestedCreateView(RDCNestedBaseMixin, CreateView):
     template_name = "rdc/item_form.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rdc'] = self.rdc
+        return context
+
     def form_valid(self, form):
         form.instance.rdc = self.rdc
         response = super().form_valid(form)
@@ -1919,6 +1934,11 @@ class RDCNestedUpdateView(RDCNestedBaseMixin, UpdateView):
 
     def get_queryset(self):
         return self.model.objects.filter(rdc=self.rdc)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rdc'] = self.rdc
+        return context
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -1935,6 +1955,11 @@ class RDCNestedDeleteView(RDCNestedBaseMixin, DeleteView):
 
     def get_queryset(self):
         return self.model.objects.filter(rdc=self.rdc)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rdc'] = self.rdc
+        return context
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -2103,6 +2128,17 @@ class RDCFuncionarioLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCE
 
 
 class RDCApontamentoLoteView(AuthenticatedTemplateMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
+    def post(self, request, *args, **kwargs):
+        raise PermissionDenied
+
+    def post(self, request, *args, **kwargs):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
@@ -2117,10 +2153,22 @@ class RDCApontamentoLoteView(AuthenticatedTemplateMixin, View):
             messages.warning(request, "Selecione uma Ação válida para apontamentos.")
 
         _atualizar_validacoes_automaticas(rdc)
-        return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#apontamentos")
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
 
 
 class RDCValidacaoLoteView(AuthenticatedTemplateMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
+    def post(self, request, *args, **kwargs):
+        raise PermissionDenied
+
+    def post(self, request, *args, **kwargs):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
@@ -2135,7 +2183,7 @@ class RDCValidacaoLoteView(AuthenticatedTemplateMixin, View):
             messages.warning(request, "Selecione uma Ação válida para validaçÃµes.")
 
         _atualizar_validacoes_automaticas(rdc)
-        return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#validacoes")
+        from django.core.exceptions import PermissionDenied
 
 
 class RDCAtividadeBuscaView(AuthenticatedTemplateMixin, View):
@@ -2485,3 +2533,28 @@ class RDCAuditoriaExportView(AuthenticatedTemplateMixin, RoleRequiredMixin, View
 
         return response
 
+
+
+class RDCApontamentoCreateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, CreateView):
+    allowed_roles = ["admin", "supervisor"]
+    model = RDCApontamento
+    form_class = RDCApontamentoForm
+    template_name = "rdc/item_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        from django.shortcuts import get_object_or_404
+        self.rdc = get_object_or_404(RDC, pk=kwargs.get("pk"))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rdc'] = self.rdc
+        return context
+
+    def form_valid(self, form):
+        form.instance.rdc = self.rdc
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        from django.urls import reverse
+        return f"{reverse('rdc-detail', kwargs={'pk': self.rdc.pk})}#apontamentos"
