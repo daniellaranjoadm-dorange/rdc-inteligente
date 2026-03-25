@@ -1,6 +1,6 @@
 ﻿import csv
 
-from cadastros.models import Funcionario, Empresa, Funcao
+from cadastros.models import Empresa, Funcao, Funcionario
 from core.services.import_base import BaseImportService
 
 
@@ -48,16 +48,33 @@ class ImportFuncionariosCSVService(BaseImportService):
         if not row.get("nome"):
             errors.append("Nome obrigatório.")
 
+        if not row.get("empresa"):
+            errors.append("Empresa obrigatória.")
+
+        if not row.get("funcao"):
+            errors.append("Função obrigatória.")
+
         return errors
 
     def process_row(self, row, index):
+        empresa_nome = row.get("empresa").strip()
+        funcao_nome = row.get("funcao").strip()
+
         empresa, _ = Empresa.objects.get_or_create(
-            nome="IMPORTACAO PADRAO"
+            nome=empresa_nome,
+            defaults={
+                "ativa": True,
+            },
         )
 
+        funcao_codigo = funcao_nome.upper().replace(" ", "_")[:30]
+
         funcao, _ = Funcao.objects.get_or_create(
-            codigo="PADRAO",
-            defaults={"nome": "Função padrão"},
+            codigo=funcao_codigo,
+            defaults={
+                "nome": funcao_nome,
+                "ativa": True,
+            },
         )
 
         obj, created = Funcionario.objects.update_or_create(
@@ -73,5 +90,7 @@ class ImportFuncionariosCSVService(BaseImportService):
         return {
             "matricula": obj.matricula,
             "nome": obj.nome,
+            "empresa": empresa.nome,
+            "funcao": funcao.nome,
             "created": created,
         }
