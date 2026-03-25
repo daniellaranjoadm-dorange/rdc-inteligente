@@ -1,27 +1,42 @@
-<div style="margin-bottom: 16px;">
-    <a href="{% url 'download_modelo_funcionarios' %}" class="btn btn-secondary">
-        ⬇ Baixar modelo CSV
-    </a>
-</div>
-
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<h1 class="mb-3">Nova importação</h1>
-<div class="alert alert-info">
-    <strong>Cronograma:</strong> para importar com contexto completo, use em <strong>ObservAções</strong> algo como:<br>
-    <code>projeto=RDCPLA; projeto_nome=RDC PLA; disciplina=ELE; disciplina_nome=Elétrica; area=GENYARD; area_descricao=Generator Yard; turno=integral; unidade=UN</code>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h1 class="mb-1">Nova importação</h1>
+            <p class="text-muted mb-0">
+                Envie um arquivo para processamento e use o modelo CSV para evitar erros de estrutura.
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'download_modelo_funcionarios' %}" class="btn btn-outline-secondary">
+                Baixar modelo CSV
+            </a>
+            {% if object %}
+            <a href="{% url 'download_erros_importacao' object.pk %}" class="btn btn-outline-danger">
+                Baixar erros da importação
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Dica de contexto:</strong> para importar com contexto completo, use em
+        <strong>Observações</strong> algo como:<br>
+        <code>projeto=RDCPLA; projeto_nome=RDC PLA; disciplina=ELE; disciplina_nome=Elétrica; area=GENYARD; area_descricao=Generator Yard; turno=integral; unidade=UN</code>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-flex gap-2 flex-wrap mt-3">
+                    <button class="btn btn-success" type="submit">Enviar e processar</button>
+                    <a href="{% url 'importacoes-home' %}" class="btn btn-secondary">Voltar</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-<form method="post" enctype="multipart/form-data" class="card table-card card-body">{% csrf_token %}{{ form.as_p }}<button class="btn btn-success" type="submit">Enviar e processar</button></form>
 {% endblock %}
-
-
-
-
-
-{% if object %}
-<div style="margin-bottom: 16px;">
-    <a href="{% url 'download_erros_importacao' object.pk %}" class="btn btn-danger">
-        ⬇ Baixar erros da importação
-    </a>
-</div>
-{% endif %}
