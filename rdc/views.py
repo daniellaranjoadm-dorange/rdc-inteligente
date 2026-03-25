@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from accounts.models import AuditLog
 from core.mixins import AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin
+from core.exceptions import ContextualPermissionDenied
 from core.audit import registrar_auditoria, traduzir_acao_auditoria, cor_acao_auditoria
 from core.audit_decorators import audit_action
 from django.utils import timezone
@@ -2101,16 +2102,7 @@ class RDCFuncionarioLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCE
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#funcionarios")
 
 
-class RDCApontamentoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
-    def get(self, request, *args, **kwargs):
-        from django.http import HttpResponse
-        return HttpResponse('OK')
-    allowed_roles = ["admin", "supervisor"]
-
-    def dispatch(self, request, *args, **kwargs):
-        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
-        return super().dispatch(request, *args, **kwargs)
-
+class RDCApontamentoLoteView(AuthenticatedTemplateMixin, View):
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
@@ -2128,13 +2120,7 @@ class RDCApontamentoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCE
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#apontamentos")
 
 
-class RDCValidacaoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, View):
-    allowed_roles = ["admin", "supervisor"]
-
-    def dispatch(self, request, *args, **kwargs):
-        self.rdc = get_object_or_404(RDC, pk=kwargs["pk"])
-        return super().dispatch(request, *args, **kwargs)
-
+class RDCValidacaoLoteView(AuthenticatedTemplateMixin, View):
     def post(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         ids = request.POST.getlist("ids")
@@ -2144,13 +2130,12 @@ class RDCValidacaoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEdi
 
         if acao == "excluir":
             qs.delete()
-            messages.success(request, f"{total} validação(ões) excluída(s).")
+            messages.success(request, f"{total} validAção(Ãµes) excluída(s).")
         else:
-            messages.warning(request, "Selecione uma Ação válida para validações.")
+            messages.warning(request, "Selecione uma Ação válida para validaçÃµes.")
 
         _atualizar_validacoes_automaticas(rdc)
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#validacoes")
-
 
 
 class RDCAtividadeBuscaView(AuthenticatedTemplateMixin, View):
@@ -2223,7 +2208,7 @@ def _resolve_funcionario_autofill_payload(rdc, funcionario, equipe_id=None, equi
         alertas.append("Não foi possível validar a catraca do dia.")
 
     if not equipe_id:
-        alertas.append("Equipe/alocação não encontrada automaticamente para o contexto do RDC.")
+        alertas.append("Equipe/alocAção não encontrada automaticamente para o contexto do RDC.")
 
     motivo_bloqueio = " ; ".join(alertas)
     hora_normal = Decimal("8.00")
@@ -2415,39 +2400,12 @@ class RDCImportarFuncionariosAlocacaoView(AuthenticatedTemplateMixin, View):
             criados += 1
 
         _atualizar_validacoes_automaticas(rdc)
-        messages.success(request, f"{criados} funcionário(s) importado(s) da alocação.")
+        messages.success(request, f"{criados} funcionário(s) importado(s) da alocAção.")
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#funcionarios")
 
 
 class RDCExportView(RDCExportarModeloView):
     pass
-
-class RDCAuditoriaExportView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
-    allowed_roles = ["admin", "supervisor"]
-
-    def get(self, request, pk):
-        rdc = get_object_or_404(RDC, pk=pk)
-        logs = AuditLog.objects.filter(
-            target_model="RDC",
-            target_id=str(rdc.pk),
-        ).select_related("user").order_by("-created_at")
-
-        arquivo = exportar_auditoria_rdc_para_excel(rdc, logs)
-
-        registrar_auditoria(
-            user=request.user,
-            action="exportar_auditoria_rdc",
-            target_model="RDC",
-            target_id=rdc.pk,
-            detail=f"Exportou auditoria do RDC {rdc.pk}",
-        )
-
-        return FileResponse(
-            open(arquivo, "rb"),
-            as_attachment=True,
-            filename=arquivo.name,
-        )
-
 
 
 
@@ -2461,93 +2419,46 @@ class RDCDashboardHomeView(AuthenticatedTemplateMixin, TemplateView):
 
 
 
-class RDCAuditoriaDashboardView(AuthenticatedTemplateMixin, RoleRequiredMixin, TemplateView):
-    allowed_roles = ["admin", "supervisor"]
-    template_name = "rdc/auditoria_dashboard.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        logs = AuditLog.objects.filter(target_model="RDC").select_related("user")
-
-        context["total_eventos"] = logs.count()
-
-        acoes_top = list(
-            logs.values("action")
-            .annotate(total=Count("id"))
-            .order_by("-total", "action")[:10]
-        )
-        for item in acoes_top:
-            item["rotulo"] = traduzir_acao_auditoria(item["action"])
-            item["cor"] = cor_acao_auditoria(item["action"])
-        context["acoes_top"] = acoes_top
-
-        context["usuarios_top"] = list(
-            logs.values("user__username")
-            .annotate(total=Count("id"))
-            .order_by("-total", "user__username")[:10]
-        )
-
-        context["rdcs_top"] = list(
-            logs.values("target_id")
-            .annotate(total=Count("id"), ultima_data=Max("created_at"))
-            .order_by("-total", "-ultima_data")[:10]
-        )
-
-        return context
-
-
-
-class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
-    allowed_roles = ["admin", "supervisor"]
-
-    @audit_action(
-        action="workflow_rdc",
-        target_model="RDC",
-        get_target_id=lambda self, request, *a, **k: request.POST.get("rdc_id") or request.POST.get("pk") or k.get("pk") or "",
-        detail_func=lambda self, request, *a, **k: f"Ação '{request.POST.get('action')}' aplicada",
-    )
+class RDCWorkflowView(AuthenticatedTemplateMixin, View):
     def post(self, request, *args, **kwargs):
-        rdc_id = request.POST.get("rdc_id") or kwargs.get("pk")
-        action = (
-            request.POST.get("action")
-            or request.POST.get("acao")
-            or ""
-        ).strip()
-        observacao = (
-            request.POST.get("observacao")
-            or request.POST.get("justificativa_fechamento")
-            or request.POST.get("justificativa_reabertura")
-            or ""
-        ).strip()
+        rdc = get_object_or_404(RDC, pk=kwargs["pk"])
+        acao = (request.POST.get("acao") or "").strip()
+        observacao = (request.POST.get("observacao") or "").strip()
 
-        rdc = get_object_or_404(RDC, pk=rdc_id)
-
-        result = process_rdc_workflow_action(
+        resultado = process_rdc_workflow_action(
             rdc,
-            action=action,
+            action=acao,
             user=request.user,
             observacao=observacao,
         )
 
-        if result.get("ok"):
-            messages.success(request, result.get("message", "Ação executada com sucesso."))
+        if resultado["ok"]:
+            messages.success(request, resultado["message"])
         else:
-            level = (result.get("level") or "").lower()
-            msg = result.get("message", "Não foi possível executar a ação.")
-            if level == "warning":
-                messages.warning(request, msg)
-            elif level == "error":
-                messages.error(request, msg)
-            else:
-                messages.info(request, msg)
+            messages.warning(request, resultado["message"])
 
-        return redirect(request.META.get("HTTP_REFERER", reverse("rdc-detail", kwargs={"pk": rdc.pk})))
+        if observacao and not resultado["ok"]:
+            messages.info(request, f"ObservAção: {observacao}")
+        return redirect("rdc-detail", pk=rdc.pk)
 
 
-from decimal import Decimal
-from django.http import JsonResponse
-from django.core.exceptions import ValidationError
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+class RDCAuditoriaExportView(View):
+    def get(self, request, *args, **kwargs):
+        from django.http import HttpResponse
+        return HttpResponse('Exportação de auditoria temporariamente indisisponível.')
 
