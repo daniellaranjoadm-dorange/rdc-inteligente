@@ -718,12 +718,6 @@ class RDCMontagemView(AuthenticatedTemplateMixin, RoleRequiredMixin, FormView):
             {"label": "Programação semanal", "url": "/admin/rdc/programacaosemanal/"},
         ]
         return context
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['rdc'] = self.rdc
-        return context
-
     def form_valid(self, form):
         contexto = self._contexto_guiado()
         resumo = resumo_montagem_rdc(contexto)
