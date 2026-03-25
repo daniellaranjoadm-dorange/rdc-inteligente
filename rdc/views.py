@@ -2419,7 +2419,9 @@ class RDCDashboardHomeView(AuthenticatedTemplateMixin, TemplateView):
 
 
 
-class RDCWorkflowView(AuthenticatedTemplateMixin, View):
+class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
+    required_permission = "rdc.workflow.execute"
+
     def post(self, request, *args, **kwargs):
         rdc = get_object_or_404(RDC, pk=kwargs["pk"])
         acao = (request.POST.get("acao") or "").strip()

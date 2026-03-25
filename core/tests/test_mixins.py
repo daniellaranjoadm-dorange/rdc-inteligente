@@ -17,8 +17,12 @@ class _RoleAdminView(RoleRequiredMixin, _BaseOkView):
     allowed_roles = ["admin"]
 
 
-class _PermissionView(RoleRequiredMixin, _BaseOkView):
+class _AuditPermissionView(RoleRequiredMixin, _BaseOkView):
     required_permission = "rdc.audit.export"
+
+
+class _WorkflowPermissionView(RoleRequiredMixin, _BaseOkView):
+    required_permission = "rdc.workflow.execute"
 
 
 class _RDCClosedByAttrView(RDCEditableMixin, _BaseOkView):
@@ -117,7 +121,7 @@ class RoleRequiredMixinTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"ok")
 
-    def test_denies_when_specific_permission_is_missing(self):
+    def test_denies_when_audit_permission_is_missing(self):
         request = self.factory.get("/")
         request.user = SimpleNamespace(
             is_superuser=False,
@@ -129,7 +133,7 @@ class RoleRequiredMixinTests(SimpleTestCase):
         )
 
         with self.assertRaises(ContextualPermissionDenied) as exc:
-            _PermissionView.as_view()(request)
+            _AuditPermissionView.as_view()(request)
 
         self.assertEqual(exc.exception.code, "permission_denied")
         self.assertEqual(
@@ -137,7 +141,7 @@ class RoleRequiredMixinTests(SimpleTestCase):
             "Seu perfil não possui a permissão necessária para executar esta ação.",
         )
 
-    def test_allows_when_specific_permission_exists_in_permissions(self):
+    def test_allows_when_audit_permission_exists_in_permissions(self):
         request = self.factory.get("/")
         request.user = SimpleNamespace(
             is_superuser=False,
@@ -148,12 +152,12 @@ class RoleRequiredMixinTests(SimpleTestCase):
             ),
         )
 
-        response = _PermissionView.as_view()(request)
+        response = _AuditPermissionView.as_view()(request)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"ok")
 
-    def test_allows_when_specific_permission_exists_in_permissoes(self):
+    def test_allows_when_audit_permission_exists_in_permissoes(self):
         request = self.factory.get("/")
         request.user = SimpleNamespace(
             is_superuser=False,
@@ -164,7 +168,39 @@ class RoleRequiredMixinTests(SimpleTestCase):
             ),
         )
 
-        response = _PermissionView.as_view()(request)
+        response = _AuditPermissionView.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
+
+    def test_denies_when_workflow_permission_is_missing(self):
+        request = self.factory.get("/")
+        request.user = SimpleNamespace(
+            is_superuser=False,
+            is_authenticated=True,
+            perfil_acesso=SimpleNamespace(
+                role="admin",
+                permissions={"rdc.audit.export"},
+            ),
+        )
+
+        with self.assertRaises(ContextualPermissionDenied) as exc:
+            _WorkflowPermissionView.as_view()(request)
+
+        self.assertEqual(exc.exception.code, "permission_denied")
+
+    def test_allows_when_workflow_permission_exists(self):
+        request = self.factory.get("/")
+        request.user = SimpleNamespace(
+            is_superuser=False,
+            is_authenticated=True,
+            perfil_acesso=SimpleNamespace(
+                role="admin",
+                permissions={"rdc.workflow.execute"},
+            ),
+        )
+
+        response = _WorkflowPermissionView.as_view()(request)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"ok")
