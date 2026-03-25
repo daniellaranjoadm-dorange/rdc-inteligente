@@ -9,8 +9,20 @@ from core.services.import_funcionarios import ImportFuncionariosCSVService
 class ImportFuncionariosView(View):
     template_name = "core/import_funcionarios.html"
 
+    def get_context_data(self):
+        jobs = ImportJob.objects.filter(
+            tipo=ImportJob.TIPO_FUNCIONARIOS,
+        ).order_by("-criado_em")[:10]
+
+        ultimo_job = jobs[0] if jobs else None
+
+        return {
+            "jobs": jobs,
+            "ultimo_job": ultimo_job,
+        }
+
     def get(self, request):
-        return render(request, self.template_name)
+        return render(request, self.template_name, self.get_context_data())
 
     def post(self, request):
         arquivo = request.FILES.get("arquivo")
@@ -28,6 +40,11 @@ class ImportFuncionariosView(View):
 
         ImportFuncionariosCSVService(job).run()
 
-        messages.success(request, f"Importação finalizada com status: {job.get_status_display()}")
+        messages.success(
+            request,
+            f"Importação finalizada com status: {job.get_status_display()}",
+        )
 
-        return redirect("import-funcionarios")
+        context = self.get_context_data()
+        context["ultimo_job"] = job
+        return render(request, self.template_name, context)

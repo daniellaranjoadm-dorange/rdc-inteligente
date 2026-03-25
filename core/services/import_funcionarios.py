@@ -10,10 +10,33 @@ class ImportFuncionariosCSVService(BaseImportService):
         if not self.import_job.arquivo:
             return []
 
-        decoded_file = self.import_job.arquivo.read().decode("utf-8").splitlines()
-        reader = csv.DictReader(decoded_file)
+        raw_content = self.import_job.arquivo.read()
 
-        return list(reader)
+        try:
+            text = raw_content.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            text = raw_content.decode("latin1")
+
+        content = text.splitlines()
+
+        sample = "\n".join(content[:5])
+        try:
+            dialect = csv.Sniffer().sniff(sample)
+            delimiter = dialect.delimiter
+        except Exception:
+            delimiter = ","
+
+        reader = csv.DictReader(content, delimiter=delimiter)
+
+        rows = []
+        for row in reader:
+            normalized_row = {}
+            for key, value in row.items():
+                normalized_key = (key or "").replace("\ufeff", "").strip().lower()
+                normalized_row[normalized_key] = value.strip() if isinstance(value, str) else value
+            rows.append(normalized_row)
+
+        return rows
 
     def validate_row(self, row, index):
         errors = []
@@ -27,9 +50,6 @@ class ImportFuncionariosCSVService(BaseImportService):
         return errors
 
     def process_row(self, row, index):
-        # Por enquanto só simula processamento
-        # Depois aqui vamos integrar com model real
-
         return {
             "matricula": row.get("matricula"),
             "nome": row.get("nome"),
