@@ -10,6 +10,23 @@ class AuthenticatedTemplateMixin(LoginRequiredMixin):
 
 class RoleRequiredMixin:
     allowed_roles = []
+    required_permission = None
+
+    def _get_profile_permissions(self, perfil):
+        permissions = getattr(perfil, "permissions", None)
+        if permissions is None:
+            permissions = getattr(perfil, "permissoes", None)
+
+        if permissions is None:
+            return set()
+
+        if isinstance(permissions, str):
+            return {permissions}
+
+        try:
+            return set(permissions)
+        except TypeError:
+            return set()
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_superuser:
@@ -30,6 +47,14 @@ class RoleRequiredMixin:
                 code="insufficient_role",
                 message="Você não tem permissão para acessar esta funcionalidade.",
             )
+
+        if self.required_permission:
+            permissions = self._get_profile_permissions(perfil)
+            if self.required_permission not in permissions:
+                raise ContextualPermissionDenied(
+                    code="permission_denied",
+                    message="Seu perfil não possui a permissão necessária para executar esta ação.",
+                )
 
         return super().dispatch(request, *args, **kwargs)
 

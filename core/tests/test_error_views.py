@@ -79,3 +79,24 @@ class Error403Tests(SimpleTestCase):
             status_code=403,
         )
         self.assertContains(response, "codigo_desconhecido", status_code=403)
+
+    def test_logs_access_denied_event(self):
+        request = self.factory.get("/rota-protegida/")
+        request.user = type(
+            "User",
+            (),
+            {"id": 99, "username": "daniel"},
+        )()
+
+        with self.assertLogs("core.error_views", level="WARNING") as captured:
+            response = erro_403(
+                request,
+                ContextualPermissionDenied(
+                    code="missing_profile",
+                    message="Usuário sem perfil operacional definido.",
+                ),
+            )
+
+        self.assertEqual(response.status_code, 403)
+        joined = "\n".join(captured.output)
+        self.assertIn("access_denied", joined)

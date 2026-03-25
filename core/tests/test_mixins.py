@@ -17,6 +17,10 @@ class _RoleAdminView(RoleRequiredMixin, _BaseOkView):
     allowed_roles = ["admin"]
 
 
+class _PermissionView(RoleRequiredMixin, _BaseOkView):
+    required_permission = "rdc.audit.export"
+
+
 class _RDCClosedByAttrView(RDCEditableMixin, _BaseOkView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -109,6 +113,58 @@ class RoleRequiredMixinTests(SimpleTestCase):
         )
 
         response = _RoleAdminView.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
+
+    def test_denies_when_specific_permission_is_missing(self):
+        request = self.factory.get("/")
+        request.user = SimpleNamespace(
+            is_superuser=False,
+            is_authenticated=True,
+            perfil_acesso=SimpleNamespace(
+                role="admin",
+                permissions={"rdc.view"},
+            ),
+        )
+
+        with self.assertRaises(ContextualPermissionDenied) as exc:
+            _PermissionView.as_view()(request)
+
+        self.assertEqual(exc.exception.code, "permission_denied")
+        self.assertEqual(
+            str(exc.exception),
+            "Seu perfil não possui a permissão necessária para executar esta ação.",
+        )
+
+    def test_allows_when_specific_permission_exists_in_permissions(self):
+        request = self.factory.get("/")
+        request.user = SimpleNamespace(
+            is_superuser=False,
+            is_authenticated=True,
+            perfil_acesso=SimpleNamespace(
+                role="admin",
+                permissions={"rdc.audit.export", "rdc.view"},
+            ),
+        )
+
+        response = _PermissionView.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
+
+    def test_allows_when_specific_permission_exists_in_permissoes(self):
+        request = self.factory.get("/")
+        request.user = SimpleNamespace(
+            is_superuser=False,
+            is_authenticated=True,
+            perfil_acesso=SimpleNamespace(
+                role="admin",
+                permissoes={"rdc.audit.export"},
+            ),
+        )
+
+        response = _PermissionView.as_view()(request)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"ok")
