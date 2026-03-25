@@ -9,6 +9,101 @@
         <a class="btn btn-primary" href="{% url 'importacoes-create' %}">Nova importação</a>
     </div>
 
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            {% if importacao_destacada and importacao_destacada.total_erros > 0 %}
+    <div class="card shadow-sm mb-4 border-danger">
+        <div class="card-body">
+            <h5 class="mb-3 text-danger">Erros encontrados na importação</h5>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Linha</th>
+                            <th>Campo</th>
+                            <th>Mensagem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for erro in erros_preview %}
+                        <tr>
+                            <td>{{ erro.linha }}</td>
+                            <td>{{ erro.campo }}</td>
+                            <td>{{ erro.mensagem }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-2 text-end">
+                <a href="{% url 'download_erros_importacao' importacao_destacada.pk %}" class="btn btn-sm btn-outline-danger">
+                    Baixar todos os erros
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Total</div>
+                    <div class="fs-3 fw-bold">{{ totais.total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-success">
+                <div class="card-body">
+                    <div class="text-muted small">Concluídas</div>
+                    <div class="fs-3 fw-bold text-success">{{ totais.concluidas }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <div class="text-muted small">Com erro</div>
+                    <div class="fs-3 fw-bold text-danger">{{ totais.com_erro }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <div class="text-muted small">Pendentes / processando</div>
+                    <div class="fs-3 fw-bold text-warning">{{ totais.em_andamento }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="d-flex gap-2 flex-wrap align-items-end">
+                <div>
+                    <label class="form-label mb-1">Arquivo</label>
+                    <input type="text" name="q" value="{{ busca_arquivo }}" class="form-control" placeholder="Buscar por nome do arquivo">
+                </div>
+                <div>
+                    <label class="form-label mb-1">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="pendente" {% if filtro_status == "pendente" %}selected{% endif %}>Pendente</option>
+                        <option value="processando" {% if filtro_status == "processando" %}selected{% endif %}>Processando</option>
+                        <option value="concluida" {% if filtro_status == "concluida" %}selected{% endif %}>Concluída</option>
+                        <option value="erro" {% if filtro_status == "erro" %}selected{% endif %}>Erro</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+                    <a href="{% url 'importacoes-home' %}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {% if importacao_destacada %}
     <div class="alert alert-info border mb-4">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">

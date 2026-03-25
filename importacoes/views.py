@@ -18,18 +18,43 @@ class ImportacoesHomeView(AuthenticatedTemplateMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return ImportacaoArquivo.objects.select_related("criado_por").prefetch_related("erros").order_by("-created_at")
+        qs = ImportacaoArquivo.objects.select_related("criado_por").prefetch_related("erros").order_by("-created_at")
+        status = self.request.GET.get("status", "").strip()
+        q = self.request.GET.get("q", "").strip()
+
+        if status:
+            qs = qs.filter(status=status)
+
+        if q:
+            qs = qs.filter(arquivo__icontains=q)
+
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         highlight_id = self.request.GET.get("highlight")
+        status = self.request.GET.get("status", "").strip()
+        q = self.request.GET.get("q", "").strip()
+
+        base_qs = ImportacaoArquivo.objects.all()
 
         context["importacao_destacada"] = None
         if highlight_id:
             try:
-                context["importacao_destacada"] = ImportacaoArquivo.objects.prefetch_related("erros").get(pk=highlight_id)
+                importacao = ImportacaoArquivo.objects.prefetch_related("erros").get(pk=highlight_id)
+                context["importacao_destacada"] = importacao
+                context["erros_preview"] = importacao.erros.all()[:10]
             except ImportacaoArquivo.DoesNotExist:
                 context["importacao_destacada"] = None
+
+        context["filtro_status"] = status
+        context["busca_arquivo"] = q
+        context["totais"] = {
+            "total": base_qs.count(),
+            "concluidas": base_qs.filter(status="concluida").count(),
+            "com_erro": base_qs.filter(status="erro").count(),
+            "em_andamento": base_qs.filter(status__in=["pendente", "processando"]).count(),
+        }
 
         return context
 
