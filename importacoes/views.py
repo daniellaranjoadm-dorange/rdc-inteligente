@@ -20,6 +20,19 @@ class ImportacoesHomeView(AuthenticatedTemplateMixin, ListView):
     def get_queryset(self):
         return ImportacaoArquivo.objects.select_related("criado_por").prefetch_related("erros").order_by("-created_at")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        highlight_id = self.request.GET.get("highlight")
+
+        context["importacao_destacada"] = None
+        if highlight_id:
+            try:
+                context["importacao_destacada"] = ImportacaoArquivo.objects.prefetch_related("erros").get(pk=highlight_id)
+            except ImportacaoArquivo.DoesNotExist:
+                context["importacao_destacada"] = None
+
+        return context
+
 
 class ImportacaoCreateView(LoginRequiredMixin, CreateView):
     model = ImportacaoArquivo
@@ -32,8 +45,8 @@ class ImportacaoCreateView(LoginRequiredMixin, CreateView):
         form.instance.criado_por = self.request.user
         response = super().form_valid(form)
         executar_importacao(self.object.pk)
-        messages.success(self.request, "ImportAção recebida e processada.")
-        return response
+        messages.success(self.request, "Importação recebida e processada.")
+        return redirect(f"{self.success_url}?highlight={self.object.pk}")
 
 
 

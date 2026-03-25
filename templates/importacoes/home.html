@@ -9,6 +9,30 @@
         <a class="btn btn-primary" href="{% url 'importacoes-create' %}">Nova importação</a>
     </div>
 
+    {% if importacao_destacada %}
+    <div class="alert alert-info border mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h5 class="mb-2">Última importação processada</h5>
+                <div><strong>ID:</strong> {{ importacao_destacada.pk }}</div>
+                <div><strong>Arquivo:</strong> {{ importacao_destacada.nome_arquivo }}</div>
+                <div><strong>Status:</strong> {{ importacao_destacada.get_status_display }}</div>
+                <div><strong>Erros:</strong> {{ importacao_destacada.total_erros }}</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                {% if importacao_destacada.total_erros > 0 %}
+                <a href="{% url 'download_erros_importacao' importacao_destacada.pk %}" class="btn btn-outline-danger">
+                    Baixar erros
+                </a>
+                {% endif %}
+                <a href="{% url 'importacoes-create' %}" class="btn btn-primary">
+                    Nova importação
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
