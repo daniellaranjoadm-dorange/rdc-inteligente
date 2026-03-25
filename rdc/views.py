@@ -2457,7 +2457,9 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, View):
 
 
 
-class RDCAuditoriaExportView(AuthenticatedTemplateMixin, View):
+class RDCAuditoriaExportView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
+    required_permission = "rdc.audit.export"
+
     def get(self, request, pk):
         rdc = get_object_or_404(RDC, pk=pk)
         logs = AuditLog.objects.filter(
