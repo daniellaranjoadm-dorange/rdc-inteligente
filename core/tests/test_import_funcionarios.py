@@ -8,6 +8,12 @@ from core.services.import_funcionarios import ImportFuncionariosCSVService
 
 class ImportFuncionariosCSVTests(TestCase):
     def test_import_csv_basic(self):
+        Empresa.objects.create(nome="Empresa X", ativa=True)
+        Empresa.objects.create(nome="Empresa Y", ativa=True)
+
+        Funcao.objects.create(nome="Eletricista", codigo="ELETRICISTA", ativa=True)
+        Funcao.objects.create(nome="Encanador", codigo="ENCANADOR", ativa=True)
+
         csv_content = (
             "matricula,nome,empresa,funcao\n"
             "001,Fulano,Empresa X,Eletricista\n"
@@ -33,8 +39,8 @@ class ImportFuncionariosCSVTests(TestCase):
         self.assertEqual(result.status, ImportJob.STATUS_CONCLUIDO)
 
         self.assertEqual(Funcionario.objects.count(), 2)
-        self.assertEqual(Empresa.objects.count(), 2)
-        self.assertEqual(Funcao.objects.count(), 2)
+        self.assertEqual(Empresa.objects.count(), 2)  # pré-cadastradas
+        self.assertEqual(Funcao.objects.count(), 2)  # pré-cadastradas
 
     def test_import_csv_requires_empresa_and_funcao(self):
         csv_content = (

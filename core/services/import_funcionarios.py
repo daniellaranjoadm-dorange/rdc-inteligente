@@ -60,22 +60,15 @@ class ImportFuncionariosCSVService(BaseImportService):
         empresa_nome = row.get("empresa").strip()
         funcao_nome = row.get("funcao").strip()
 
-        empresa, _ = Empresa.objects.get_or_create(
-            nome=empresa_nome,
-            defaults={
-                "ativa": True,
-            },
-        )
+        try:
+            empresa = Empresa.objects.get(nome=empresa_nome)
+        except Empresa.DoesNotExist:
+            raise ValueError(f'Empresa "{empresa_nome}" não cadastrada.')
 
-        funcao_codigo = funcao_nome.upper().replace(" ", "_")[:30]
-
-        funcao, _ = Funcao.objects.get_or_create(
-            codigo=funcao_codigo,
-            defaults={
-                "nome": funcao_nome,
-                "ativa": True,
-            },
-        )
+        try:
+            funcao = Funcao.objects.get(nome=funcao_nome)
+        except Funcao.DoesNotExist:
+            raise ValueError(f'Função "{funcao_nome}" não cadastrada.')
 
         obj, created = Funcionario.objects.update_or_create(
             matricula=row.get("matricula"),
