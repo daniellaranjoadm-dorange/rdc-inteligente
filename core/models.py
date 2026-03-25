@@ -7,3 +7,5 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
+
+from .models_importacao import ImportJob

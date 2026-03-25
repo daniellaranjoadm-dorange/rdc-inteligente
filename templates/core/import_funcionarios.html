@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Importar Funcionários</title>
+</head>
+<body>
+    <h1>Importar Funcionários (CSV)</h1>
+
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="arquivo" required>
+        <button type="submit">Importar</button>
+    </form>
+</body>
+</html>
