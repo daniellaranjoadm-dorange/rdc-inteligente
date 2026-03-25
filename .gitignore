@@ -1,21 +1,7 @@
-﻿# Python
+﻿.env
+staticfiles/
+logs/
+*.sqlite3
 __pycache__/
 *.pyc
-*.pyo
-
-# Virtualenv
-.venv*/
-env/
-
-# Django
-db.sqlite3
-/media/
-
-# VSCode
-.vscode/
-
-# Logs
-*.log
-
-# Windows
-Thumbs.db
+.venv_rdc/
