@@ -2457,8 +2457,27 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, View):
 
 
 
-class RDCAuditoriaExportView(View):
-    def get(self, request, *args, **kwargs):
-        from django.http import HttpResponse
-        return HttpResponse('Exportação de auditoria temporariamente indisisponível.')
+class RDCAuditoriaExportView(AuthenticatedTemplateMixin, View):
+    def get(self, request, pk):
+        rdc = get_object_or_404(RDC, pk=pk)
+        logs = AuditLog.objects.filter(
+            target_model="RDC",
+            target_id=str(rdc.pk),
+        ).select_related("user").order_by("created_at")
+
+        output = exportar_auditoria_rdc_para_excel(rdc, logs)
+
+        if hasattr(output, "getvalue"):
+            content = output.getvalue()
+        else:
+            with open(output, "rb") as f:
+                content = f.read()
+
+        response = HttpResponse(
+            content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="auditoria_rdc_{rdc.pk}.xlsx"'
+
+        return response
 
