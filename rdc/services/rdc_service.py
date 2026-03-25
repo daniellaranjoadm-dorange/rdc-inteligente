@@ -204,7 +204,7 @@ def _peso_funcao(nome_funcao):
         return 3
     if "ENGENHEIRO" in txt:
         return 4
-    if "TÃ‰CNICO" in txt or "TECNICO" in txt:
+    if "TÉCNICO" in txt or "TECNICO" in txt:
         return 5
     if "MONTADOR" in txt or "SOLDADOR" in txt or "PINTOR" in txt or "ELETRICISTA" in txt:
         return 6
@@ -751,7 +751,7 @@ def preencher_quadro_climatico(ws, clima_info):
     emoji = visual["emoji"]
     fill = visual["fill"]
 
-    cel_manha = _localizar_celula_por_texto(ws, "MANHÃƒ")
+    cel_manha = _localizar_celula_por_texto(ws, "MANHÃ")
     cel_tarde = _localizar_celula_por_texto(ws, "TARDE")
     cel_noite = _localizar_celula_por_texto(ws, "NOITE")
     cel_sol = _localizar_celula_por_texto(ws, "SOL")
@@ -798,7 +798,7 @@ def preencher_header_limpo(ws, rdc, clima):
 
     dias_semana_pt = {
         "Monday": "SEGUNDA-FEIRA",
-        "Tuesday": "TERÃ‡A-FEIRA",
+        "Tuesday": "TERÇA-FEIRA",
         "Wednesday": "QUARTA-FEIRA",
         "Thursday": "QUINTA-FEIRA",
         "Friday": "SEXTA-FEIRA",
@@ -814,7 +814,7 @@ def preencher_header_limpo(ws, rdc, clima):
             pass
 
     titulo = _resolver_celula_editavel(ws, "G1")
-    titulo.value = "RELATÃ“RIO DIÃRIO DE CAMPO - RDC"
+    titulo.value = "RELATÓRIO DIÃRIO DE CAMPO - RDC"
     _aplicar_estilo_celula(
         titulo,
         fill=FILL_HEADER_BOX,
@@ -961,15 +961,15 @@ def preencher_bloco_restricoes_elite(ws, rdc):
         bloqueios = rdc.validacoes.filter(status=StatusValidacaoChoices.BLOQUEIO).count()
         infos = rdc.validacoes.filter(status=StatusValidacaoChoices.INFO).count()
         restricoes.extend([
-            f"ValidaçÃµes registradas: {total}",
+            f"Validações registradas: {total}",
             f"Alertas: {alertas}",
             f"Bloqueios: {bloqueios}",
-            f"InformaçÃµes: {infos}",
+            f"Informações: {infos}",
         ])
     else:
-        restricoes.append("Sem validaçÃµes registradas")
+        restricoes.append("Sem validações registradas")
 
-    ws["A36"] = f"RESTRIÃ‡Ã•ES / QUALIDADE DE DADOS: {' | '.join(restricoes)}"
+    ws["A36"] = f"RESTRIÇÕES / QUALIDADE DE DADOS: {' | '.join(restricoes)}"
     _aplicar_estilo_celula(ws["A36"], fill=FILL_ALERTA, bold=True, size=9, wrap=True)
 
 
@@ -979,7 +979,7 @@ def preencher_bloco_assinatura_elite(ws, rdc):
         f"Responsável pela gerAção: {getattr(getattr(rdc, 'criado_por', None), 'username', 'sistema')}",
         f"Supervisor de referência: {rdc.supervisor.nome if getattr(rdc, 'supervisor_id', None) else SUPERVISOR_PADRAO_NOME}",
     ]
-    ws["A37"] = "ASSINATURA / EMISSÃƒO: " + " | ".join(assinatura)
+    ws["A37"] = "ASSINATURA / EMISSÃO: " + " | ".join(assinatura)
     _aplicar_estilo_celula(ws["A37"], fill=FILL_INFO, bold=True, size=9, wrap=True)
 
 
@@ -1150,3 +1150,5 @@ from .rdc_montagem_service import (
     montar_rdc_pre_preenchido,
     montar_rdc_simulado_por_cronograma,
 )
+
+

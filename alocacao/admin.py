@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 
 from alocacao.models import FuncionarioProjeto, HistogramaPlanejado
 
@@ -15,3 +15,4 @@ class HistogramaPlanejadoAdmin(admin.ModelAdmin):
     list_filter = ("data", "turno", "projeto", "disciplina", "equipe", "funcao")
     search_fields = ("equipe__nome", "funcao__nome", "area_local__descricao")
     autocomplete_fields = ("projeto", "area_local", "disciplina", "equipe", "funcao")
+

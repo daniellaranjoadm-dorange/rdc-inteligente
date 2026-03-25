@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -57,3 +57,4 @@ class RDCWorkflowUITests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Workflow do RDC")
+

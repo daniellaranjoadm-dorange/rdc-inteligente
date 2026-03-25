@@ -117,3 +117,4 @@ class Command(BaseCommand):
                 created += 1
         self.stdout.write(self.style.SUCCESS(f'ProgramAção semanal importada com sucesso. Registros: {created}'))
 
+

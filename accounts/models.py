@@ -42,3 +42,4 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.created_at:%d/%m/%Y %H:%M} - {self.action} - {self.target_model}#{self.target_id}"
+

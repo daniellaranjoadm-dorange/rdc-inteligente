@@ -80,7 +80,7 @@ class TipoImportacaoChoices:
     CHOICES = (
         (FUNCIONARIOS, "Funcionários"),
         (CATRACA, "Catraca"),
-        (ALOCACOES, "AlocaçÃµes"),
+        (ALOCACOES, "Alocações"),
         (CRONOGRAMA, "Cronograma"),
         (HISTOGRAMA, "Histograma"),
     )
@@ -100,4 +100,5 @@ class StatusImportacaoChoices:
         (CONCLUIDO_COM_ERROS, "Concluído com erros"),
         (ERRO, "Erro"),
     )
+
 

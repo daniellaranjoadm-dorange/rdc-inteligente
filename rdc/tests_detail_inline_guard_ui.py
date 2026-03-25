@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -58,3 +58,4 @@ class RDCDetailInlineGuardUITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "fetch(url")
         self.assertContains(response, "Edi??o r?pida temporariamente indispon?vel nesta vers?o.")
+

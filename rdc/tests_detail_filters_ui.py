@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -57,6 +57,9 @@ class RDCDetailFiltersUITests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Atividades filtradas")
-        self.assertContains(response, "Funcion?rios filtrados")
+        self.assertContains(response, "Funcionários filtrados")
         self.assertContains(response, "Apontamentos filtrados")
-        self.assertContains(response, "Valida??es filtradas")
+        self.assertContains(response, "Validações filtradas")
+
+
+

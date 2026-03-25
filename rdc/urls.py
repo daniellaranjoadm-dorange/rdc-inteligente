@@ -1,4 +1,4 @@
-from django.urls import path
+Ôªøfrom django.urls import path
 from rdc.views import *
 
 # ===== BASE =====
@@ -44,7 +44,7 @@ atividade_patterns = [
     path("<int:pk>/importar-atividades-cronograma/", RDCImportarAtividadesCronogramaView.as_view(), name="rdc-importar-atividades-cronograma"),
 ]
 
-# ===== FUNCION¡RIOS =====
+# ===== FUNCION√ÅRIOS =====
 funcionario_patterns = [
     path("<int:pk>/funcionarios/novo/", RDCFuncionarioLoteView.as_view(), name="rdc-funcionario-create"),
     path("<int:pk>/funcionarios/<int:pk2>/inline-update/", RDCFuncionarioInlineUpdateView.as_view(), name="rdc-funcionario-inline-update"),
@@ -60,7 +60,7 @@ apontamento_patterns = [
     path("<int:pk>/apontamentos/lote/", RDCApontamentoLoteView.as_view(), name="rdc-apontamento-lote"),
 ]
 
-# ===== VALIDA«’ES =====
+# ===== VALIDA√á√ïES =====
 validacao_patterns = [
     path("<int:pk>/validacoes/", RDCValidacoesView.as_view(), name="rdc-validacoes"),
     path("<int:pk>/validacoes/novo/", RDCValidacaoLoteView.as_view(), name="rdc-validacao-create"),
@@ -88,3 +88,4 @@ urlpatterns = (
     + validacao_patterns
     + extra_patterns
 )
+

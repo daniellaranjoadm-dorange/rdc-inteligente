@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 
 from core.choices import TurnoChoices
 from core.models import TimeStampedModel
@@ -26,3 +26,4 @@ class AtividadeCronograma(TimeStampedModel):
 
     def __str__(self):
         return f"{self.codigo_atividade} - {self.descr_atividade}"
+

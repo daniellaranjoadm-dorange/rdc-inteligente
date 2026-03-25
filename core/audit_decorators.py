@@ -42,3 +42,4 @@ def audit_action(action, target_model="RDC", get_target_id=None, detail_func=Non
         return wrapper
 
     return decorator
+

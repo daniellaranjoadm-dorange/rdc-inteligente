@@ -61,3 +61,4 @@ class Command(BaseCommand):
                 f"Perfil operacional {acao} com sucesso para: {username} (funcionario_id={funcionario.id})"
             )
         )
+

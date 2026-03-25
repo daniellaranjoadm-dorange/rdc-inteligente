@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -69,3 +69,4 @@ class RDCDeleteLockTests(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 403)
         self.assertTrue(RDCAtividade.objects.filter(pk=self.atividade.pk).exists())
+

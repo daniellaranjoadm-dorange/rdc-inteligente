@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -73,3 +73,4 @@ class RDCStatusLockTests(TestCase):
         url = reverse("rdc-apontamento-create", kwargs={"pk": self.rdc.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
+

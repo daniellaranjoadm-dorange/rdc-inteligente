@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -123,3 +123,4 @@ class RDCLoteLockTests(TestCase):
         response = self.client.post(url, data={"ids": [self.validacao.pk], "acao": "excluir"})
         self.assertEqual(response.status_code, 403)
         self.assertTrue(RDCValidacao.objects.filter(pk=self.validacao.pk).exists())
+

@@ -184,3 +184,4 @@ def resumo_montagem_rdc(contexto):
         'intervalo_semana': f"{semana.get('data_inicio_semana').strftime('%d/%m/%Y')} a {semana.get('data_fim_semana').strftime('%d/%m/%Y')}" if semana and semana.get('data_inicio_semana') and semana.get('data_fim_semana') else '-',
         'origem_semana': 'Semana de planejamento carregada do calendário' if semana else 'Semana calculada sem calendário carregado',
     }
+

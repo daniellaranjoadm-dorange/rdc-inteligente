@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='criado em')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='atualizado em')),
-                ('tipo', models.CharField(choices=[('funcionarios', 'Funcionários'), ('catraca', 'Catraca'), ('alocacoes', 'AlocaçÃµes'), ('cronograma', 'Cronograma'), ('histograma', 'Histograma')], max_length=30)),
+                ('tipo', models.CharField(choices=[('funcionarios', 'Funcionários'), ('catraca', 'Catraca'), ('alocacoes', 'Alocações'), ('cronograma', 'Cronograma'), ('histograma', 'Histograma')], max_length=30)),
                 ('arquivo', models.FileField(upload_to='importacoes/')),
                 ('status', models.CharField(choices=[('pendente', 'Pendente'), ('processando', 'Processando'), ('concluido', 'Concluído'), ('concluido_com_erros', 'Concluído com erros'), ('erro', 'Erro')], default='pendente', max_length=30)),
                 ('iniciado_em', models.DateTimeField(blank=True, null=True)),
@@ -46,4 +46,5 @@ class Migration(migrations.Migration):
             },
         ),
     ]
+
 

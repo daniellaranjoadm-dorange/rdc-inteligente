@@ -18,3 +18,4 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Arquivo gerado em: {caminho}"))
 
 
+

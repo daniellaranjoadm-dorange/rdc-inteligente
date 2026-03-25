@@ -1,4 +1,4 @@
-from django.conf import settings
+﻿from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
@@ -59,3 +59,4 @@ class ImportacaoErro(models.Model):
 
     def __str__(self):
         return f"{self.importacao.nome_arquivo} - linha {self.linha}"
+

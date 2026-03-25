@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 
 from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario, RDCValidacao, RDCAuditoria, PerfilOperacionalUsuario, CalendarioPlanejamento, ProgramacaoSemanal
 
@@ -82,3 +82,4 @@ class RDCAuditoriaAdmin(admin.ModelAdmin):
     list_filter = ("acao", "secao", "created_at")
     search_fields = ("resumo", "detalhe")
     autocomplete_fields = ("rdc", "usuario")
+

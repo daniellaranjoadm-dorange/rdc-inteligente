@@ -130,3 +130,4 @@ class HomeDashboardService:
             "apontamentos_obs_hoje": apontamentos_hoje.exclude(observacao="").count(),
             "top_alertas": [],
         }
+

@@ -21,7 +21,7 @@ class ImportacaoErroInline(admin.TabularInline):
     verbose_name_plural = "Erros da importAção"
 
 
-@admin.action(description="Limpar erros das importaçÃµes selecionadas")
+@admin.action(description="Limpar erros das importações selecionadas")
 def limpar_erros_das_importacoes(modeladmin, request, queryset):
     total = 0
     for importacao in queryset:
@@ -30,13 +30,13 @@ def limpar_erros_das_importacoes(modeladmin, request, queryset):
     modeladmin.message_user(request, f"{total} erro(s) removido(s).", level=messages.SUCCESS)
 
 
-@admin.action(description="Reprocessar importaçÃµes selecionadas")
+@admin.action(description="Reprocessar importações selecionadas")
 def reprocessar_importacoes(modeladmin, request, queryset):
     total = 0
     for importacao in queryset:
         executar_importacao(importacao.id)
         total += 1
-    modeladmin.message_user(request, f"{total} importAção(Ãµes) reprocessada(s).", level=messages.SUCCESS)
+    modeladmin.message_user(request, f"{total} importAção(ões) reprocessada(s).", level=messages.SUCCESS)
 
 
 @admin.register(ImportacaoArquivo)
@@ -107,7 +107,7 @@ class ImportacaoArquivoAdmin(admin.ModelAdmin):
 
     def render_change_form(self, request, context, *args, **kwargs):
         context["adminform"].form.fields["observacoes"].help_text = (
-            "Resumo do processamento. Use os botÃµes abaixo para reprocessar ou limpar erros."
+            "Resumo do processamento. Use os botões abaixo para reprocessar ou limpar erros."
         )
         return super().render_change_form(request, context, *args, **kwargs)
 
@@ -163,4 +163,5 @@ class ImportacaoErroAdmin(admin.ModelAdmin):
     @admin.display(description="Mensagem")
     def mensagem_curta(self, obj: ImportacaoErro) -> str:
         return obj.mensagem[:140] + ("..." if len(obj.mensagem) > 140 else "")
+
 

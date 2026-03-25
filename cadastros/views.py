@@ -96,7 +96,7 @@ class EmpresaCreateView(BaseCadastroCreateView):
 
 class FuncaoListView(BaseCadastroListView):
     model = Funcao
-    titulo = "FunçÃµes"
+    titulo = "Funções"
     botao_novo_url = reverse_lazy("funcao-create")
     campos_busca = ("codigo", "nome")
 
@@ -131,5 +131,6 @@ class EquipeCreateView(BaseCadastroCreateView):
     model = Equipe
     form_class = EquipeForm
     titulo = "Nova equipe"
+
 
 

@@ -184,3 +184,4 @@ def build_rdc_detail_context(rdc, *, user=None) -> dict[str, Any]:
         "auditorias_recent": auditorias_recent,
     }
 
+

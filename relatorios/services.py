@@ -1,4 +1,4 @@
-from rdc.models import RDC
+﻿from rdc.models import RDC
 
 def montar_contexto_pdf_rdc(rdc: RDC) -> dict:
     return {
@@ -14,3 +14,4 @@ def montar_contexto_pdf_rdc(rdc: RDC) -> dict:
         "funcionarios": list(rdc.funcionarios.values()),
         "validacoes": list(rdc.validacoes.values()),
     }
+

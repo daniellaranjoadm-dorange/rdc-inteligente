@@ -104,3 +104,4 @@ class Command(BaseCommand):
             f"Calendário importado com sucesso para {projeto.codigo}. Semanas: {len(codigos)} | registros/dias: {total_registros}"
         ))
 
+

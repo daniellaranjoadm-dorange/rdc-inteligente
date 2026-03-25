@@ -1,4 +1,4 @@
-from django.urls import path
+﻿from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from cadastros.api import AreaLocalViewSet, DisciplinaViewSet, EquipeViewSet, FuncionarioViewSet, ProjetoViewSet
@@ -18,3 +18,4 @@ router.register("rdc-validacoes", RDCValidacaoViewSet, basename="api-rdc-validac
 urlpatterns = router.urls + [
     path("rdc/montar/", RDCMontagemAPIView.as_view(), name="api-rdc-montar"),
 ]
+

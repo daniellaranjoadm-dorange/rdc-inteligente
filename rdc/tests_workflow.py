@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -99,3 +99,4 @@ class RDCWorkflowServiceTests(TestCase):
 
         self.assertFalse(result["ok"])
         self.assertEqual(self.rdc.status, "rascunho")
+

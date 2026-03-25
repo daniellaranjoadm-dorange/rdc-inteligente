@@ -1,4 +1,4 @@
-from django.urls import path
+﻿from django.urls import path
 
 from cadastros.views import (
     AreaLocalCreateView, AreaLocalListView, DisciplinaCreateView, DisciplinaListView, EmpresaCreateView, EmpresaListView,
@@ -22,3 +22,4 @@ urlpatterns = [
     path("equipes/", EquipeListView.as_view(), name="equipe-list"),
     path("equipes/nova/", EquipeCreateView.as_view(), name="equipe-create"),
 ]
+

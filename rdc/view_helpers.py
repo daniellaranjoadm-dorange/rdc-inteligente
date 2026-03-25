@@ -264,3 +264,4 @@ def _montagem_health(contexto, resumo):
         "semana_ok": semana_ok,
         "resumo": resumo,
     }
+

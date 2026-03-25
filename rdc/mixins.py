@@ -1,4 +1,4 @@
-def rdc_is_editable(rdc):
+﻿def rdc_is_editable(rdc):
     return getattr(rdc, "status", "") != "fechado"
 
 
@@ -99,5 +99,6 @@ class RDCInlineUpdateBaseView(RoleRequiredMixin, View):
         }
         payload.update(self.extra_payload())
         return JsonResponse(payload)
+
 
 

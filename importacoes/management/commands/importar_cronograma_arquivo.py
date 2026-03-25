@@ -39,3 +39,4 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"ImportAção #{importacao.pk} finalizada com status: {importacao.status}"))
         self.stdout.write(importacao.observacoes)
 
+

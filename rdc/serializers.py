@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 
 from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao
 
@@ -25,3 +25,4 @@ class RDCSerializer(serializers.ModelSerializer):
     class Meta:
         model = RDC
         fields = "__all__"
+

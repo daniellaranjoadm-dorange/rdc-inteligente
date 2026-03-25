@@ -1,4 +1,4 @@
-from django import forms
+﻿from django import forms
 
 from core.choices import TipoImportacaoChoices
 from importacoes.models import ImportacaoArquivo
@@ -15,3 +15,4 @@ class ImportacaoArquivoForm(forms.ModelForm):
             css = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{css} form-control".strip()
         self.fields["tipo"].choices = TipoImportacaoChoices.CHOICES
+

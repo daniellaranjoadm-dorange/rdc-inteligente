@@ -333,3 +333,4 @@ def montar_rdc_simulado_por_cronograma(
         referencia=f"{contexto['projeto'].codigo}-{contexto['disciplina'].codigo}-{contexto['area_local'].codigo}",
     )
     return rdc, contexto
+

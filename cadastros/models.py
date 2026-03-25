@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+﻿from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
@@ -125,7 +125,8 @@ class Equipe(TimeStampedModel):
 
     def clean(self):
         if self.encarregado and self.encarregado.empresa_id != self.empresa_id:
-            raise ValidationError("O encarregado deve pertencer à mesma empresa da equipe.")
+            raise ValidationError("O encarregado deve pertencer Ã  mesma empresa da equipe.")
 
     def __str__(self):
         return f"{self.codigo} - {self.nome}"
+

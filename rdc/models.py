@@ -609,7 +609,7 @@ class ProgramacaoSemanal(TimeStampedModel):
 
     class Meta:
         verbose_name = "ProgramAção semanal"
-        verbose_name_plural = "ProgramaçÃµes semanais"
+        verbose_name_plural = "Programações semanais"
         ordering = ("projeto__codigo", "semana_codigo", "codigo_atividade")
         indexes = [
             models.Index(fields=("projeto", "semana_codigo"), name="idx_prog_proj_semana"),
@@ -618,4 +618,5 @@ class ProgramacaoSemanal(TimeStampedModel):
 
     def __str__(self):
         return f"{self.projeto} / {self.semana_codigo} / {self.codigo_atividade}"
+
 

@@ -1,4 +1,4 @@
-import uuid
+﻿import uuid
 
 from django.db import migrations, models
 from django.utils import timezone

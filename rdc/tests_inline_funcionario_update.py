@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -132,3 +132,4 @@ class RDCInlineFuncionarioUpdateTests(TestCase):
         url = reverse("rdc-funcionario-inline-update", kwargs={"pk": self.rdc_aberto.pk, "pk2": self.funcionario_aberto.pk})
         response = self.client.post(url, data={"field": "nome", "value": "Tentativa indevida"})
         self.assertEqual(response.status_code, 400)
+

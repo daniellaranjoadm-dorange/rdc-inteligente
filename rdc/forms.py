@@ -53,7 +53,7 @@ class RDCMontagemForm(BootstrapFormMixin, forms.Form):
         self.fields["area_local"].queryset = AreaLocal.objects.filter(ativo=True).order_by("descricao")
         self.fields["disciplina"].queryset = Disciplina.objects.filter(ativo=True).order_by("nome")
         self.fields["equipe"].queryset = Equipe.objects.filter(ativa=True).order_by("nome")
-        self.fields["equipe"].help_text = "Opcional. Ajuda a priorizar alocAção e programAção semanal."
+        self.fields["equipe"].help_text = "Opcional. Ajuda a priorizar alocação e programação semanal."
 
         projeto = contexto.get("projeto")
         disciplina = contexto.get("disciplina")
@@ -249,7 +249,7 @@ class RDCFuncionarioForm(BootstrapFormMixin, forms.ModelForm):
             self.fields["funcionario"].queryset = qs.order_by("nome")
             self.fields["funcionario"].help_text = (
                 "Pesquise por matrícula ou nome. O sistema completa função, equipe, HH e catraca. "
-                "Se faltar equipe, alocAção ou catraca, o sistema avisa e mantém a informAção visível."
+                "Se faltar equipe, alocação ou catraca, o sistema avisa e mantém a informação visível."
             )
 
         if "matricula" in self.fields:
@@ -283,8 +283,8 @@ class RDCFuncionarioForm(BootstrapFormMixin, forms.ModelForm):
             self.fields["nome"].help_text = "Preenchido automaticamente a partir do cadastro do funcionário."
         if "equipe" in self.fields:
             self.fields["equipe"].help_text = (
-                "Tentativa de preenchimento automático pela alocAção ativa. "
-                "Se ficar vazio, selecione manualmente e revise a alocAção do funcionário."
+                "Tentativa de preenchimento automático pela alocação ativa. "
+                "Se ficar vazio, selecione manualmente e revise a alocação do funcionário."
             )
         if "funcao" in self.fields:
             self.fields["funcao"].help_text = "Preenchida automaticamente pelo cadastro do funcionário."
@@ -301,17 +301,17 @@ class RDCFuncionarioForm(BootstrapFormMixin, forms.ModelForm):
                 "Use somente quando o funcionário realmente trabalhou no dia, mas não apareceu na catraca."
             )
         if "justificativa_liberacao" in self.fields:
-            self.fields["justificativa_liberacao"].label = "Justificativa da liberAção"
+            self.fields["justificativa_liberacao"].label = "Justificativa da liberação"
             self.fields["justificativa_liberacao"].widget = forms.Textarea(attrs={"rows": 3})
-            self.fields["justificativa_liberacao"].help_text = "Obrigatória quando houver liberAção manual sem catraca."
+            self.fields["justificativa_liberacao"].help_text = "Obrigatória quando houver liberação manual sem catraca."
         if "liberado_por" in self.fields:
             self.fields["liberado_por"].disabled = True
             self.fields["liberado_por"].required = False
-            self.fields["liberado_por"].help_text = "Preenchido automaticamente ao salvar a liberAção manual."
+            self.fields["liberado_por"].help_text = "Preenchido automaticamente ao salvar a liberação manual."
         if "liberado_em" in self.fields:
             self.fields["liberado_em"].disabled = True
             self.fields["liberado_em"].required = False
-            self.fields["liberado_em"].help_text = "Preenchido automaticamente ao salvar a liberAção manual."
+            self.fields["liberado_em"].help_text = "Preenchido automaticamente ao salvar a liberação manual."
 
     def _resolve_funcionario_context(self, funcionario):
         ctx = {
@@ -348,9 +348,9 @@ class RDCFuncionarioForm(BootstrapFormMixin, forms.ModelForm):
                 if aloc:
                     ctx["equipe"] = getattr(aloc, "equipe", None)
                 else:
-                    ctx["alertas"].append("Sem alocAção ativa para o projeto/disciplina/data do RDC.")
+                    ctx["alertas"].append("Sem alocação ativa para o projeto/disciplina/data do RDC.")
         except Exception:
-            ctx["alertas"].append("Não foi possível consultar a alocAção do funcionário.")
+            ctx["alertas"].append("Não foi possível consultar a alocação do funcionário.")
 
         try:
             from acesso.models import RegistroCatraca
@@ -432,7 +432,7 @@ class RDCFuncionarioForm(BootstrapFormMixin, forms.ModelForm):
             if liberado_sem_catraca:
                 if not justificativa_liberacao:
                     raise ValidationError({
-                        "justificativa_liberacao": "Informe a justificativa da liberAção manual."
+                        "justificativa_liberacao": "Informe a justificativa da liberação manual."
                     })
                 if "elegivel" in self.fields:
                     cleaned["elegivel"] = True
@@ -574,7 +574,7 @@ class RDCApontamentoLoteRapidoForm(BootstrapFormMixin, forms.Form):
         widget=forms.SelectMultiple(attrs={"size": 8}),
     )
     horas = forms.DecimalField(max_digits=6, decimal_places=2, min_value=Decimal("0.25"), label="Horas")
-    observacao = forms.CharField(required=False, label="ObservAção", widget=forms.Textarea(attrs={"rows": 2}))
+    observacao = forms.CharField(required=False, label="Observação", widget=forms.Textarea(attrs={"rows": 2}))
 
     def __init__(self, *args, **kwargs):
         self.rdc = kwargs.pop("rdc", None)
@@ -629,7 +629,9 @@ class RDCWorkflowActionForm(BootstrapFormMixin, forms.Form):
         ],
         widget=forms.HiddenInput,
     )
-    observacao = forms.CharField(required=False, label="ObservAção", widget=forms.Textarea(attrs={"rows": 3}))
+    observacao = forms.CharField(required=False, label="Observação", widget=forms.Textarea(attrs={"rows": 3}))
     forcar = forms.BooleanField(required=False, label="Permitir Ação mesmo com bloqueios")
+
+
 
 

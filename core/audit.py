@@ -31,3 +31,4 @@ def cor_acao_auditoria(action):
         "create_rdc": "success",
     }
     return mapa.get(action, "light")
+

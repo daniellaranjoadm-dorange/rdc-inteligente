@@ -1,4 +1,4 @@
-
+﻿
 from decimal import Decimal
 
 from django.test import TestCase
@@ -172,3 +172,4 @@ class RDCInlineApontamentoUpdateTests(TestCase):
         url = reverse("rdc-apontamento-inline-update", kwargs={"pk": self.rdc_aberto.pk, "pk2": self.apontamento_aberto.pk})
         response = self.client.post(url, data={"field": "rdc_atividade", "value": "999"})
         self.assertEqual(response.status_code, 400)
+

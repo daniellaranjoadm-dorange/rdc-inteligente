@@ -245,7 +245,7 @@ def gerar_codigo_unico_funcao(nome_funcao: str) -> str:
     return codigo
 
 
-def buscar_ou_criar_funcao(nome_funcao: str, nome_padrao: str = "SEM FUNÃ‡ÃƒO") -> Funcao:
+def buscar_ou_criar_funcao(nome_funcao: str, nome_padrao: str = "SEM FUNÇÃƒO") -> Funcao:
     nome_original = (nome_funcao or "").strip() or nome_padrao
     nome_norm = normalizar_nome_comparacao(nome_original)
 
@@ -763,5 +763,6 @@ def buscar_equipe_por_nome_ou_codigo(valor: str, disciplina: Disciplina | None =
         if normalizar_texto_busca(equipe.codigo) == termo or normalizar_texto_busca(equipe.nome) == termo:
             return equipe
     return None
+
 
 

@@ -1,4 +1,4 @@
-from django.urls import path
+﻿from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import (
@@ -32,3 +32,4 @@ urlpatterns = [
     path("rdcs/<int:pk>/apontamentos/", MobileRDCApontamentoListCreateAPIView.as_view(), name="mobile-rdc-apontamentos"),
     path("rdcs/<int:pk>/apontamentos/<int:item_pk>/", MobileRDCApontamentoRetrieveUpdateDestroyAPIView.as_view(), name="mobile-rdc-apontamento-rud"),
 ]
+

@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>Acesso negado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #222;
+            background: #f5f5f5;
+        }
+        .box {
+            max-width: 720px;
+            padding: 24px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        h1 {
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+        p {
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .mensagem {
+            padding: 12px 16px;
+            background: #fff8e1;
+            border: 1px solid #f0d98c;
+            border-radius: 6px;
+        }
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Acesso negado</h1>
+
+        <p class="mensagem">
+            {{ mensagem|default:"Você não tem permissão para acessar esta área." }}
+        </p>
+
+        <p>
+            Verifique se seu usuário possui o perfil e as permissões necessárias para executar esta ação.
+        </p>
+
+        <p>
+            Se você acredita que deveria ter acesso, entre em contato com o responsável pelo sistema.
+        </p>
+
+        <p>
+            <a href="javascript:history.back()">Voltar para a página anterior</a>
+        </p>
+    </div>
+</body>
+</html>
+

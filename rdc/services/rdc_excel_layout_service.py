@@ -170,3 +170,4 @@ def ajustar_layout_topo(ws):
     ws.column_dimensions["N"].width = 16
     ws.column_dimensions["O"].width = 16
     ws.column_dimensions["P"].width = 16
+

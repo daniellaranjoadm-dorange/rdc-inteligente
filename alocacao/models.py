@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 
 from core.choices import TurnoChoices
 from core.models import TimeStampedModel

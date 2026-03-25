@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
@@ -13,5 +13,7 @@ urlpatterns = [
     path("api/", include("core.api_urls")),
 ]
 
-handler403 = 'core.views.handler403'
+handler403 = 'core.error_views.erro_403'
+
+
 

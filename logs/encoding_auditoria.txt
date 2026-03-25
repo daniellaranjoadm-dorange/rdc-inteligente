@@ -1,0 +1,515 @@
+﻿D:\RDC PLA\rdc_inteligente\rdc_inteligente\settings.py:129: # ===== Segurança para produção =====
+D:\RDC PLA\rdc_inteligente\rdc_inteligente\settings.py:155: # Só faz sentido atrás de proxy reverso em produção
+D:\RDC PLA\rdc_inteligente\core\audit_decorators.py:9: - action: nome da ação (string)
+D:\RDC PLA\rdc_inteligente\core\audit_decorators.py:10: - get_target_id: função que recebe (self, request, *args, **kwargs)
+D:\RDC PLA\rdc_inteligente\core\audit_decorators.py:12: - detail_func: função que retorna texto detalhado
+D:\RDC PLA\rdc_inteligente\core\choices.py:8: (MANHA, "Manhã"),
+D:\RDC PLA\rdc_inteligente\core\choices.py:25: (EM_REVISAO, "Em revisão"),
+D:\RDC PLA\rdc_inteligente\core\choices.py:53: (FUNCIONARIO_SEM_ALOCACAO, "Funcionário sem alocAção"),
+D:\RDC PLA\rdc_inteligente\core\choices.py:55: (FUNCAO_DIVERGENTE, "Função divergente"),
+D:\RDC PLA\rdc_inteligente\core\choices.py:83: (ALOCACOES, "Alocações"),
+D:\RDC PLA\rdc_inteligente\core\dashboard_services.py:130: "apontamentos_obs_hoje": apontamentos_hoje.exclude(observacao="").count(),
+D:\RDC PLA\rdc_inteligente\core\services.py:18: "em_revisao": "Em revisão",
+D:\RDC PLA\rdc_inteligente\core\services.py:73: apontamentos_obs_hoje = apontamentos_hoje.exclude(observacao="").count()
+D:\RDC PLA\rdc_inteligente\core\mixins.py:25: raise PermissionDenied("Você não tem permissão para acessar esta funcionalidade.")
+D:\RDC PLA\rdc_inteligente\core\mixins.py:31: Bloqueia alterações se o RDC estiver fechado.
+D:\RDC PLA\rdc_inteligente\core\mixins.py:57: raise PermissionDenied("RDC está fechado e não pode ser alterado.")
+D:\RDC PLA\rdc_inteligente\core\error_views.py:5: mensagem = str(exception) if exception else "Você não tem permissão para acessar esta área."
+D:\RDC PLA\rdc_inteligente\cadastros\migrations\0003_empresa_cadastro_pendente_empresa_observacoes_and_more.py:20: name='observacoes',
+D:\RDC PLA\rdc_inteligente\cadastros\forms.py:41: fields = ["nome", "cnpj", "ativa", "cadastro_pendente", "observacoes"]
+D:\RDC PLA\rdc_inteligente\cadastros\models.py:38: observacoes = models.TextField(blank=True)
+D:\RDC PLA\rdc_inteligente\cadastros\models.py:128: raise ValidationError("O encarregado deve pertencer Ã  mesma empresa da equipe.")
+D:\RDC PLA\rdc_inteligente\cadastros\admin.py:33: search_fields = ("nome", "cnpj", "observacoes")
+D:\RDC PLA\rdc_inteligente\cadastros\views.py:88: campos_busca = ("nome", "cnpj", "observacoes")
+D:\RDC PLA\rdc_inteligente\cadastros\views.py:107: titulo = "Nova função"
+D:\RDC PLA\rdc_inteligente\planejamento\migrations\0001_initial.py:30: ('turno', models.CharField(choices=[('manha', 'Manhã'), ('tarde', 'Tarde'), ('noite', 'Noite'), ('integral', 'Integral')], default='integral', max_length=20)),
+D:\RDC PLA\rdc_inteligente\alocacao\migrations\0001_initial.py:43: ('turno', models.CharField(choices=[('manha', 'Manhã'), ('tarde', 'Tarde'), ('noite', 'Noite'), ('integral', 'Integral')], default='integral', max_length=20)),
+D:\RDC PLA\rdc_inteligente\acesso\migrations\0001_initial.py:30: ('observacao', models.TextField(blank=True)),
+D:\RDC PLA\rdc_inteligente\acesso\models.py:29: observacao = models.TextField(blank=True)
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0001_initial.py:27: ('turno', models.CharField(choices=[('manha', 'Manhã'), ('tarde', 'Tarde'), ('noite', 'Noite'), ('integral', 'Integral')], max_length=20)),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0001_initial.py:35: ('observacoes', models.TextField(blank=True)),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0001_initial.py:36: ('status', models.CharField(choices=[('rascunho', 'Rascunho'), ('pre_preenchido', 'Pré-preenchido'), ('em_revisao', 'Em revisão'), ('aprovado', 'Aprovado'), ('fechado', 'Fechado')], default='rascunho', max_length=20)),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0001_initial.py:101: ('observacao', models.TextField(blank=True)),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0001_initial.py:114: ('tipo', models.CharField(choices=[('funcionario_sem_catraca', 'Funcionário sem catraca'), ('funcionario_sem_alocacao', 'Funcionário sem alocAção'), ('atividade_fora_cronograma', 'Atividade fora do cronograma'), ('funcao_divergente', 'Função divergente'), ('equipe_fora_histograma', 'Equipe fora do histograma'), ('duplicidade_apontamento', 'Duplicidade de apontamento')], max_length=50)),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0010_perfiloperacionalusuario_calendarioplanejamento.py:11: ('cadastros', '0003_empresa_cadastro_pendente_empresa_observacoes_and_more'),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0011_programacaosemanal.py:11: ('cadastros', '0003_empresa_cadastro_pendente_empresa_observacoes_and_more'),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0011_programacaosemanal.py:34: ('turno', models.CharField(choices=[('manha', 'Manhã'), ('tarde', 'Tarde'), ('noite', 'Noite'), ('integral', 'Integral')], default='integral', max_length=20)),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0011_programacaosemanal.py:35: ('observacao', models.TextField(blank=True)),
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0011_programacaosemanal.py:45: 'verbose_name': 'ProgramAção semanal',
+D:\RDC PLA\rdc_inteligente\rdc\migrations\0011_programacaosemanal.py:46: 'verbose_name_plural': 'Programações semanais',
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\exportar_rdc_modelo.py:16: raise CommandError(f"RDC não encontrado: {options['rdc_id']}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_calendario_planejamento.py:23: raise CommandError(f"Arquivo não encontrado: {arquivo}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:15: help = 'Importa programAção semanal a partir de planilha.'
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:26: raise CommandError(f'Arquivo não encontrado: {arquivo}')
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:29: raise CommandError('Projeto não encontrado pelo código informado.')
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:44: 'descr_atividade': ['descr_atividade', 'descrição', 'descricao'],
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:46: 'descr_subatividade': ['descr_subatividade', 'subdescrição', 'subdescricao'],
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:50: 'observacao': ['observacao', 'observAção'],
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:65: raise CommandError('Não foi possível localizar o cabeçalho da programAção semanal na planilha.')
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:114: observacao=str(row[header_map['observacao']]).strip() if header_map.get('observacao') is not None and row[header_map['observacao']] else '',
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\importar_programacao_semanal.py:118: self.stdout.write(self.style.SUCCESS(f'ProgramAção semanal importada com sucesso. Registros: {created}'))
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\montar_rdc_demo.py:25: raise CommandError(f"Projeto não encontrado: {options['projeto']}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\montar_rdc_demo.py:29: raise CommandError(f"Área/local não encontrada: {options['area']}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\montar_rdc_demo.py:33: raise CommandError(f"Disciplina não encontrada: {options['disciplina']}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\montar_rdc_demo.py:38: raise CommandError(f"Usuário não encontrado: {options['usuario']}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:21: parser.add_argument("--usuario", default="admin", help="Usuário responsável pela simulAção")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:30: raise CommandError(f"Arquivo não encontrado: {caminho}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:35: raise CommandError(f"Usuário não encontrado: {options['usuario']}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:42: self.stdout.write(self.style.SUCCESS(f"ImportAção #{importacao.pk} finalizada com status: {importacao.status}"))
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:43: self.stdout.write(importacao.observacoes)
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:49: raise CommandError(f"Projeto não encontrado no cronograma importado: {projeto_codigo}")
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:81: observacoes="",
+D:\RDC PLA\rdc_inteligente\rdc\management\commands\simular_rdc_cronograma.py:91: raise CommandError(f"Modelo RDC não encontrado: {modelo_path}")
+D:\RDC PLA\rdc_inteligente\rdc\services\dashboard_service.py:97: "apontamentos_obs_hoje": apontamentos_hoje_qs.exclude(observacao__isnull=True).exclude(observacao__exact="").count(),
+D:\RDC PLA\rdc_inteligente\rdc\services\dashboard_service.py:137: rotulo = "Atenção"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_auditoria_export_service.py:19: ws.append(["Data/Hora", "Usuário", "Ação", "Detalhe"])
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_clima_service.py:71: descricao = _traduzir_weather_code(weather_code) if weather_code is not None else "Clima não identificado"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_clima_service.py:82: descricao = "Clima não disponível"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_contexto_service.py:175: 'projeto': getattr(contexto.get('projeto'), 'codigo', '') or 'Não sugerido',
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_contexto_service.py:176: 'disciplina': getattr(contexto.get('disciplina'), 'nome', '') or 'Não sugerida',
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_contexto_service.py:177: 'area_local': getattr(contexto.get('area_local'), 'descricao', '') or 'Não sugerida',
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_contexto_service.py:178: 'encarregado': getattr(contexto.get('encarregado'), 'nome', '') or 'Não identificado',
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_contexto_service.py:179: 'equipe': getattr(contexto.get('equipe'), 'nome', '') or 'Não sugerida',
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_excel_layout_service.py:131: print("[RDC] Logo não encontrada. Verifique RDC_LOGO_PATH ou coloque a imagem em static/img.")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_exportacao_service.py:26: Função extraída do rdc_service para organização.
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_exportacao_service.py:34: raise FileNotFoundError(f"Modelo RDC não encontrado em: {template_path}")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_montagem_service.py:98: "observacao": "Gerado automaticamente na montagem assistida.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_montagem_service.py:165: comentarios=(prog.observacao or ""),
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_montagem_service.py:203: "Nenhum histograma planejado encontrado para o contexto informado. O RDC será preenchido por alocação, com catraca apenas como referência.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_montagem_service.py:243: motivo_bloqueio = "Funcionário sem alocação ativa no contexto."
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_montagem_service.py:248: f"{funcionario.nome} sem alocação ativa para o projeto/disciplina/data.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_montagem_service.py:258: f"{funcionario.nome} não possui presença de catraca em {data}.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_montagem_service.py:267: f"Função divergente para {funcionario.nome}: cadastrado em {funcionario.funcao} e histograma em {hist.funcao}.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:168: observacoes_linhas = [
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:177: observacoes_linhas.append(
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:181: observacoes_linhas.append(f"PrecipitAção: {clima['chuva_mm']} mm")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:183: observacoes_linhas.append(f"Vento: {clima['vento_kmh']} km/h")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:186: rdc.observacoes = " | ".join(observacoes_linhas)
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:188: update_fields = ["condicao_area", "observacoes"]
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:201: if "LÃDER" in txt or "LIDER" in txt:
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:218: return any(x in txt for x in ["SUPERVISOR", "LÃDER", "LIDER", "ENCARREGADO", "ENGENHEIRO"])
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:270: motivo_bloqueio="" if presente else "Sem catraca no dia - incluído por simulAção de alocAção",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:279: f"{funcionario.nome} sem catraca em {data}, incluído por simulAção de alocAção.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:375: comentarios=(prog.observacao or ""),
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:413: "Nenhum histograma planejado encontrado para o contexto informado. O RDC será preenchido por alocAção, com catraca apenas como referência.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:453: motivo_bloqueio = "Funcionário sem alocAção ativa no contexto."
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:458: f"{funcionario.nome} sem alocAção ativa para o projeto/disciplina/data.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:468: f"{funcionario.nome} não possui presença de catraca em {data}.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:477: f"Função divergente para {funcionario.nome}: cadastrado em {funcionario.funcao} e histograma em {hist.funcao}.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:592: "observacao": "Gerado automaticamente na montagem assistida.",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:712: return equipe or "Equipe não identificada"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:754: cel_manha = _localizar_celula_por_texto(ws, "MANHÃƒ")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:780: cab = _localizar_celula_por_texto(ws, "HORÃRIO DE TRABALHO")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:786: f"Intervalo: {HORARIO_INTERVALO_INICIO_PADRAO} Ã s {HORARIO_INTERVALO_FIM_PADRAO}",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:805: "Saturday": "SÃBADO",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:817: titulo.value = "RELATÓRIO DIÃRIO DE CAMPO - RDC"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:892: f"HORÃRIO: {HORARIO_INICIO_PADRAO}-{HORARIO_TERMINO_PADRAO}"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:897: f"HORÃRIO: {HORARIO_INICIO_PADRAO}-{HORARIO_TERMINO_PADRAO}"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:943: def preencher_bloco_observacoes_elite(ws, rdc, clima):
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:944: observacoes = [
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:952: ws["A35"] = f"COMENTÃRIOS EXECUTIVOS: {' | '.join(observacoes)}"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:964: f"Validações registradas: {total}",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:967: f"Informações: {infos}",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:970: restricoes.append("Sem validações registradas")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:972: ws["A36"] = f"RESTRIÇÃ•ES / QUALIDADE DE DADOS: {' | '.join(restricoes)}"
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:979: f"Responsável pela gerAção: {getattr(getattr(rdc, 'criado_por', None), 'username', 'sistema')}",
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:982: ws["A37"] = "ASSINATURA / EMISSÃƒO: " + " | ".join(assinatura)
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:991: raise FileNotFoundError(f"Modelo RDC não encontrado em: {template_path}")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:1005: print("[RDC] ExportAção seguirá sem logo.")
+D:\RDC PLA\rdc_inteligente\rdc\services\rdc_service.py:1106: preencher_bloco_observacoes_elite(ws, rdc, clima)
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:37: def process_rdc_workflow_action(rdc: RDC, *, action: str, user=None, observacao: str = "") -> dict[str, Any]:
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:39: observacao = (observacao or "").strip()
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:44: return {"ok": False, "level": "warning", "message": "RDC não pode ser enviado para revisão no status atual."}
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:47: _registrar_auditoria(rdc, user, "enviar_revisao", "RDC enviado para revisão.", observacao)
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:51: return {"ok": False, "level": "warning", "message": "Usuário sem permissão para aprovar este RDC."}
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:54: _registrar_auditoria(rdc, user, "aprovar", "RDC aprovado.", observacao)
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:58: return {"ok": False, "level": "warning", "message": "Usuário sem permissão para devolver este RDC."}
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:65: _registrar_auditoria(rdc, user, "devolver", "RDC devolvido para elaborAção.", observacao)
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:69: return {"ok": False, "level": "warning", "message": "Usuário sem permissão para reabrir este RDC."}
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:76: _registrar_auditoria(rdc, user, "reabrir", "RDC reaberto.", observacao)
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:92: _registrar_auditoria(rdc, user, "fechar", "RDC fechado.", observacao)
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:95: return {"ok": False, "level": "warning", "message": "Ação de workflow inválida."}
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:98: "enviar_revisao": "RDC enviado para revisão.",
+D:\RDC PLA\rdc_inteligente\rdc\services\workflow_service.py:100: "devolver": "RDC devolvido para elaborAção.",
+D:\RDC PLA\rdc_inteligente\rdc\admin.py:75: search_fields = ("codigo_atividade", "descr_atividade", "codigo_subatividade", "descr_subatividade", "observacao")
+D:\RDC PLA\rdc_inteligente\rdc\mixins.py:25: # convers?o simples
+D:\RDC PLA\rdc_inteligente\rdc\mixins.py:35: return "Sim" if value else "N?o"
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:56: self.fields["equipe"].help_text = "Opcional. Ajuda a priorizar alocAção e programAção semanal."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:91: self.add_error("area_local", "A área selecionada não pertence ao projeto informado.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:99: self.add_error("equipe", "A equipe selecionada não pertence Ã  disciplina informada.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:121: "observacoes",
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:128: "observacoes": forms.Textarea(attrs={"rows": 6}),
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:156: "Pesquise por código, descrição ou subatividade."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:198: "Informe a atividade do cronograma ou preencha ao menos código/descrição."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:241: # melhora importante: manter busca ampla, mas priorizar/permitir não alocados
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:251: "Pesquise por matrícula ou nome. O sistema completa função, equipe, HH e catraca. "
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:252: "Se faltar equipe, alocAção ou catraca, o sistema avisa e mantém a informAção visível."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:286: "Tentativa de preenchimento automático pela alocAção ativa. "
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:287: "Se ficar vazio, selecione manualmente e revise a alocAção do funcionário."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:294: self.fields["elegivel"].help_text = "Definido automaticamente. Sem catraca no dia, o funcionário fica não elegível."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:301: "Use somente quando o funcionário realmente trabalhou no dia, mas não apareceu na catraca."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:304: self.fields["justificativa_liberacao"].label = "Justificativa da liberAção"
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:306: self.fields["justificativa_liberacao"].help_text = "Obrigatória quando houver liberAção manual sem catraca."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:310: self.fields["liberado_por"].help_text = "Preenchido automaticamente ao salvar a liberAção manual."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:314: self.fields["liberado_em"].help_text = "Preenchido automaticamente ao salvar a liberAção manual."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:351: ctx["alertas"].append("Sem alocAção ativa para o projeto/disciplina/data do RDC.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:353: ctx["alertas"].append("Não foi possível consultar a alocAção do funcionário.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:369: ctx["alertas"].append("Não foi possível validar a catraca do dia.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:413: raise ValidationError("Hora normal e hora extra não podem ser negativas.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:435: "justificativa_liberacao": "Informe a justificativa da liberAção manual."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:478: "Funcionários não elegíveis exibem bloqueio no lançamento."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:500: raise ValidationError("As horas do apontamento não podem ser maiores que 24.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:517: "Não é permitido apontar horas para funcionário bloqueado ou não elegível."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:522: raise ValidationError("Não é permitido apontar horas para atividade inativa no dia.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:566: fields = ["rdc_funcionario", "rdc_atividade", "horas", "observacao"]
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:577: observacao = forms.CharField(required=False, label="ObservAção", widget=forms.Textarea(attrs={"rows": 2}))
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:596: raise ValidationError("Não é permitido apontar horas para atividade inativa no dia.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:598: raise ValidationError("As horas do apontamento não podem ser maiores que 24.")
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:607: "Não é permitido apontar horas para funcionário bloqueado ou não elegível."
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:624: ("enviar_revisao", "Enviar para revisão"),
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:632: observacao = forms.CharField(required=False, label="ObservAção", widget=forms.Textarea(attrs={"rows": 3}))
+D:\RDC PLA\rdc_inteligente\rdc\forms.py:633: forcar = forms.BooleanField(required=False, label="Permitir Ação mesmo com bloqueios")
+D:\RDC PLA\rdc_inteligente\rdc\models.py:77: observacoes = models.TextField(blank=True)
+D:\RDC PLA\rdc_inteligente\rdc\models.py:151: "rascunho": "Em elaborAção",
+D:\RDC PLA\rdc_inteligente\rdc\models.py:153: "em_revisao": "Em revisão",
+D:\RDC PLA\rdc_inteligente\rdc\models.py:323: {"funcao": "A função lançada diverge da função cadastrada do funcionário."}
+D:\RDC PLA\rdc_inteligente\rdc\models.py:331: "Não é possível liberar manualmente um funcionário que já possui catraca no dia."
+D:\RDC PLA\rdc_inteligente\rdc\models.py:337: {"justificativa_liberacao": "Informe a justificativa da liberAção manual."}
+D:\RDC PLA\rdc_inteligente\rdc\models.py:372: observacao = models.TextField(blank=True)
+D:\RDC PLA\rdc_inteligente\rdc\models.py:389: {"rdc_funcionario": "O funcionário informado não pertence a este RDC."}
+D:\RDC PLA\rdc_inteligente\rdc\models.py:394: {"rdc_atividade": "A atividade informada não pertence a este RDC."}
+D:\RDC PLA\rdc_inteligente\rdc\models.py:402: or "Funcionário não está elegível para apontamento."
+D:\RDC PLA\rdc_inteligente\rdc\models.py:607: observacao = models.TextField(blank=True)
+D:\RDC PLA\rdc_inteligente\rdc\models.py:611: verbose_name = "ProgramAção semanal"
+D:\RDC PLA\rdc_inteligente\rdc\models.py:612: verbose_name_plural = "Programações semanais"
+D:\RDC PLA\rdc_inteligente\rdc\tests_detail_filters_ui.py:60: self.assertContains(response, "Funcion?rios filtrados")
+D:\RDC PLA\rdc_inteligente\rdc\tests_detail_filters_ui.py:62: self.assertContains(response, "Valida??es filtradas")
+D:\RDC PLA\rdc_inteligente\rdc\tests_detail_inline_guard_ui.py:60: self.assertContains(response, "Edi??o r?pida temporariamente indispon?vel nesta vers?o.")
+D:\RDC PLA\rdc_inteligente\rdc\tests_inline_apontamento_update.py:54: nome="Fun??o Inline Apontamento",
+D:\RDC PLA\rdc_inteligente\rdc\tests_inline_apontamento_update.py:131: observacao="Inicial",
+D:\RDC PLA\rdc_inteligente\rdc\tests_inline_apontamento_update.py:139: observacao="Fechado",
+D:\RDC PLA\rdc_inteligente\rdc\tests_inline_apontamento_update.py:150: def test_supervisor_atualiza_observacao_com_rdc_aberto(self):
+D:\RDC PLA\rdc_inteligente\rdc\tests_inline_apontamento_update.py:153: response = self.client.post(url, data={"field": "observacao", "value": "Observa??o alterada"})
+D:\RDC PLA\rdc_inteligente\rdc\tests_inline_apontamento_update.py:156: self.assertEqual(self.apontamento_aberto.observacao, "Observa??o alterada")
+D:\RDC PLA\rdc_inteligente\rdc\tests_inline_funcionario_update.py:52: nome="Fun??o Inline Funcionario",
+D:\RDC PLA\rdc_inteligente\rdc\tests_lote_lock.py:62: nome="Fun??o Lote",
+D:\RDC PLA\rdc_inteligente\rdc\tests_lote_lock.py:71: nome="Funcion?rio Lote",
+D:\RDC PLA\rdc_inteligente\rdc\tests_lote_lock.py:90: mensagem="Valida??o lote",
+D:\RDC PLA\rdc_inteligente\rdc\tests_workflow.py:58: observacao="Fechamento de teste",
+D:\RDC PLA\rdc_inteligente\rdc\tests_workflow.py:74: observacao="Reabertura de teste",
+D:\RDC PLA\rdc_inteligente\rdc\tests_workflow.py:95: observacao="Tentativa sem permiss?o",
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:30: if valor in {"0", "false", "nao", "não", "no"}:
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:66: rotulo = "Atenção"
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:187: "label": "Amanhã",
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:230: alertas.append("Semana de planejamento não identificada para a data informada.")
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:232: alertas.append("Perfil operacional do usuário não está configurado.")
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:234: alertas.append("Equipe sugerida não foi identificada automaticamente.")
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:236: alertas.append("Área operacional não foi identificada automaticamente.")
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:243: mensagem = "Montagem não recomendada"
+D:\RDC PLA\rdc_inteligente\rdc\view_helpers.py:246: rotulo = "Atenção"
+D:\RDC PLA\rdc_inteligente\rdc\views.py:81: Evita quebrar quando o código já foi atualizado, mas a migration ainda não rodou.
+D:\RDC PLA\rdc_inteligente\rdc\views.py:135: mensagem=f"{func.nome} marcado como não elegível.",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:190: "observacoes",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:241: observacoes_consolidadas = [
+D:\RDC PLA\rdc_inteligente\rdc\views.py:243: for obs in rdcs_selecionados.exclude(observacoes__isnull=True)
+D:\RDC PLA\rdc_inteligente\rdc\views.py:244: .exclude(observacoes__exact="")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:245: .values_list("observacoes", flat=True)
+D:\RDC PLA\rdc_inteligente\rdc\views.py:276: "observacoes_consolidadas": observacoes_consolidadas,
+D:\RDC PLA\rdc_inteligente\rdc\views.py:324: (r.observacoes or "").strip(),
+D:\RDC PLA\rdc_inteligente\rdc\views.py:620: "observacoes",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:717: {"label": "ProgramAção semanal", "url": "/admin/rdc/programacaosemanal/"},
+D:\RDC PLA\rdc_inteligente\rdc\views.py:768: rdc.observacoes = f"{prefixo}\n{rdc.observacoes}".strip()
+D:\RDC PLA\rdc_inteligente\rdc\views.py:769: rdc.save(update_fields=["observacoes", "updated_at", "sync_updated_at"])
+D:\RDC PLA\rdc_inteligente\rdc\views.py:772: "RDC criado por exceção controlada. A justificativa foi registrada."
+D:\RDC PLA\rdc_inteligente\rdc\views.py:836: "observacao",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:903: if rdc.observacoes and rdc.observacoes.startswith("[MONTAGEM EXCEPCIONAL]"):
+D:\RDC PLA\rdc_inteligente\rdc\views.py:905: context["justificativa_excepcional"] = rdc.observacoes
+D:\RDC PLA\rdc_inteligente\rdc\views.py:963: ("create_rdc", "Cria??o"),
+D:\RDC PLA\rdc_inteligente\rdc\views.py:964: ("update_rdc", "Atualiza??o"),
+D:\RDC PLA\rdc_inteligente\rdc\views.py:967: ("exportar_rdc_modelo", "Exporta??o"),
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1070: ["projeto__codigo", "area_local__descricao", "disciplina__nome", "observacoes"],
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1216: "descricao": "Semáforo gerencial das validações.",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1246: "descricao": "Validações monitoradas.",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1261: "validacoes": "Validações",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1343: "RDC", "Data", "Projeto", "Nome", "Matrícula", "Função", "Equipe",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1366: "name": "Validações",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1367: "title": "Base de Validações",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1407: "Sim" if a.ativa_no_dia else "Não",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1420: "Descrição",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1422: "Subdescrição",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1444: "Sim" if f.presente_catraca else "Não",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1445: "Sim" if f.elegivel else "Não",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1458: "Função",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1481: a.observacao,
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1496: "ObservAção",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1576: raise Http404("Tipo de exportAção não suportado.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1601: context["observacoes_consolidadas"] = scope["observacoes_consolidadas"]
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1699: "Observações",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1713: observacoes_rows = [
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1715: for idx, obs in enumerate(scope.get("observacoes_consolidadas") or [])
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1727: a.observacao,
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1748: "headers": ["RDC", "Data", "Projeto", "Funcionário", "Cód. atividade", "Atividade", "Horas", "ObservAção"],
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1752: "name": "Observações",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1753: "title": "Observações Consolidadas",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1754: "headers": ["#", "ObservAção"],
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1755: "rows": observacoes_rows,
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1777: "Observações",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1806: raise Http404("Tipo de exportAção de RDO não suportado.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:1990: success_message = "Funcion?rio atualizado com sucesso."
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2006: allowed_fields = ("horas", "observacao")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2016: success_message = "Valida??o atualizada com sucesso."
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2059: messages.warning(request, "Selecione uma Ação válida para atividades.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2098: messages.warning(request, "Selecione uma Ação válida para funcionários.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2125: messages.warning(request, "Selecione uma Ação válida para apontamentos.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2147: messages.success(request, f"{total} validAção(ões) excluída(s).")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2149: messages.warning(request, "Selecione uma Ação válida para validações.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2223: alertas.append("Não foi possível validar a catraca do dia.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2226: alertas.append("Equipe/alocAção não encontrada automaticamente para o contexto do RDC.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2295: # sem texto digitado, prioriza os alocados para não trazer universo muito grande
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2418: messages.success(request, f"{criados} funcionário(s) importado(s) da alocAção.")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2508: detail_func=lambda self, request, *a, **k: f"A??o '{request.POST.get('action')}' aplicada",
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2517: observacao = (
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2518: request.POST.get("observacao")
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2530: observacao=observacao,
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2534: messages.success(request, result.get("message", "A??o executada com sucesso."))
+D:\RDC PLA\rdc_inteligente\rdc\views.py:2537: msg = result.get("message", "N?o foi poss?vel executar a a??o.")
+D:\RDC PLA\rdc_inteligente\rdc\urls.py:63: # ===== VALIDAÇÕES =====
+D:\RDC PLA\rdc_inteligente\importacoes\migrations\0001_initial.py:23: ('tipo', models.CharField(choices=[('funcionarios', 'Funcionários'), ('catraca', 'Catraca'), ('alocacoes', 'Alocações'), ('cronograma', 'Cronograma'), ('histograma', 'Histograma')], max_length=30)),
+D:\RDC PLA\rdc_inteligente\importacoes\migrations\0001_initial.py:28: ('observacoes', models.TextField(blank=True)),
+D:\RDC PLA\rdc_inteligente\importacoes\migrations\0002_alter_importacaoerro_options_and_more.py:20: field=models.CharField(choices=[('funcionarios', 'Funcionários'), ('catraca', 'Catraca'), ('alocacoes', 'Alocações'), ('cronograma', 'Cronograma'), ('histograma', 'Histograma')], max_length=30),
+D:\RDC PLA\rdc_inteligente\importacoes\management\commands\importar_cronograma_arquivo.py:13: help = "Cria uma importAção de cronograma a partir de um arquivo local e processa imediatamente."
+D:\RDC PLA\rdc_inteligente\importacoes\management\commands\importar_cronograma_arquivo.py:17: parser.add_argument("--usuario", default="admin", help="Usuário responsável pela importAção")
+D:\RDC PLA\rdc_inteligente\importacoes\management\commands\importar_cronograma_arquivo.py:22: raise CommandError(f"Arquivo não encontrado: {caminho}")
+D:\RDC PLA\rdc_inteligente\importacoes\management\commands\importar_cronograma_arquivo.py:27: raise CommandError(f"Usuário não encontrado: {options['usuario']}")
+D:\RDC PLA\rdc_inteligente\importacoes\management\commands\importar_cronograma_arquivo.py:33: observacoes="",
+D:\RDC PLA\rdc_inteligente\importacoes\management\commands\importar_cronograma_arquivo.py:39: self.stdout.write(self.style.SUCCESS(f"ImportAção #{importacao.pk} finalizada com status: {importacao.status}"))
+D:\RDC PLA\rdc_inteligente\importacoes\management\commands\importar_cronograma_arquivo.py:40: self.stdout.write(importacao.observacoes)
+D:\RDC PLA\rdc_inteligente\importacoes\services\orchestrator.py:25: importacao.observacoes = f"Tipo de importação ainda não implementado: {importacao.tipo}"
+D:\RDC PLA\rdc_inteligente\importacoes\services\orchestrator.py:26: importacao.save(update_fields=["status", "observacoes"])
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:76: self.importacao.observacoes = ""
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:77: self.importacao.save(update_fields=["status", "iniciado_em", "observacoes"])
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:106: self.importacao.observacoes = (
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:112: self.importacao.observacoes = f"Erro no processamento: {exc}"
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:115: self.importacao.save(update_fields=["status", "observacoes", "finalizado_em"])
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:126: raise ValueError("Formato de arquivo não suportado. Use CSV ou XLSX.")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:248: def buscar_ou_criar_funcao(nome_funcao: str, nome_padrao: str = "SEM FUNÇÃƒO") -> Funcao:
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:265: def buscar_ou_criar_empresa(nome_empresa: str, cnpj: str = "", nome_padrao: str = "EMPRESA NÃƒO INFORMADA") -> Empresa:
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:280: if empresa_por_cnpj.observacoes:
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:281: empresa_por_cnpj.observacoes = ""
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:282: alteracoes.append("observacoes")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:295: empresa.observacoes = ""
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:296: alteracoes.extend(["cnpj", "cadastro_pendente", "observacoes"])
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:301: observacoes = "Importada automaticamente sem CNPJ. Completar cadastro." if not cnpj_normalizado else ""
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:307: observacoes=observacoes,
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:318: "funcao": ["funcao", "função", "cargo", "ocupacao", "ocupAção"],
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:319: "empresa": ["empresa", "empreiteira", "contratada", "relAção social", "relacao social"],
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:321: "ativo": ["ativo", "status", "situacao", "situAção"],
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:335: return ResultadoLinhaImportacao(False, "Matrícula e nome são obrigatórios.")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:374: "observacao": ["observacao", "observAção", "obs"],
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:386: observacao = self.valor_texto(linha.get("observacao"))
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:389: return ResultadoLinhaImportacao(False, "Data e matrícula são obrigatórios.")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:406: "observacao": observacao,
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:421: "ativo": ["ativo", "status", "situacao", "situAção"],
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:435: return ResultadoLinhaImportacao(False, f"Funcionário não encontrado para matrícula {matricula}")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:439: return ResultadoLinhaImportacao(False, f"Projeto não encontrado: {codigo_projeto}")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:443: return ResultadoLinhaImportacao(False, f"Disciplina não encontrada: {nome_disciplina}")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:449: return ResultadoLinhaImportacao(False, f"Equipe não encontrada: {nome_equipe}")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:490: self.importacao.observacoes = ""
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:491: self.importacao.save(update_fields=["status", "iniciado_em", "observacoes"])
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:526: self.importacao.observacoes = (
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:534: self.importacao.observacoes = f"Erro no processamento do cronograma: {exc}"
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:537: self.importacao.save(update_fields=["status", "observacoes", "finalizado_em"])
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:546: return ResultadoLinhaImportacao(False, "Linha com activity_id sem descrição de atividade.")
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:607: "INSTRUMENTACAO": ("INS", "InstrumentAção"),
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:608: "MECANICA": ("MEC", "MecÃ¢nica"),
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:610: "TUBULACAO": ("TUB", "TubulAção"),
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:702: return "Não iniciada"
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:724: return {"mensagem": importacao.observacoes}
+D:\RDC PLA\rdc_inteligente\importacoes\services\original_service.py:730: return {"mensagem": "Stub de importAção de histograma pronto para evolução."}
+D:\RDC PLA\rdc_inteligente\importacoes\forms.py:10: fields = ["tipo", "arquivo", "observacoes"]
+D:\RDC PLA\rdc_inteligente\importacoes\models.py:24: observacoes = models.TextField(blank=True)
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:20: verbose_name = "Erro da importAção"
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:21: verbose_name_plural = "Erros da importAção"
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:24: @admin.action(description="Limpar erros das importações selecionadas")
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:33: @admin.action(description="Reprocessar importações selecionadas")
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:39: modeladmin.message_user(request, f"{total} importAção(ões) reprocessada(s).", level=messages.SUCCESS)
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:56: search_fields = ("arquivo", "observacoes", "criado_por__username", "criado_por__first_name")
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:94: f"{deletados} erro(s) removido(s) da importAção {obj.id}.",
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:102: f"ImportAção {obj.id} reprocessada com sucesso.",
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:109: context["adminform"].form.fields["observacoes"].help_text = (
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:143: "importacao__observacoes",
+D:\RDC PLA\rdc_inteligente\importacoes\admin.py:150: @admin.display(description="ImportAção")
+D:\RDC PLA\rdc_inteligente\importacoes\views.py:34: messages.success(self.request, "ImportAção recebida e processada.")
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:9: <h1 class="h2 fw-bold mb-2">Visão executiva do D'ORANGE Control</h1>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:10: <div class="text-white-50">Resumo diário da Operação, saúde dos RDCs e acesso rápido ao núcleo do módulo.</div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:31: <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">Atividades com execução</div><div class="kpi-number">{{ atividades_execucao_hoje }}</div></div><div class="kpi-icon">A</div></div><div class="kpi-desc">{{ apontamentos_hoje }} apontamentos no dia.</div></div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:32: <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">ObservAções do dia</div><div class="kpi-number">{{ apontamentos_obs_hoje }}</div></div><div class="kpi-icon">!</div></div><div class="kpi-desc">Registros com observação ou desvio informado.</div></div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:33: <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-danger h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">ImportAções com erro</div><div class="kpi-number">{{ importacoes_com_erro }}</div></div><div class="kpi-icon">‡…</div></div><div class="kpi-desc">Monitoramento centralizado para carga de base.</div></div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:71: <div class="section-title">Distribuição por status</div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:124: <div class="mini-muted mb-3">ValidAções capturadas nos RDCs do dia.</div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:146: <div class="mini-muted mb-3">Histórico recente de Movimentação operacional.</div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:171: <div class="section-title">ImportAções recentes</div>
+D:\RDC PLA\rdc_inteligente\templates\core\dashboard.html:186: <tr><td colspan="3" class="text-center text-muted py-4">Sem importAções recentes.</td></tr>
+D:\RDC PLA\rdc_inteligente\templates\rdc\validacoes.html:3: <h1 class="mb-3">ValidAções do RDC #{{ rdc.id }}</h1>
+D:\RDC PLA\rdc_inteligente\templates\rdc\validacoes.html:10: <tr><td colspan="5">Nenhuma Validação encontrada.</td></tr>
+D:\RDC PLA\rdc_inteligente\templates\rdc\editar_rdc.html:33: <button type="submit" class="btn btn-primary">Salvar alterAções</button>
+D:\RDC PLA\rdc_inteligente\templates\rdc\excluir_rdc.html:6: Confirmar exclusão
+D:\RDC PLA\rdc_inteligente\templates\rdc\item_confirm_delete.html:5: <div class="card-header bg-danger text-white">Confirmar exclusão</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\rdo.html:48: <input type="text" name="q" value="{{ filter_values.q }}" class="form-control" placeholder="Projeto, disciplina, área ou observação">
+D:\RDC PLA\rdc_inteligente\templates\rdc\rdo.html:71: <div class="mini-muted">Os RDCs filtrados já entram automaticamente no RDO e nas exportAções.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\rdo.html:137: <div class="section-title">ObservAções consolidadas</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\rdo.html:138: {% for obs in observacoes_consolidadas %}
+D:\RDC PLA\rdc_inteligente\templates\rdc\rdo.html:141: <div class="text-muted">Sem observAções consolidadas.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\funcionario_list.html:12: <th>LiberAção</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\apontamento_form.html:10: O funcionário está sem catraca e sem liberAção manual no momento.
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:164: Painel operacional de registros diários com filtros avançados, visão gerencial por status,
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:165: modos de Visualização e entrada rápida para Criação e acompanhamento dos RDCs.
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:181: Filtros ativos: {% if has_active_filters %}Sim{% else %}Não{% endif %}
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:215: <div class="kpi-rdc-label">Em revisão</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:220: <div class="kpi-rdc-desc">RDCs aguardando fechamento ou Validação.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:252: <div class="filter-title">Filtros e Visualização</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:272: <span class="summary-badge warning"><i class="bi bi-hourglass-split"></i> Em revisão {{ status_summary.em_revisao }}</span>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:281: <input class="form-control" type="text" name="q" value="{{ filter_values.q }}" placeholder="Projeto, disciplina, área, observação...">
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:289: <option value="em_revisao" {% if filter_values.status == 'em_revisao' %}selected{% endif %}>Em revisão</option>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:298: <option value="manha" {% if filter_values.turno == 'manha' %}selected{% endif %}>Manhã</option>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:344: <label class="form-label invisible">Ação</label>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:348: <label class="form-label invisible">Ação</label>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:359: <a class="filter-chip" href="{% url 'rdc-list' %}?status=em_revisao&view={{ view_mode }}"><i class="bi bi-hourglass-split"></i> Em revisão</a>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:371: <div class="filter-title mb-1">Visão tabular</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:372: <div class="text-muted">Leitura mais gerencial para Comparação rápida entre RDCs.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:388: <th class="text-end">Ações</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\lista_rdc.html:517: <p class="text-muted mb-3">Revise os filtros aplicados ou crie um novo registro para iniciar a Operação diária.</p>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:12: <div class="text-muted">Monte um RDC com base em semana, equipe, alocAção e programAção operacional.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:38: <span class="subtle-label">Prontidão da montagem</span>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:61: <div class="mini-muted">ProgramAção semanal</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:116: <div class="fw-semibold mb-1">Pontos de atenção</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:152: <div class="fw-semibold mb-1">Não foi possível montar o RDC</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:174: <div class="fw-semibold mb-2">Exceção controlada</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:185: <label class="form-label fw-semibold">Justificativa da exceção</label>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:196: <li>Sugere atividades da programAção semanal</li>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:274: <th>Descrição</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:295: <div class="alert alert-warning mt-3 mb-0">Nenhuma programAção semanal encontrada para o contexto atual. Você pode seguir manualmente ou cadastrar/importar a programAção da semana.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:303: <div class="section-title mb-1">Equipe sugerida / alocAção válida</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:316: <th>Função</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:333: <div class="alert alert-secondary mt-3 mb-0">Nenhuma alocAção válida localizada para o contexto atual.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:390: if (projetoId && !areasRelacionadas.length) avisos.push('Projeto sem áreas vinculadas diretamente no cadastro. Lista ampla mantida para não travar a operAção.');
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:391: if (disciplinaId && !equipesRelacionadas.length) avisos.push('Disciplina sem equipes vinculadas diretamente. Lista ampla mantida para operAção assistida.');
+D:\RDC PLA\rdc_inteligente\templates\rdc\novo_rdc.html:393: if (projetoId && areaAtual && areaAtual.projeto_id && String(areaAtual.projeto_id) !== String(projetoId)) avisos.push('A área selecionada pertence a outro projeto no cadastro e merece revisão posterior.');
+D:\RDC PLA\rdc_inteligente\templates\rdc\item_form.html:44: <strong>RDC fechado para edição.</strong> Seu perfil não pode alterar este documento neste momento.
+D:\RDC PLA\rdc_inteligente\templates\rdc\item_form.html:52: <strong>Busca premium de atividade:</strong> digite código, descrição ou subatividade. Ao selecionar, o sistema preenche código, descrição, subatividade e escopo automaticamente.
+D:\RDC PLA\rdc_inteligente\templates\rdc\item_form.html:56: <input type="text" id="busca-atividade" class="form-control" autocomplete="off" placeholder="Ex.: A1170, painel, iluminAção, cabo">
+D:\RDC PLA\rdc_inteligente\templates\rdc\item_form.html:63: <strong>Busca premium de funcionário:</strong> pesquise por matrícula ou nome. Ao selecionar, o sistema preenche matrícula, nome, função, equipe, horas padrão e presença de catraca.
+D:\RDC PLA\rdc_inteligente\templates\rdc\item_form.html:96: <div class="col-md-{% if field.name == 'observacoes' or field.name == 'mensagem' or field.name == 'motivo_bloqueio' %}12{% else %}6{% endif %}">
+D:\RDC PLA\rdc_inteligente\templates\rdc\item_form.html:115: <button type="submit" class="btn btn-primary">Salvar alterAções</button>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:15: <div class="text-muted">D'ORANGE Control · visão gerencial com ranking, comparativos, semáforos e exportações completas.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:70: <div class="col-md-2 col-6"><div class="executive-card exec-warning"><div class="exec-label">Em revisão</div><div class="exec-number">{{ workflow_summary.em_revisao|default:0 }}</div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:165: <div class="kpi-desc">{{ totais.validacoes|default:0 }} Validações no período</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:270: <div class="section-title">Validações por tipo</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:281: <li class="nav-item"><a class="nav-link {% if aba == 'validacoes' %}active{% endif %}" href="?{% for k,v in filter_values.items %}{% if v %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}aba=validacoes">Validações</a></li>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:291: <div class="mini-muted">Leitura gerencial com semáforos de Situação</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:296: Os campos de fechamento ainda não foram aplicados no banco. O consolidado segue funcionando, mas a coluna de fechamento e o botão de fechar RDC dependem da migration nova.
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:311: <th>Situação gerencial</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:360: <th>Descrição</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:400: <th>Função</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:418: <td>{% if f.presente_catraca %}<span class="summary-badge success">Sim</span>{% else %}<span class="summary-badge warning">Não</span>{% endif %}</td>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:419: <td>{% if f.elegivel %}<span class="summary-badge success">Sim</span>{% else %}<span class="summary-badge danger">Não</span>{% endif %}</td>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:444: <th>Observação</th>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:456: <td>{{ a.observacao }}</td>
+D:\RDC PLA\rdc_inteligente\templates\rdc\painel_consolidado.html:504: <tr><td colspan="7">Sem Validações.</td></tr>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:9: <span class="badge bg-danger ms-2">Exceção operacional</span>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:37: <span class="badge text-bg-warning">ATENÇÃO</span>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:42: <div class="mini-muted">Visão rápida de como este RDC foi pré-preenchido.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:78: <div class="mini-muted">Não elegíveis</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:122: <span class="badge text-bg-warning">ATENÇÃO</span>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:127: <div class="mini-muted">Visão rápida de como este RDC foi pré-preenchido.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:163: <div class="mini-muted">Não elegíveis</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:192: {% if not can_edit_rdc %}<div class="alert alert-warning">Este RDC está fechado. Edição somente com Liberação especial.</div>{% endif %}
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:198: <div class="mini-muted">Pronto para fechamento e visão operacional do dia.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:262: <div class="mini-muted">Acompanhe o est?gio atual e execute as transi??es permitidas.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:273: <button class="btn btn-outline-primary">Enviar para revis?o</button>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:289: <input type="text" name="observacao" class="form-control" style="max-width: 320px;" placeholder="Motivo da devolu??o">
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:304: Nenhuma a??o de workflow est? dispon?vel para este RDC no momento.
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:314: <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#validacoes">ValidAções</button></li>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:326: <div class="col-md-4"><input type="text" name="afq" value="{{ filter_values.afq }}" class="form-control form-control-sm" placeholder="Buscar c?digo ou descri??o"></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:349: <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">Ação em lote</option><option value="ativar">Ativar</option><option value="inativar">Inativar</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:350: <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-atividades"><thead><tr><th><input type="checkbox" data-check-all="#tabela-atividades"></th><th>Código</th><th>Descrição</th><th>Escopo</th><th>Executada</th><th>Origem</th><th>Ativa</th><th>Comentário</th><th>Ações</th></tr></thead><tbody>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:351: {% for item in atividades_filtradas %}<tr><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.codigo_atividade }}</td><td>{{ item.descr_atividade }}</td><td>{{ item.qtd_escopo }}</td><td class="inline-editable" data-section="atividade" data-id="{{ item.pk }}" data-field="qtd_executada">{{ item.qtd_executada }}</td><td>{{ item.get_origem_display }}</td><td class="inline-editable" data-section="atividade" data-id="{{ item.pk }}" data-field="ativa_no_dia">{% if item.ativa_no_dia %}Sim{% else %}Não{% endif %}</td><td class="inline-editable" data-section="atividade" data-id="{{ item.pk }}" data-field="comentarios">{{ item.comentarios|default:'-'|truncatechars:40 }}</td><td>{% if can_edit_rdc %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-atividade-update' pk=rdc.pk pk2=item.pk %}">Editar</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="9">Sem atividades.</td></tr>{% endfor %}
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:358: <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Funcion?rios filtrados</div><div class="metric-value">{{ funcionarios_stats.total }}</div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:364: <div class="col-md-4"><input type="text" name="ffq" value="{{ filter_values.ffq }}" class="form-control form-control-sm" placeholder="Buscar matr?cula, nome, fun??o"></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:384: <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-funcionario-create' rdc.pk %}">Incluir funcion?rio</a><form method="post" action="{% url 'rdc-importar-funcionarios-alocacao' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm">Importar da aloca??o</button></form>{% endif %}</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:386: <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:260px"><option value="">A??o em lote</option><option value="confirmar_supervisor">Confirmar supervisor</option><option value="liberar">Liberar</option><option value="bloquear_sem_catraca">Bloquear sem catraca</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:387: <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-funcionarios"><thead><tr><th><input type="checkbox" data-check-all="#tabela-funcionarios"></th><th>Matr?cula</th><th>Nome</th><th>Equipe</th><th>Fun??o</th><th>Catraca</th><th>Eleg?vel</th><th>HN</th><th>HE</th><th>HH</th><th>Bloqueio</th></tr></thead><tbody>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:388: {% for item in funcionarios_filtrados %}<tr class="{% if item.liberado_sem_catraca %}table-warning{% elif item.motivo_bloqueio %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.matricula }}</td><td>{{ item.nome }}</td><td>{{ item.equipe|default:'-' }}</td><td>{{ item.funcao|default:'-' }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="presente_catraca">{% if item.presente_catraca %}Sim{% else %}N?o{% endif %}</td><td>{% if item.presente_catraca %}<span class="badge text-bg-success">Presente na catraca</span>{% elif item.liberado_sem_catraca %}<span class="badge text-bg-warning">Liberado manualmente</span>{% else %}<span class="badge text-bg-danger">Bloqueado</span>{% endif %}<div class="small text-muted mt-1">{% if item.liberado_sem_catraca %}Sem catraca, mas apto para apontamento.{% elif item.motivo_bloqueio %}{{ item.motivo_bloqueio|truncatechars:55 }}{% else %}Apto para apontamento.{% endif %}</div>{% if item.liberado_sem_catraca and item.liberado_por %}<div class="small text-muted">Por {{ item.liberado_por }}{% if item.liberado_em %} em {{ item.liberado_em|date:'d/m/Y H:i' }}{% endif %}</div>{% endif %}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_normal">{{ item.hora_normal }}</td><td class="inline-editable" data-section="funcionario" data-id="{{ item.pk }}" data-field="hora_extra">{{ item.hora_extra }}</td><td class="hh-cell" data-id="{{ item.pk }}">{{ item.hh_total }}</td><td>{% if item.liberado_sem_catraca %}{{ item.justificativa_liberacao|default:'-'|truncatechars:35 }}{% else %}{{ item.motivo_bloqueio|default:'-'|truncatechars:35 }}{% endif %}</td></tr>{% empty %}<tr><td colspan="11">Sem funcion?rios.</td></tr>{% endfor %}
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:399: <div class="col-md-10"><input type="text" name="apq" value="{{ filter_values.apq }}" class="form-control form-control-sm" placeholder="Buscar funcion?rio, atividade ou observa??o"></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:407: <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">A??o em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:408: <div class="table-card p-3"><table class="table table-sm align-middle" id="tabela-apontamentos"><thead><tr><th><input type="checkbox" data-check-all="#tabela-apontamentos"></th><th>Funcion?rio</th><th>Atividade</th><th>Horas</th><th>observa??o</th></tr></thead><tbody>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:409: {% for item in apontamentos_filtrados %}<tr><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.rdc_funcionario }}</td><td>{{ item.rdc_atividade }}</td><td class="inline-editable" data-section="apontamento" data-id="{{ item.pk }}" data-field="horas">{{ item.horas }}</td><td class="inline-editable" data-section="apontamento" data-id="{{ item.pk }}" data-field="observacao">{{ item.observacao|default:'-'|truncatechars:70 }}</td></tr>{% empty %}<tr><td colspan="5">Sem apontamentos.</td></tr>{% endfor %}
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:415: <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Valida??es filtradas</div><div class="metric-value">{{ validacoes_stats.total }}</div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:424: <option value="">Status da valida??o</option>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:435: <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-validacao-create' rdc.pk %}">Incluir Valida??o</a>{% endif %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-validacoes' rdc.pk %}">Ver tela dedicada</a></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:437: <div class="d-flex gap-2 mb-2 flex-wrap">{% if can_edit_rdc %}<select class="form-select form-select-sm" name="acao" style="max-width:220px"><option value="">A??o em lote</option><option value="excluir">Excluir</option></select><button class="btn btn-outline-dark btn-sm">Aplicar</button>{% endif %}</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:439: {% for item in validacoes_filtradas %}<tr class="{% if item.status == 'bloqueio' %}table-danger{% elif item.status == 'alerta' %}table-warning{% endif %}"><td><input type="checkbox" name="ids" value="{{ item.pk }}"></td><td>{{ item.get_tipo_display }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="status">{{ item.status }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="mensagem">{{ item.mensagem|truncatechars:70 }}</td><td class="inline-editable" data-section="validacao" data-id="{{ item.pk }}" data-field="referencia">{{ item.referencia|default:'-' }}</td></tr>{% empty %}<tr><td colspan="5">Sem valida??es.</td></tr>{% endfor %}
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:449: <p class="mb-2">O fechamento bloqueia edição comum e registra usuário, data e hora.</p>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:450: <div class="mb-3"><label class="form-label">Justificativa / observação do fechamento</label><input type="hidden" name="action" value="fechar"><textarea name="observacao" class="form-control" rows="4"></textarea></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:464: <div class="mb-3"><label class="form-label">Motivo da reabertura</label><textarea name="observacao" class="form-control" rows="4" required></textarea></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:497: if (['comentarios', 'observacao', 'mensagem', 'referencia'].includes(field)) {
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:507: [['true','Sim'],['false','Não']].forEach(([val,label]) => {
+D:\RDC PLA\rdc_inteligente\templates\rdc\detalhe_rdc.html:539: cell.title = 'Edi??o r?pida temporariamente indispon?vel nesta vers?o.';
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:8: <h1 class="display-6 fw-bold mb-2">Operação do dia em uma única tela</h1>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:9: <p class="mb-3 text-white-50">Acompanhe RDCs de hoje, HH, efetivo, alertas operacionais e entre direto no detalhe do que precisa de Ação.</p>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:29: <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">Atividades com execução</div><div class="kpi-number">{{ atividades_execucao_hoje }}</div></div><div class="kpi-icon">A</div></div><div class="kpi-desc">Apontamentos hoje: {{ apontamentos_hoje }}.</div></div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:30: <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">ObservAções críticas</div><div class="kpi-number">{{ apontamentos_obs_hoje }}</div></div><div class="kpi-icon">!</div></div><div class="kpi-desc">Registros com observação no dia.</div></div></div></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:46: <thead><tr><th>RDC</th><th>Projeto</th><th>Disciplina</th><th>Turno</th><th>Status</th><th class="text-end">Ação</th></tr></thead>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:67: <div class="section-title mb-1">Fila de atenção</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:68: <div class="mini-muted mb-3">RDCs com bloqueio ou alerta que merecem Ação mais rápida.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:80: <div class="metric-box"><div class="fw-semibold text-success">Sem pendências críticas hoje.</div><div class="small text-muted">Os RDCs do dia estão sem bloqueios ou alertas relevantes.</div></div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\dashboard.html:187: <a class="summary-badge warning text-decoration-none" href="/rdc/?status=em_revisao">Revisão {{ status_summary.em_revisao }}</a>
+D:\RDC PLA\rdc_inteligente\templates\rdc\auditoria_dashboard.html:6: <div class="text-muted">Visão consolidada das ações executadas nos RDCs.</div>
+D:\RDC PLA\rdc_inteligente\templates\rdc\auditoria_dashboard.html:26: <h5>Ações mais frequentes</h5>
+D:\RDC PLA\rdc_inteligente\templates\planejamento\home.html:2: {% block content %}<div class="card table-card card-body"><h1>Planejamento</h1><p>Módulo preparado para evolução operacional.</p></div>{% endblock %}
+D:\RDC PLA\rdc_inteligente\templates\alocacao\home.html:2: {% block content %}<div class="card table-card card-body"><h1>AlocAção</h1><p>Módulo preparado para evolução operacional.</p></div>{% endblock %}
+D:\RDC PLA\rdc_inteligente\templates\acesso\home.html:8: <p class="mb-3 text-white-50">A partir daqui você acompanha a operAção do RDC, identifica desvios e entra direto no que precisa de Ação.</p>
+D:\RDC PLA\rdc_inteligente\templates\importacoes\home.html:3: <div class="d-flex justify-content-between align-items-center mb-3"><h1>ImportAções</h1><a class="btn btn-primary" href="{% url 'importacoes-create' %}">Nova importação</a></div>
+D:\RDC PLA\rdc_inteligente\templates\importacoes\home.html:7: <tbody>{% for item in importacoes %}<tr><td>{{ item.pk }}</td><td>{{ item.get_tipo_display }}</td><td>{{ item.nome_arquivo }}</td><td>{{ item.get_status_display }}</td><td>{{ item.total_erros }}</td><td>{{ item.created_at }}</td></tr>{% empty %}<tr><td colspan="6">Nenhuma importação.</td></tr>{% endfor %}</tbody>
+D:\RDC PLA\rdc_inteligente\templates\importacoes\form.html:3: <h1 class="mb-3">Nova importação</h1>
+D:\RDC PLA\rdc_inteligente\templates\importacoes\form.html:5: <strong>Cronograma:</strong> para importar com contexto completo, use em <strong>ObservAções</strong> algo como:<br>
+D:\RDC PLA\rdc_inteligente\templates\relatorios\home.html:2: {% block content %}<div class="card table-card card-body"><h1>Relatórios</h1><p>Módulo preparado para evolução operacional.</p></div>{% endblock %}
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:14: <h1>Centro de administração</h1>
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:15: <p>Cadastros, importAções, planejamento e governança do sistema em um só lugar.</p>
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:28: <small>Visão gerencial, gráficos e exportAções</small>
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:31: <span class="label">Operação</span>
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:37: <strong>ImportAções</strong>
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:53: <h3>Navegação rápida</h3>
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:58: <li><a href="/admin/importacoes/importacaoarquivo/">ImportAções</a></li>
+D:\RDC PLA\rdc_inteligente\templates\admin\index.html:63: <p>Use o admin para ajustes estruturais e o painel RDC para Operação diária e leitura gerencial.</p>
+D:\RDC PLA\rdc_inteligente\templates\admin\base_site.html:4: {% block title %}D'ORANGE Control | AdministrAção{% endblock %}
+D:\RDC PLA\rdc_inteligente\templates\admin\base_site.html:16: <div class="dorange-admin-subtitle">AdministrAção, cadastros e governança</div>
+D:\RDC PLA\rdc_inteligente\templates\errors\403.html:5: <title>Acesso não permitido</title>
+D:\RDC PLA\rdc_inteligente\templates\errors\403.html:17: <h1>Acesso não permitido</h1>
+D:\RDC PLA\rdc_inteligente\templates\errors\403.html:18: <p>Seu usuário está autenticado, mas ainda não possui um perfil operacional ativo para executar esta ação.</p>
+D:\RDC PLA\rdc_inteligente\templates\base.html:161: <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Alternar Navegação">
+D:\RDC PLA\rdc_inteligente\templates\base.html:171: <a class="nav-link" href="/importacoes/">ImportAções</a>
+D:\RDC PLA\rdc_inteligente\templates\403.html:45: {{ mensagem|default:"Você não tem permissão para acessar esta área." }}
+D:\RDC PLA\rdc_inteligente\templates\403.html:49: Verifique se seu usuário possui o perfil e as permissões necessárias para executar esta ação.
+D:\RDC PLA\rdc_inteligente\mobile_api\permissions.py:10: a permissão será aplicada por papel.
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:136: "observacao",
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:196: "observacoes",
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:237: "observacoes",
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:290: "observacoes",
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:328: raise serializers.ValidationError({"funcao": "Informe a função do funcionário."})
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:403: "observacao",
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:436: "observacoes",
+D:\RDC PLA\rdc_inteligente\mobile_api\serializers.py:523: "observacao",
+D:\RDC PLA\rdc_inteligente\mobile_api\views.py:631: raise ValueError("RDC de referência não localizado para o funcionário.")
+D:\RDC PLA\rdc_inteligente\mobile_api\views.py:676: raise ValueError("RDC de referência não localizado para a atividade.")
+D:\RDC PLA\rdc_inteligente\mobile_api\views.py:720: raise ValueError("RDC de referência não localizado para o apontamento.")
+D:\RDC PLA\rdc_inteligente\manage.py:10: raise ImportError("Não foi possível importar o Django.") from exc
+D:\RDC PLA\rdc_inteligente\README.md:3: Base inicial de um sistema Django modular para RDC inteligente, com foco em operação web, API REST e preparação para futuras integrações com app mobile e GED.
+D:\RDC PLA\rdc_inteligente\README.md:18: 2. Serviço `montar_rdc_pre_preenchido` cruza cronograma, histograma, alocação e catraca.
+D:\RDC PLA\rdc_inteligente\README.md:19: 3. Sistema cria o cabeçalho do RDC, atividades, funcionários elegíveis/bloqueados e validações.
+D:\RDC PLA\rdc_inteligente\README.md:20: 4. Estrutura fica pronta para detalhamento web, API e futura geração de PDF.
+D:\RDC PLA\rdc_inteligente\README.md:22: ## Observações
+D:\RDC PLA\rdc_inteligente\README.md:23: - O endpoint `POST /api/rdc/montar/` está preparado para automação do pré-preenchimento.
+D:\RDC PLA\rdc_inteligente\README.md:24: - O app `importacoes` traz base genérica para importação de CSV/XLSX.
+D:\RDC PLA\rdc_inteligente\estrutura.txt:96: |   |   |   0003_empresa_cadastro_pendente_empresa_observacoes_and_more.py
+D:\RDC PLA\rdc_inteligente\estrutura.txt:102: |   |           0003_empresa_cadastro_pendente_empresa_observacoes_and_more.cpython-312.pyc

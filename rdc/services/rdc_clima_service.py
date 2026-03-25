@@ -89,3 +89,4 @@ def buscar_clima_online_rio_grande(data):
             "vento_kmh": None,
             "visual": _classificar_clima_visual(descricao),
         }
+

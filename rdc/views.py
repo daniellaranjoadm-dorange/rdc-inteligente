@@ -714,7 +714,7 @@ class RDCMontagemView(AuthenticatedTemplateMixin, RoleRequiredMixin, FormView):
         context["montagem_health"] = _montagem_health(contexto, resumo)
         context["atalhos_admin"] = [
             {"label": "Perfis operacionais", "url": "/admin/rdc/perfiloperacionalusuario/"},
-            {"label": "ProgramAção semanal", "url": "/admin/rdc/programacaosemanal/"},
+            {"label": "Programação semanal", "url": "/admin/rdc/programacaosemanal/"},
         ]
         return context
 
@@ -960,11 +960,11 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
         context["filtro_usuario"] = self.request.GET.get("usuario", "")
         context["acoes_disponiveis"] = [
             ("", "Todas"),
-            ("create_rdc", "Cria??o"),
-            ("update_rdc", "Atualiza??o"),
+            ("create_rdc", "Criação"),
+            ("update_rdc", "Atualização"),
             ("workflow_rdc", "Workflow"),
             ("delete_rdc", "Exclus?o"),
-            ("exportar_rdc_modelo", "Exporta??o"),
+            ("exportar_rdc_modelo", "Exportação"),
         ]
         context["usuarios_auditoria"] = sorted({
             log.user.username
@@ -1213,7 +1213,7 @@ class RDCConsolidadoView(AuthenticatedTemplateMixin, TemplateView):
                 "rotulo": "Conformidade",
                 "valor": f"{conformidade.quantize(Decimal('0.1'))}",
                 "sufixo": "%",
-                "descricao": "Semáforo gerencial das validaçÃµes.",
+                "descricao": "Semáforo gerencial das validações.",
             },
             "prontos": {
                 "nivel": "success",
@@ -1243,7 +1243,7 @@ class RDCConsolidadoView(AuthenticatedTemplateMixin, TemplateView):
                 "nivel": "warning" if context["totais"]["alertas"] else "success",
                 "rotulo": "Alertas",
                 "valor": context["totais"]["alertas"],
-                "descricao": "ValidaçÃµes monitoradas.",
+                "descricao": "Validações monitoradas.",
             },
         }
 
@@ -1258,7 +1258,7 @@ def _rdc_consolidado_summary_rows(ctx):
         "atividades": "Atividades",
         "funcionarios": "Funcionários",
         "apontamentos": "Apontamentos",
-        "validacoes": "ValidaçÃµes",
+        "validacoes": "Validações",
         "hh_total": "HH Total",
         "bloqueios": "Bloqueios",
         "alertas": "Alertas",
@@ -1363,8 +1363,8 @@ def _rdc_consolidado_extra_sheets(ctx):
             ],
         },
         {
-            "name": "ValidaçÃµes",
-            "title": "Base de ValidaçÃµes",
+            "name": "Validações",
+            "title": "Base de Validações",
             "headers": ["RDC", "Data", "Projeto", "Tipo", "Status", "Mensagem", "Referência", "Criado em"],
             "rows": [
                 [
@@ -1493,7 +1493,7 @@ class RDCConsolidadoExportView(AuthenticatedTemplateMixin, View):
                     "Cód atividade",
                     "Atividade",
                     "Horas",
-                    "ObservAção",
+                    "Observação",
                 ],
                 rows,
             )
@@ -1573,7 +1573,7 @@ class RDCConsolidadoExportView(AuthenticatedTemplateMixin, View):
                 summary_rows=resumo_rows,
             )
 
-        raise Http404("Tipo de exportAção não suportado.")
+        raise Http404("Tipo de exportação não suportado.")
 
 
 class RDOView(AuthenticatedTemplateMixin, TemplateView):
@@ -1696,7 +1696,7 @@ def _rdo_extra_sheets(scope):
         "Funcionários",
         "Presentes",
         "HH total",
-        "ObservaçÃµes",
+        "Observações",
     ]
     base_rows = _rdo_table_rows(scope)
 
@@ -1745,13 +1745,13 @@ def _rdo_extra_sheets(scope):
         {
             "name": "Apontamentos",
             "title": "Base de Apontamentos",
-            "headers": ["RDC", "Data", "Projeto", "Funcionário", "Cód. atividade", "Atividade", "Horas", "ObservAção"],
+            "headers": ["RDC", "Data", "Projeto", "Funcionário", "Cód. atividade", "Atividade", "Horas", "Observação"],
             "rows": apontamentos_rows,
         },
         {
-            "name": "ObservaçÃµes",
-            "title": "ObservaçÃµes Consolidadas",
-            "headers": ["#", "ObservAção"],
+            "name": "Observações",
+            "title": "Observações Consolidadas",
+            "headers": ["#", "Observação"],
             "rows": observacoes_rows,
         },
     ]
@@ -1774,7 +1774,7 @@ class RDOExportView(AuthenticatedTemplateMixin, View):
             "Funcionários",
             "Presentes",
             "HH total",
-            "ObservaçÃµes",
+            "Observações",
         ]
         rows = _rdo_table_rows(scope)
 
@@ -1803,7 +1803,7 @@ class RDOExportView(AuthenticatedTemplateMixin, View):
                 summary_rows=_rdo_summary_rows(scope),
             )
 
-        raise Http404("Tipo de exportAção de RDO não suportado.")
+        raise Http404("Tipo de exportação de RDO não suportado.")
 
 
 class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, UpdateView):
@@ -1987,7 +1987,7 @@ class RDCAtividadeInlineUpdateView(RDCInlineUpdateBaseView):
 class RDCFuncionarioInlineUpdateView(RDCInlineUpdateBaseView):
     model = RDCFuncionario
     allowed_fields = ("presente_catraca", "hora_normal", "hora_extra")
-    success_message = "Funcion?rio atualizado com sucesso."
+    success_message = "Funcionário atualizado com sucesso."
 
     def get_field_value(self, field, value):
         if field == "presente_catraca":
@@ -2013,7 +2013,7 @@ class RDCApontamentoInlineUpdateView(RDCInlineUpdateBaseView):
 class RDCValidacaoInlineUpdateView(RDCInlineUpdateBaseView):
     model = RDCValidacao
     allowed_fields = ("status", "mensagem", "referencia")
-    success_message = "Valida??o atualizada com sucesso."
+    success_message = "Validação atualizada com sucesso."
 
     def post_save(self):
         _atualizar_validacoes_automaticas(self.rdc)
@@ -2144,9 +2144,9 @@ class RDCValidacaoLoteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEdi
 
         if acao == "excluir":
             qs.delete()
-            messages.success(request, f"{total} validAção(Ãµes) excluída(s).")
+            messages.success(request, f"{total} validação(ões) excluída(s).")
         else:
-            messages.warning(request, "Selecione uma Ação válida para validaçÃµes.")
+            messages.warning(request, "Selecione uma Ação válida para validações.")
 
         _atualizar_validacoes_automaticas(rdc)
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#validacoes")
@@ -2223,7 +2223,7 @@ def _resolve_funcionario_autofill_payload(rdc, funcionario, equipe_id=None, equi
         alertas.append("Não foi possível validar a catraca do dia.")
 
     if not equipe_id:
-        alertas.append("Equipe/alocAção não encontrada automaticamente para o contexto do RDC.")
+        alertas.append("Equipe/alocação não encontrada automaticamente para o contexto do RDC.")
 
     motivo_bloqueio = " ; ".join(alertas)
     hora_normal = Decimal("8.00")
@@ -2415,7 +2415,7 @@ class RDCImportarFuncionariosAlocacaoView(AuthenticatedTemplateMixin, View):
             criados += 1
 
         _atualizar_validacoes_automaticas(rdc)
-        messages.success(request, f"{criados} funcionário(s) importado(s) da alocAção.")
+        messages.success(request, f"{criados} funcionário(s) importado(s) da alocação.")
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#funcionarios")
 
 
@@ -2505,7 +2505,7 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
         action="workflow_rdc",
         target_model="RDC",
         get_target_id=lambda self, request, *a, **k: request.POST.get("rdc_id") or request.POST.get("pk") or k.get("pk") or "",
-        detail_func=lambda self, request, *a, **k: f"A??o '{request.POST.get('action')}' aplicada",
+        detail_func=lambda self, request, *a, **k: f"Ação '{request.POST.get('action')}' aplicada",
     )
     def post(self, request, *args, **kwargs):
         rdc_id = request.POST.get("rdc_id") or kwargs.get("pk")
@@ -2531,10 +2531,10 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
         )
 
         if result.get("ok"):
-            messages.success(request, result.get("message", "A??o executada com sucesso."))
+            messages.success(request, result.get("message", "Ação executada com sucesso."))
         else:
             level = (result.get("level") or "").lower()
-            msg = result.get("message", "N?o foi poss?vel executar a a??o.")
+            msg = result.get("message", "Não foi possível executar a ação.")
             if level == "warning":
                 messages.warning(request, msg)
             elif level == "error":
@@ -2548,3 +2548,6 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
 from decimal import Decimal
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
+
+
+

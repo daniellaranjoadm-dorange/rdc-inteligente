@@ -215,3 +215,4 @@ class HomeDashboardService:
             row["label"] = row["tipo"].replace("_", " ").title()
         return grouped
 
+

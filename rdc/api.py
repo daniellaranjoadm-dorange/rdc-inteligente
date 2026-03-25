@@ -57,3 +57,4 @@ class RDCMontagemAPIView(generics.GenericAPIView):
             user=request.user,
         )
         return Response(RDCSerializer(rdc, context={"request": request}).data)
+

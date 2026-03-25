@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 
 from core.models import TimeStampedModel
 
@@ -39,3 +39,4 @@ class RegistroCatraca(TimeStampedModel):
 
     def __str__(self):
         return f"{self.data} - {self.matricula}"
+

@@ -530,3 +530,4 @@ class MobileRDCApontamentoUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+

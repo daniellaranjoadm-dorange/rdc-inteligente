@@ -17,7 +17,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='importacaoarquivo',
             name='tipo',
-            field=models.CharField(choices=[('funcionarios', 'Funcionários'), ('catraca', 'Catraca'), ('alocacoes', 'AlocaçÃµes'), ('cronograma', 'Cronograma'), ('histograma', 'Histograma')], max_length=30),
+            field=models.CharField(choices=[('funcionarios', 'Funcionários'), ('catraca', 'Catraca'), ('alocacoes', 'Alocações'), ('cronograma', 'Cronograma'), ('histograma', 'Histograma')], max_length=30),
         ),
     ]
+
 

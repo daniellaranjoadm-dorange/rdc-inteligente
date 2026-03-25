@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -58,3 +58,4 @@ class RDCDetailTabStateUITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "const tabFromQuery = urlParams.get('tab');")
         self.assertContains(response, "#funcionarios")
+

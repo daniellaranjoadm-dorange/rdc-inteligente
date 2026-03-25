@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -78,3 +78,4 @@ class RDCRevalidarLockTests(TestCase):
         url = reverse("rdc-revalidar", kwargs={"pk": self.rdc_aberto.pk})
         response = self.client.post(url)
         self.assertEqual(response.status_code, 403)
+

@@ -1,4 +1,4 @@
-from django import forms
+﻿from django import forms
 
 from cadastros.models import AreaLocal, Disciplina, Empresa, Equipe, Funcao, Funcionario, Projeto
 
@@ -57,3 +57,4 @@ class EquipeForm(BaseBootstrapModelForm):
     class Meta:
         model = Equipe
         fields = ["codigo", "nome", "disciplina", "encarregado", "empresa", "ativa"]
+

@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 
 from acesso.models import RegistroCatraca
 
@@ -8,3 +8,4 @@ class RegistroCatracaAdmin(admin.ModelAdmin):
     list_filter = ("data", "presente", "projeto")
     search_fields = ("matricula", "funcionario__nome", "origem_arquivo")
     autocomplete_fields = ("funcionario", "projeto")
+

@@ -67,3 +67,4 @@ class EquipeAdmin(admin.ModelAdmin):
     autocomplete_fields = ("disciplina", "encarregado", "empresa")
 
 
+

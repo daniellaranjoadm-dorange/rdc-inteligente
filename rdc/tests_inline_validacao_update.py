@@ -1,4 +1,4 @@
-from django.test import TestCase
+﻿from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
@@ -115,3 +115,4 @@ class RDCInlineValidacaoUpdateTests(TestCase):
         url = reverse("rdc-validacao-inline-update", kwargs={"pk": self.rdc_aberto.pk, "pk2": self.validacao_aberta.pk})
         response = self.client.post(url, data={"field": "tipo", "value": "tentativa"})
         self.assertEqual(response.status_code, 400)
+

@@ -1,4 +1,4 @@
-
+﻿
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -140,3 +140,4 @@ class RDCInlineAtividadeUpdateTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.atividade_aberta.refresh_from_db()
         self.assertEqual(self.atividade_aberta.descr_atividade, "Atividade aberta")
+

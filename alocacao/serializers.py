@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 
 from alocacao.models import FuncionarioProjeto, HistogramaPlanejado
 
@@ -13,3 +13,4 @@ class HistogramaPlanejadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = HistogramaPlanejado
         fields = "__all__"
+

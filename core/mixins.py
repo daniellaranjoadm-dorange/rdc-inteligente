@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+﻿from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 
 
@@ -19,16 +19,16 @@ class RoleRequiredMixin:
         perfil = getattr(request.user, "perfil_acesso", None)
 
         if not perfil:
-            raise PermissionDenied("Usuário sem perfil de acesso definido.")
+            raise PermissionDenied("Usuário sem perfil operacional definido.")
 
         if self.allowed_roles and perfil.role not in self.allowed_roles:
-            raise PermissionDenied("Você não tem permissão para acessar esta página.")
+            raise PermissionDenied("Você não tem permissão para acessar esta funcionalidade.")
 
         return super().dispatch(request, *args, **kwargs)
 
 class RDCEditableMixin:
     """
-    Bloqueia altera??es se o RDC estiver fechado.
+    Bloqueia alterações se o RDC estiver fechado.
     Prioridade:
     1. self.rdc
     2. self.get_object()
@@ -54,6 +54,10 @@ class RDCEditableMixin:
                     rdc = getattr(obj, "rdc", None)
 
         if rdc and getattr(rdc, "is_fechado", False):
-            raise PermissionDenied("RDC est? fechado e n?o pode ser alterado.")
+            raise PermissionDenied("RDC está fechado e não pode ser alterado.")
 
         return super().dispatch(request, *args, **kwargs)
+
+
+
+
