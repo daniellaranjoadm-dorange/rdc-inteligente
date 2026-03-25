@@ -1,13 +1,73 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3"><h1>ImportAções</h1><a class="btn btn-primary" href="{% url 'importacoes-create' %}">Nova importação</a></div>
-<div class="p-3 table-card">
-<table class="table table-striped">
-<thead><tr><th>ID</th><th>Tipo</th><th>Arquivo</th><th>Status</th><th>Erros</th><th>Criado em</th></tr></thead>
-<tbody>{% for item in importacoes %}<tr><td>{{ item.pk }}</td><td>{{ item.get_tipo_display }}</td><td>{{ item.nome_arquivo }}</td><td>{{ item.get_status_display }}</td><td>{{ item.total_erros }}</td><td>{{ item.created_at }}</td></tr>{% empty %}<tr><td colspan="6">Nenhuma importação.</td></tr>{% endfor %}</tbody>
-</table>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h1 class="mb-1">Importações</h1>
+            <p class="text-muted mb-0">Acompanhe o status, quantidade de erros e ações disponíveis para cada processamento.</p>
+        </div>
+        <a class="btn btn-primary" href="{% url 'importacoes-create' %}">Nova importação</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Arquivo</th>
+                            <th>Status</th>
+                            <th>Erros</th>
+                            <th>Criado em</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in importacoes %}
+                        <tr>
+                            <td>{{ item.pk }}</td>
+                            <td>{{ item.get_tipo_display }}</td>
+                            <td>{{ item.nome_arquivo }}</td>
+                            <td>
+                                {% if item.status == "concluida" %}
+                                    <span class="badge bg-success">{{ item.get_status_display }}</span>
+                                {% elif item.status == "processando" %}
+                                    <span class="badge bg-warning text-dark">{{ item.get_status_display }}</span>
+                                {% elif item.status == "erro" %}
+                                    <span class="badge bg-danger">{{ item.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ item.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.total_erros > 0 %}
+                                    <span class="badge bg-danger">{{ item.total_erros }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">0</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                            <td class="text-end">
+                                {% if item.total_erros > 0 %}
+                                    <a href="{% url 'download_erros_importacao' item.pk %}" class="btn btn-sm btn-outline-danger">
+                                        Baixar erros
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">Sem ações</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">Nenhuma importação encontrada.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
-
-
-
