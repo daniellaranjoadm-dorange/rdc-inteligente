@@ -10,21 +10,12 @@ class BaseImportService:
         self.import_job = import_job
 
     def parse(self):
-        """
-        Deve retornar uma lista de registros normalizados.
-        """
         raise NotImplementedError
 
     def validate_row(self, row, index):
-        """
-        Deve retornar lista de erros da linha.
-        """
         return []
 
     def process_row(self, row, index):
-        """
-        Processa a linha validada.
-        """
         raise NotImplementedError
 
     def run(self):
@@ -38,6 +29,10 @@ class BaseImportService:
         erros = []
         processadas = 0
 
+        created = 0
+        updated = 0
+        unchanged = 0
+
         for index, row in enumerate(registros, start=1):
             row_errors = self.validate_row(row, index)
             if row_errors:
@@ -50,8 +45,15 @@ class BaseImportService:
                 )
                 continue
 
-            self.process_row(row, index)
+            result = self.process_row(row, index)
             processadas += 1
+
+            if result == "created":
+                created += 1
+            elif result == "unchanged":
+                unchanged += 1
+            else:
+                updated += 1
 
         self.import_job.linhas_processadas = processadas
         self.import_job.linhas_com_erro = len(erros)
@@ -69,7 +71,11 @@ class BaseImportService:
             "total_linhas": self.import_job.total_linhas,
             "linhas_processadas": self.import_job.linhas_processadas,
             "linhas_com_erro": self.import_job.linhas_com_erro,
+            "created": created,
+            "updated": updated,
+            "unchanged": unchanged,
         }
 
         self.import_job.save()
         return self.import_job
+

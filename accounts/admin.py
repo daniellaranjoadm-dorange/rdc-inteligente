@@ -15,3 +15,4 @@ class AuditLogAdmin(admin.ModelAdmin):
     search_fields = ("user__username", "action", "target_model", "target_id", "detail")
     list_filter = ("action", "target_model", "created_at")
 
+

@@ -59,3 +59,4 @@ class RDCDetailInlineGuardUITests(TestCase):
         self.assertNotContains(response, "fetch(url")
         self.assertContains(response, "Edi??o r?pida temporariamente indispon?vel nesta vers?o.")
 
+

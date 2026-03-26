@@ -1,0 +1,424 @@
+﻿{% extends "base_mobile.html" %}
+{% block content %}
+<div class="container py-3">
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="h4 mb-1">Operação em Campo</h1>
+                <div class="text-muted small">Acesso rápido para tablet e smartphone</div>
+            </div>
+            <a href="/" class="btn btn-outline-secondary btn-sm">Versão completa</a>
+        </div>
+    </div>
+
+    <div class="mb-3">
+    <button id="btn-sync" class="btn btn-primary w-100 py-3">
+        🔄 Sincronizar dados
+    </button>
+    <div id="sync-status" class="small text-muted mt-2 text-center"></div>
+</div>
+
+<script>
+const MOBILE_SYNC_URL = "/api/mobile/sync/";
+const MOBILE_SYNC_QUEUE_KEY = "mobile_sync_queue_v2";
+const MOBILE_LAST_SYNC_KEY = "mobile_last_sync_at_v2";
+const MOBILE_PENDING_KEY = "mobile_pending_changes_v2";
+
+document.getElementById("btn-sync").addEventListener("click", async function() {
+    const payload = buildSyncPayloadFromPending();
+    enqueueSyncPayload(payload);
+    renderQueueStatus("Sincronização incremental adicionada à fila.");
+    await flushSyncQueue();
+});
+
+document.addEventListener("DOMContentLoaded", async function () {
+    renderQueueStatus();
+    await flushSyncQueue(true);
+});
+
+function getPendingChanges() {
+    try {
+        const raw = localStorage.getItem(MOBILE_PENDING_KEY);
+        const parsed = raw ? JSON.parse(raw) : {
+            rdcs: [],
+            funcionarios: [],
+            atividades: [],
+            apontamentos: []
+        };
+        return {
+            rdcs: Array.isArray(parsed.rdcs) ? parsed.rdcs : [],
+            funcionarios: Array.isArray(parsed.funcionarios) ? parsed.funcionarios : [],
+            atividades: Array.isArray(parsed.atividades) ? parsed.atividades : [],
+            apontamentos: Array.isArray(parsed.apontamentos) ? parsed.apontamentos : []
+        };
+    } catch (e) {
+        return {
+            rdcs: [],
+            funcionarios: [],
+            atividades: [],
+            apontamentos: []
+        };
+    }
+}
+
+function savePendingChanges(changes) {
+    localStorage.setItem(MOBILE_PENDING_KEY, JSON.stringify(changes));
+}
+
+function clearPendingChanges() {
+    savePendingChanges({
+        rdcs: [],
+        funcionarios: [],
+        atividades: [],
+        apontamentos: []
+    });
+}
+
+function buildSyncPayloadFromPending() {
+    const pending = getPendingChanges();
+    return {
+        rdcs: pending.rdcs,
+        funcionarios: pending.funcionarios,
+        atividades: pending.atividades,
+        apontamentos: pending.apontamentos,
+        last_sync_at: localStorage.getItem(MOBILE_LAST_SYNC_KEY)
+    };
+}
+
+function getQueue() {
+    try {
+        const raw = localStorage.getItem(MOBILE_SYNC_QUEUE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveQueue(queue) {
+    localStorage.setItem(MOBILE_SYNC_QUEUE_KEY, JSON.stringify(queue));
+}
+
+function enqueueSyncPayload(payload) {
+    const hasChanges =
+        (payload.rdcs || []).length > 0 ||
+        (payload.funcionarios || []).length > 0 ||
+        (payload.atividades || []).length > 0 ||
+        (payload.apontamentos || []).length > 0 ||
+        !!payload.last_sync_at;
+
+    if (!hasChanges) {
+        renderQueueStatus("Nada novo para sincronizar.");
+        return;
+    }
+
+    const queue = getQueue();
+    queue.push({
+        id: cryptoRandomId(),
+        created_at: new Date().toISOString(),
+        attempts: 0,
+        payload: payload
+    });
+    saveQueue(queue);
+}
+
+function cryptoRandomId() {
+    return "sync_" + Math.random().toString(36).slice(2) + "_" + Date.now();
+}
+
+async function flushSyncQueue(silent = false) {
+    const btn = document.getElementById("btn-sync");
+
+    if (!navigator.onLine) {
+        renderQueueStatus("Sem conexão. A fila será enviada quando a internet voltar.");
+        return;
+    }
+
+    let queue = getQueue();
+
+    if (queue.length === 0) {
+        renderQueueStatus(silent ? null : "Nada pendente para sincronizar.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Sincronizando...";
+
+    while (queue.length > 0) {
+        const item = queue[0];
+
+        try {
+            const response = await fetch(MOBILE_SYNC_URL, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify(item.payload)
+            });
+
+            if (response.status === 401) {
+                window.location.href = "/accounts/login/?next=/m/";
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("Erro HTTP: " + response.status);
+            }
+
+            const data = await response.json();
+
+            localStorage.setItem(
+                MOBILE_LAST_SYNC_KEY,
+                data.sync_time || new Date().toISOString()
+            );
+
+            clearPendingChanges();
+
+            queue.shift();
+            saveQueue(queue);
+
+            renderQueueStatus("✔ Sync incremental concluído");
+        } catch (e) {
+            item.attempts = (item.attempts || 0) + 1;
+            item.last_error = String(e);
+            item.last_attempt_at = new Date().toISOString();
+            queue[0] = item;
+            saveQueue(queue);
+
+            renderQueueStatus("Erro ao sincronizar. Alterações mantidas para retry.");
+            btn.disabled = false;
+            btn.innerText = "Tentar novamente";
+            return;
+        }
+    }
+
+    btn.disabled = false;
+    btn.innerText = "🔄 Sincronizar novamente";
+    renderQueueStatus("✔ Fila vazia");
+}
+
+function renderQueueStatus(message) {
+    const status = document.getElementById("sync-status");
+    const queue = getQueue();
+    const pending = getPendingChanges();
+
+    const totalLocalChanges =
+        pending.rdcs.length +
+        pending.funcionarios.length +
+        pending.atividades.length +
+        pending.apontamentos.length;
+
+    const base = "Fila: " + queue.length + " | Alterações locais: " + totalLocalChanges;
+    status.innerText = message ? (message + " | " + base) : base;
+}
+
+window.addEventListener("online", function () {
+    renderQueueStatus("Conexão restaurada. Tentando sincronizar...");
+    flushSyncQueue(true);
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/*
+ * Helpers para uso futuro.
+ * Quando a UI começar a editar dados offline, chame:
+ *
+ *   queueLocalChange("rdcs", { mobile_uuid: "...", op: "upsert", ... })
+ *   queueLocalChange("apontamentos", { mobile_uuid: "...", op: "delete", ... })
+ */
+function queueLocalChange(scope, item) {
+    const allowed = ["rdcs", "funcionarios", "atividades", "apontamentos"];
+    if (!allowed.includes(scope)) {
+        throw new Error("Escopo inválido: " + scope);
+    }
+
+    const entityKey = item.mobile_uuid;
+    if (!entityKey) {
+        throw new Error("mobile_uuid obrigatório");
+    }
+
+    const pending = getPendingChanges();
+    const list = pending[scope] || [];
+
+    const normalized = {
+        ...item,
+        client_changed_at: new Date().toISOString()
+    };
+
+    const index = list.findIndex(x => x.mobile_uuid === entityKey);
+
+    if (index >= 0) {
+        list[index] = mergeItem(list[index], normalized);
+    } else {
+        list.push(normalized);
+    }
+
+    pending[scope] = list;
+    savePendingChanges(pending);
+    renderQueueStatus("Alteração deduplicada.");
+}
+
+function mergeItem(prev, next) {
+    if (next.op === "delete") {
+        return {
+            ...prev,
+            ...next,
+            op: "delete"
+        };
+    }
+
+    return {
+        ...prev,
+        ...next,
+        op: next.op || "upsert"
+    };
+}
+
+function resolveEntityKey(scope, item) {
+    if (!item || typeof item !== "object") {
+        return null;
+    }
+
+    if (item.mobile_uuid) {
+        return String(item.mobile_uuid);
+    }
+
+    const fallbackKeys = {
+        rdcs: ["rdc_mobile_uuid", "rdc"],
+        funcionarios: ["rdc_funcionario_mobile_uuid", "rdc_funcionario"],
+        atividades: ["rdc_atividade_mobile_uuid", "rdc_atividade"],
+        apontamentos: ["rdc_apontamento_mobile_uuid", "rdc_apontamento"]
+    };
+
+    const keys = fallbackKeys[scope] || [];
+    for (const key of keys) {
+        if (item[key]) {
+            return String(item[key]);
+        }
+    }
+
+    return null;
+}
+
+function mergePendingItem(previousItem, nextItem) {
+    const prevOp = previousItem && previousItem.op ? previousItem.op : "upsert";
+    const nextOp = nextItem && nextItem.op ? nextItem.op : "upsert";
+
+    if (nextOp === "delete") {
+        return {
+            ...previousItem,
+            ...nextItem,
+            op: "delete",
+            client_changed_at: nextItem.client_changed_at
+        };
+    }
+
+    if (prevOp === "delete" && nextOp === "upsert") {
+        return {
+            ...previousItem,
+            ...nextItem,
+            op: "upsert",
+            client_changed_at: nextItem.client_changed_at
+        };
+    }
+
+    return {
+        ...previousItem,
+        ...nextItem,
+        client_changed_at: nextItem.client_changed_at
+    };
+}
+
+window.mobileSyncDebug = {
+    getQueue,
+    getPendingChanges,
+    queueLocalChange,
+    flushSyncQueue,
+    clearPendingChanges
+};
+</script>
+<div class="row g-3">
+        <div class="col-12">
+            <a href="/rdc/" class="text-decoration-none">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold fs-5 text-dark">RDC</div>
+                                <div class="text-muted small">Lançamentos, acompanhamento e operação diária</div>
+                            </div>
+                            <div class="fs-4">📋</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12">
+            <a href="/importacoes/mobile/" class="text-decoration-none">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold fs-5 text-dark">Importações</div>
+                                <div class="text-muted small">Status, erros e resumo incremental</div>
+                            </div>
+                            <div class="fs-4">📥</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12">
+            <a href="/cadastros/" class="text-decoration-none">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold fs-5 text-dark">Cadastros</div>
+                                <div class="text-muted small">Projetos, áreas, equipes e apoio operacional</div>
+                            </div>
+                            <div class="fs-4">🗂️</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body py-3">
+                <div class="fw-semibold mb-2">Orientação rápida</div>
+                <div class="small text-muted">
+                    Use esta tela como ponto de entrada no tablet ou smartphone. Para administração completa, acesse a versão desktop.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+

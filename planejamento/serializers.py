@@ -8,3 +8,4 @@ class AtividadeCronogramaSerializer(serializers.ModelSerializer):
         model = AtividadeCronograma
         fields = "__all__"
 
+

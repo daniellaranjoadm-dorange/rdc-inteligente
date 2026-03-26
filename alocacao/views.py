@@ -3,3 +3,4 @@
 class AlocacaoHomeView(TemplateView):
     template_name = "alocacao/home.html"
 
+

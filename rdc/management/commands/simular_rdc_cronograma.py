@@ -39,7 +39,7 @@ class Command(BaseCommand):
             importacao = self._criar_importacao(caminho, usuario)
             executar_importacao(importacao.pk)
             importacao.refresh_from_db()
-            self.stdout.write(self.style.SUCCESS(f"ImportAção #{importacao.pk} finalizada com status: {importacao.status}"))
+            self.stdout.write(self.style.SUCCESS(f"Importação #{importacao.pk} finalizada com status: {importacao.status}"))
             self.stdout.write(importacao.observacoes)
 
         projeto_id = None
@@ -90,6 +90,7 @@ class Command(BaseCommand):
         if not modelo_path.exists():
             raise CommandError(f"Modelo RDC não encontrado: {modelo_path}")
         settings.RDC_TEMPLATE_PATH = modelo_path
+
 
 
 

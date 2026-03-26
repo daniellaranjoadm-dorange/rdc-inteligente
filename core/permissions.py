@@ -29,3 +29,4 @@ PERMISSION_CODES = {
         description="Usuário sem a permissão específica exigida.",
     ),
 }
+

@@ -14,3 +14,4 @@ class HistogramaPlanejadoSerializer(serializers.ModelSerializer):
         model = HistogramaPlanejado
         fields = "__all__"
 
+

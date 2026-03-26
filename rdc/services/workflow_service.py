@@ -104,3 +104,4 @@ def process_rdc_workflow_action(rdc: RDC, *, action: str, user=None, observacao:
     return {"ok": True, "level": "success", "message": messages[action]}
 
 
+

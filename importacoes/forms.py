@@ -16,3 +16,4 @@ class ImportacaoArquivoForm(forms.ModelForm):
             field.widget.attrs["class"] = f"{css} form-control".strip()
         self.fields["tipo"].choices = TipoImportacaoChoices.CHOICES
 
+

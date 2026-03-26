@@ -27,3 +27,4 @@ class AtividadeCronograma(TimeStampedModel):
     def __str__(self):
         return f"{self.codigo_atividade} - {self.descr_atividade}"
 
+

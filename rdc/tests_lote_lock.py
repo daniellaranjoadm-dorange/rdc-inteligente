@@ -124,3 +124,4 @@ class RDCLoteLockTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertTrue(RDCValidacao.objects.filter(pk=self.validacao.pk).exists())
 
+

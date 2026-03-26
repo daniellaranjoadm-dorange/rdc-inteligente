@@ -44,3 +44,4 @@ class EquipeSerializer(serializers.ModelSerializer):
         model = Equipe
         fields = "__all__"
 
+

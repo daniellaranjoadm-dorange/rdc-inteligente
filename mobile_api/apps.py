@@ -6,3 +6,4 @@ class MobileApiConfig(AppConfig):
     name = "mobile_api"
     verbose_name = "API Mobile"
 
+

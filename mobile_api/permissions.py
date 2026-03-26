@@ -38,3 +38,4 @@ class PerfilRolePermission(BasePermission):
 class MobileApiPermission(PerfilRolePermission):
     pass
 
+

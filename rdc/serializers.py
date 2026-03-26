@@ -26,3 +26,4 @@ class RDCSerializer(serializers.ModelSerializer):
         model = RDC
         fields = "__all__"
 
+

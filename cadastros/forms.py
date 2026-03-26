@@ -58,3 +58,4 @@ class EquipeForm(BaseBootstrapModelForm):
         model = Equipe
         fields = ["codigo", "nome", "disciplina", "encarregado", "empresa", "ativa"]
 
+

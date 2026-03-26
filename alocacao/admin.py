@@ -16,3 +16,4 @@ class HistogramaPlanejadoAdmin(admin.ModelAdmin):
     search_fields = ("equipe__nome", "funcao__nome", "area_local__descricao")
     autocomplete_fields = ("projeto", "area_local", "disciplina", "equipe", "funcao")
 
+

@@ -67,3 +67,4 @@ class ImportJob(models.Model):
 
     def __str__(self):
         return f"{self.get_tipo_display()} #{self.pk} - {self.get_status_display()}"
+

@@ -8,3 +8,4 @@ class RegistroCatracaSerializer(serializers.ModelSerializer):
         model = RegistroCatraca
         fields = "__all__"
 
+

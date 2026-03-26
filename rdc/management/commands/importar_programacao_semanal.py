@@ -47,7 +47,7 @@ class Command(BaseCommand):
             'qtd_prevista': ['qtd_prevista', 'quantidade', 'qtd'],
             'hh_previsto': ['hh_previsto', 'hh'],
             'turno': ['turno'],
-            'observacao': ['observacao', 'observAção'],
+            'observacao': ['observacao', 'observação'],
         }
 
         for i, row in enumerate(ws.iter_rows(min_row=1, max_row=20, values_only=True), start=1):
@@ -116,5 +116,6 @@ class Command(BaseCommand):
                 )
                 created += 1
         self.stdout.write(self.style.SUCCESS(f'ProgramAção semanal importada com sucesso. Registros: {created}'))
+
 
 

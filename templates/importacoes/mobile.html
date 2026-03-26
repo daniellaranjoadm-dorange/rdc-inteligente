@@ -1,0 +1,81 @@
+﻿{% extends "base_mobile.html" %}
+{% block content %}
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h1 class="h4 mb-1">Importações</h1>
+            <div class="text-muted small">Tela simplificada para uso em campo</div>
+        </div>
+        <a href="{% url 'importacoes-home' %}" class="btn btn-outline-secondary btn-sm">Ver versão completa</a>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Total</div>
+                    <div class="fs-4 fw-bold">{{ totais.total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card shadow-sm h-100 border-warning">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Em andamento</div>
+                    <div class="fs-4 fw-bold text-warning">{{ totais.em_andamento }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for item in importacoes %}
+    <div class="card shadow-sm mb-3 border-0">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                    <div class="fw-semibold">#{{ item.id }} · {{ item.get_tipo_display }}</div>
+                    <div class="small text-muted">{{ item.nome_arquivo }}</div>
+                </div>
+                <div>
+                    {% if item.status == "concluida" %}
+                        <span class="badge bg-success">{{ item.get_status_display }}</span>
+                    {% elif item.status == "processando" %}
+                        <span class="badge bg-warning text-dark">{{ item.get_status_display }}</span>
+                    {% elif item.status == "erro" %}
+                        <span class="badge bg-danger">{{ item.get_status_display }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ item.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="small mb-2">
+                <div><strong>Criados:</strong> {{ item.resumo.created|default:0 }}</div>
+                <div><strong>Atualizados:</strong> {{ item.resumo.updated|default:0 }}</div>
+                <div><strong>Sem alteração:</strong> {{ item.resumo.unchanged|default:0 }}</div>
+                <div><strong>Erros:</strong> {{ item.total_erros }}</div>
+            </div>
+
+            <div class="small text-muted mb-3">
+                <div><strong>Data:</strong> {{ item.created_at|date:"d/m/Y H:i" }}</div>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                {% if item.total_erros > 0 %}
+                <a href="{% url 'download_erros_importacao' item.pk %}" class="btn btn-outline-danger btn-sm">
+                    Baixar erros
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card shadow-sm">
+        <div class="card-body text-center text-muted">
+            Nenhuma importação encontrada.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

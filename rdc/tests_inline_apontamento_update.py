@@ -173,3 +173,4 @@ class RDCInlineApontamentoUpdateTests(TestCase):
         response = self.client.post(url, data={"field": "rdc_atividade", "value": "999"})
         self.assertEqual(response.status_code, 400)
 
+

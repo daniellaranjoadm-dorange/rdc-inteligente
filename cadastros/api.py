@@ -33,3 +33,4 @@ class EquipeViewSet(BaseViewSet):
     queryset = Equipe.objects.select_related("disciplina", "empresa", "encarregado").all().order_by("nome")
     serializer_class = EquipeSerializer
 
+

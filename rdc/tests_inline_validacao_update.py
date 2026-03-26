@@ -116,3 +116,4 @@ class RDCInlineValidacaoUpdateTests(TestCase):
         response = self.client.post(url, data={"field": "tipo", "value": "tentativa"})
         self.assertEqual(response.status_code, 400)
 
+

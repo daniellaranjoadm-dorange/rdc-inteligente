@@ -141,3 +141,4 @@ class RDCInlineAtividadeUpdateTests(TestCase):
         self.atividade_aberta.refresh_from_db()
         self.assertEqual(self.atividade_aberta.descr_atividade, "Atividade aberta")
 
+

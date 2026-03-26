@@ -68,13 +68,26 @@ class LeitorPlanilhaBase:
 
     def __init__(self, importacao: ImportacaoArquivo):
         self.importacao = importacao
+        self.resumo = {
+            "created": 0,
+            "updated": 0,
+            "unchanged": 0,
+            "erros": 0,
+        }
 
     def processar(self) -> None:
         self.importacao.erros.all().delete()
         self.importacao.status = StatusImportacaoChoices.PROCESSANDO
         self.importacao.iniciado_em = self.importacao.iniciado_em or timezone.now()
         self.importacao.observacoes = ""
-        self.importacao.save(update_fields=["status", "iniciado_em", "observacoes"])
+        self.importacao.resumo = {}
+        self.resumo = {
+            "created": 0,
+            "updated": 0,
+            "unchanged": 0,
+            "erros": 0,
+        }
+        self.importacao.save(update_fields=["status", "iniciado_em", "observacoes", "resumo"])
 
         total_erros = 0
         total_sucessos = 0
@@ -111,8 +124,10 @@ class LeitorPlanilhaBase:
             self.importacao.status = StatusImportacaoChoices.ERRO
             self.importacao.observacoes = f"Erro no processamento: {exc}"
         finally:
+            self.resumo["erros"] = total_erros
+            self.importacao.resumo = self.resumo
             self.importacao.finalizado_em = timezone.now()
-            self.importacao.save(update_fields=["status", "observacoes", "finalizado_em"])
+            self.importacao.save(update_fields=["status", "observacoes", "finalizado_em", "resumo"])
 
     def ler_arquivo(self) -> list[dict[str, Any]]:
         caminho = self.importacao.arquivo.path
@@ -315,7 +330,7 @@ class ImportadorFuncionarios(LeitorPlanilhaBase):
         "nome": ["nome", "nome funcionario", "nome do funcionario", "funcionario", "colaborador"],
         "cpf": ["cpf"],
         "rg": ["rg"],
-        "funcao": ["funcao", "função", "cargo", "ocupacao", "ocupAção"],
+        "funcao": ["funcao", "função", "cargo", "ocupacao", "ocupação"],
         "empresa": ["empresa", "empreiteira", "contratada", "relAção social", "relacao social"],
         "cnpj": ["cnpj"],
         "ativo": ["ativo", "status", "situacao", "situAção"],
@@ -334,7 +349,11 @@ class ImportadorFuncionarios(LeitorPlanilhaBase):
         if not matricula or not nome:
             return ResultadoLinhaImportacao(False, "Matrícula e nome são obrigatórios.")
 
-        funcionario_existente = Funcionario.objects.filter(matricula=matricula).select_related("funcao", "empresa").first()
+        funcionario_existente = (
+            Funcionario.objects.filter(matricula=matricula)
+            .select_related("funcao", "empresa")
+            .first()
+        )
 
         if funcionario_existente and not nome_funcao and funcionario_existente.funcao_id:
             funcao = funcionario_existente.funcao
@@ -346,17 +365,51 @@ class ImportadorFuncionarios(LeitorPlanilhaBase):
         else:
             empresa = buscar_ou_criar_empresa(nome_empresa, cnpj_empresa)
 
-        Funcionario.objects.update_or_create(
-            matricula=matricula,
-            defaults={
-                "nome": nome,
-                "cpf": cpf,
-                "rg": rg,
-                "funcao": funcao,
-                "empresa": empresa,
-                "ativo": ativo,
-            },
-        )
+        if not funcionario_existente:
+            Funcionario.objects.create(
+                matricula=matricula,
+                nome=nome,
+                cpf=cpf,
+                rg=rg,
+                funcao=funcao,
+                empresa=empresa,
+                ativo=ativo,
+            )
+            self.resumo["created"] += 1
+            return ResultadoLinhaImportacao(True)
+
+        changed_fields = []
+
+        if funcionario_existente.nome != nome:
+            funcionario_existente.nome = nome
+            changed_fields.append("nome")
+
+        if funcionario_existente.cpf != cpf:
+            funcionario_existente.cpf = cpf
+            changed_fields.append("cpf")
+
+        if funcionario_existente.rg != rg:
+            funcionario_existente.rg = rg
+            changed_fields.append("rg")
+
+        if funcionario_existente.funcao_id != funcao.id:
+            funcionario_existente.funcao = funcao
+            changed_fields.append("funcao")
+
+        if funcionario_existente.empresa_id != empresa.id:
+            funcionario_existente.empresa = empresa
+            changed_fields.append("empresa")
+
+        if funcionario_existente.ativo != ativo:
+            funcionario_existente.ativo = ativo
+            changed_fields.append("ativo")
+
+        if changed_fields:
+            funcionario_existente.save(update_fields=changed_fields)
+            self.resumo["updated"] += 1
+        else:
+            self.resumo["unchanged"] += 1
+
         return ResultadoLinhaImportacao(True)
 
 
@@ -371,7 +424,7 @@ class ImportadorCatraca(LeitorPlanilhaBase):
         "entrada_2": ["entrada_2", "segunda entrada"],
         "saida_2": ["saida_2", "segunda saida", "segunda saída"],
         "presente": ["presente", "status acesso"],
-        "observacao": ["observacao", "observAção", "obs"],
+        "observacao": ["observacao", "observação", "obs"],
     }
 
     def processar_linha(self, linha: dict[str, Any]) -> ResultadoLinhaImportacao:
@@ -604,10 +657,10 @@ class ImportadorCronograma(LeitorPlanilhaBase):
             return self._disciplinas_cache[chave]
         mapeamento = {
             "ELETRICA": ("ELE", "Elétrica"),
-            "INSTRUMENTACAO": ("INS", "InstrumentAção"),
+            "INSTRUMENTACAO": ("INS", "Instrumentação"),
             "MECANICA": ("MEC", "MecÃ¢nica"),
             "CIVIL": ("CIV", "Civil"),
-            "TUBULACAO": ("TUB", "TubulAção"),
+            "TUBULACAO": ("TUB", "Tubulação"),
             "COMISSIONAMENTO": ("COM", "Comissionamento"),
         }
         codigo, nome = mapeamento[chave]
@@ -727,7 +780,7 @@ def importar_cronograma(importacao: ImportacaoArquivo):
 def importar_histograma(importacao: ImportacaoArquivo):
     importacao.status = StatusImportacaoChoices.PROCESSANDO
     importacao.save(update_fields=["status"])
-    return {"mensagem": "Stub de importAção de histograma pronto para evolução."}
+    return {"mensagem": "Stub de importação de histograma pronto para evolução."}
 
 
 def buscar_projeto_por_codigo_ou_nome(valor: str) -> Projeto | None:
@@ -763,6 +816,7 @@ def buscar_equipe_por_nome_ou_codigo(valor: str, disciplina: Disciplina | None =
         if normalizar_texto_busca(equipe.codigo) == termo or normalizar_texto_busca(equipe.nome) == termo:
             return equipe
     return None
+
 
 
 

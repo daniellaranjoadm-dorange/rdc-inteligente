@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
+{% load dict_extras %}
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -10,67 +11,32 @@
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            {% if importacao_destacada and importacao_destacada.total_erros > 0 %}
-    <div class="card shadow-sm mb-4 border-danger">
-        <div class="card-body">
-            <h5 class="mb-3 text-danger">Erros encontrados na importação</h5>
-
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Linha</th>
-                            <th>Campo</th>
-                            <th>Mensagem</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for erro in erros_preview %}
-                        <tr>
-                            <td>{{ erro.linha }}</td>
-                            <td>{{ erro.campo }}</td>
-                            <td>{{ erro.mensagem }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-2 text-end">
-                <a href="{% url 'download_erros_importacao' importacao_destacada.pk %}" class="btn btn-sm btn-outline-danger">
-                    Baixar todos os erros
-                </a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <div class="card shadow-sm">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-muted small">Total</div>
                     <div class="fs-3 fw-bold">{{ totais.total }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-success">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-success h-100">
                 <div class="card-body">
                     <div class="text-muted small">Concluídas</div>
                     <div class="fs-3 fw-bold text-success">{{ totais.concluidas }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-danger">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-danger h-100">
                 <div class="card-body">
                     <div class="text-muted small">Com erro</div>
                     <div class="fs-3 fw-bold text-danger">{{ totais.com_erro }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-warning">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-warning h-100">
                 <div class="card-body">
                     <div class="text-muted small">Pendentes / processando</div>
                     <div class="fs-3 fw-bold text-warning">{{ totais.em_andamento }}</div>
@@ -81,12 +47,12 @@
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form method="get" class="d-flex gap-2 flex-wrap align-items-end">
-                <div>
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-12 col-md-5">
                     <label class="form-label mb-1">Arquivo</label>
                     <input type="text" name="q" value="{{ busca_arquivo }}" class="form-control" placeholder="Buscar por nome do arquivo">
                 </div>
-                <div>
+                <div class="col-12 col-md-4">
                     <label class="form-label mb-1">Status</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
@@ -96,15 +62,26 @@
                         <option value="erro" {% if filtro_status == "erro" %}selected{% endif %}>Erro</option>
                     </select>
                 </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-outline-primary">Filtrar</button>
-                    <a href="{% url 'importacoes-home' %}" class="btn btn-outline-secondary">Limpar</a>
+                <div class="col-12 col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Filtrar</button>
+                    <a href="{% url 'importacoes-home' %}" class="btn btn-outline-secondary w-100">Limpar</a>
                 </div>
             </form>
         </div>
     </div>
 
     {% if importacao_destacada %}
+    <div class="card mt-3 border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="mb-3">Resumo incremental</h6>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge bg-success">Criados: {{ resumo_destacado.created }}</span>
+                <span class="badge bg-primary">Atualizados: {{ resumo_destacado.updated }}</span>
+                <span class="badge bg-secondary">Sem alteração: {{ resumo_destacado.unchanged }}</span>
+            </div>
+        </div>
+    </div>
+
     <div class="alert alert-info border mb-4">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
             <div>
@@ -126,30 +103,123 @@
             </div>
         </div>
     </div>
-    {% endif %}
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
+    {% if importacao_destacada.total_erros > 0 %}
+    <div class="card shadow-sm mb-4 border-danger">
+        <div class="card-body">
+            <h5 class="mb-3 text-danger">Erros encontrados na importação</h5>
             <div class="table-responsive">
-                <table class="table table-striped align-middle mb-0">
-                    <thead>
+                <table class="table table-sm table-bordered align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <th>ID</th>
-                            <th>Tipo</th>
-                            <th>Arquivo</th>
-                            <th>Status</th>
-                            <th>Erros</th>
-                            <th>Criado em</th>
-                            <th class="text-end">Ações</th>
+                            <th>Linha</th>
+                            <th>Campo</th>
+                            <th>Mensagem</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for item in importacoes %}
+                        {% for erro in erros_preview %}
                         <tr>
-                            <td>{{ item.pk }}</td>
-                            <td>{{ item.get_tipo_display }}</td>
-                            <td>{{ item.nome_arquivo }}</td>
-                            <td>
+                            <td>{{ erro.linha }}</td>
+                            <td>{{ erro.campo }}</td>
+                            <td>{{ erro.mensagem }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-2 text-end">
+                <a href="{% url 'download_erros_importacao' importacao_destacada.pk %}" class="btn btn-sm btn-outline-danger">
+                    Baixar todos os erros
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="d-none d-lg-block">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tipo</th>
+                                <th>Arquivo</th>
+                                <th>Status</th>
+                                <th>Erros</th>
+                                <th>Criado em</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in importacoes %}
+                            <tr>
+                                <td>{{ item.pk }}</td>
+                                <td>{{ item.get_tipo_display }}</td>
+                                <td>{{ item.nome_arquivo }}</td>
+                                <td>
+                                    {% if item.status == "concluida" %}
+                                        <span class="badge bg-success">{{ item.get_status_display }}</span>
+                                    {% elif item.status == "processando" %}
+                                        <span class="badge bg-warning text-dark">{{ item.get_status_display }}</span>
+                                    {% elif item.status == "erro" %}
+                                        <span class="badge bg-danger">{{ item.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ item.get_status_display }}</span>
+                                    {% endif %}
+                                    {% with r=resumos_por_id|get_item:item.id %}
+                                    <div class="small text-muted mt-1">
+                                        <span class="text-success">Criados: {{ r.created }}</span> |
+                                        <span class="text-primary">Atualizados: {{ r.updated }}</span> |
+                                        <span class="text-secondary">Sem alteração: {{ r.unchanged }}</span>
+                                    </div>
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% if item.total_erros > 0 %}
+                                        <span class="badge bg-danger">{{ item.total_erros }}</span>
+                                    {% else %}
+                                        <span class="badge bg-success">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                                <td class="text-end">
+                                    {% if item.total_erros > 0 %}
+                                        <a href="{% url 'download_erros_importacao' item.pk %}" class="btn btn-sm btn-outline-danger">
+                                            Baixar erros
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted small">Sem ações</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">Nenhuma importação encontrada.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-lg-none">
+        <div class="row g-3">
+            {% for item in importacoes %}
+            <div class="col-12">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                            <div>
+                                <div class="fw-bold">#{{ item.pk }} · {{ item.get_tipo_display }}</div>
+                                <div class="text-muted small">{{ item.nome_arquivo }}</div>
+                            </div>
+                            <div>
                                 {% if item.status == "concluida" %}
                                     <span class="badge bg-success">{{ item.get_status_display }}</span>
                                 {% elif item.status == "processando" %}
@@ -159,33 +229,43 @@
                                 {% else %}
                                     <span class="badge bg-secondary">{{ item.get_status_display }}</span>
                                 {% endif %}
-                            </td>
-                            <td>
-                                {% if item.total_erros > 0 %}
-                                    <span class="badge bg-danger">{{ item.total_erros }}</span>
-                                {% else %}
-                                    <span class="badge bg-success">0</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
-                            <td class="text-end">
-                                {% if item.total_erros > 0 %}
-                                    <a href="{% url 'download_erros_importacao' item.pk %}" class="btn btn-sm btn-outline-danger">
-                                        Baixar erros
-                                    </a>
-                                {% else %}
-                                    <span class="text-muted small">Sem ações</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">Nenhuma importação encontrada.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+
+                        {% with r=resumos_por_id|get_item:item.id %}
+                        <div class="small mb-2">
+                            <div><span class="text-success fw-semibold">Criados:</span> {{ r.created }}</div>
+                            <div><span class="text-primary fw-semibold">Atualizados:</span> {{ r.updated }}</div>
+                            <div><span class="text-secondary fw-semibold">Sem alteração:</span> {{ r.unchanged }}</div>
+                        </div>
+                        {% endwith %}
+
+                        <div class="small text-muted mb-2">
+                            <div><strong>Erros:</strong> {{ item.total_erros }}</div>
+                            <div><strong>Criado em:</strong> {{ item.created_at|date:"d/m/Y H:i" }}</div>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if item.total_erros > 0 %}
+                            <a href="{% url 'download_erros_importacao' item.pk %}" class="btn btn-sm btn-outline-danger">
+                                Baixar erros
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">Sem ações</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center text-muted">
+                        Nenhuma importação encontrada.
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

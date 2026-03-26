@@ -32,3 +32,4 @@ def cor_acao_auditoria(action):
     }
     return mapa.get(action, "light")
 
+

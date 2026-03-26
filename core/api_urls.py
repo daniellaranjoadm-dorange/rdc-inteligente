@@ -19,3 +19,4 @@ urlpatterns = router.urls + [
     path("rdc/montar/", RDCMontagemAPIView.as_view(), name="api-rdc-montar"),
 ]
 
+

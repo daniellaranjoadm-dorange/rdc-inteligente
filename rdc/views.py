@@ -2552,3 +2552,4 @@ class RDCApontamentoCreateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RD
     def get_success_url(self):
         from django.urls import reverse
         return f"{reverse('rdc-detail', kwargs={'pk': self.rdc.pk})}#apontamentos"
+

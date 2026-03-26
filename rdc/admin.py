@@ -83,3 +83,4 @@ class RDCAuditoriaAdmin(admin.ModelAdmin):
     search_fields = ("resumo", "detalhe")
     autocomplete_fields = ("rdc", "usuario")
 
+

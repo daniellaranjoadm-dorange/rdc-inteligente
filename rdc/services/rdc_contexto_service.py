@@ -185,3 +185,4 @@ def resumo_montagem_rdc(contexto):
         'origem_semana': 'Semana de planejamento carregada do calendário' if semana else 'Semana calculada sem calendário carregado',
     }
 
+

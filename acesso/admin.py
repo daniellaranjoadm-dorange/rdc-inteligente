@@ -9,3 +9,4 @@ class RegistroCatracaAdmin(admin.ModelAdmin):
     search_fields = ("matricula", "funcionario__nome", "origem_arquivo")
     autocomplete_fields = ("funcionario", "projeto")
 
+

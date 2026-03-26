@@ -15,3 +15,4 @@ def montar_contexto_pdf_rdc(rdc: RDC) -> dict:
         "validacoes": list(rdc.validacoes.values()),
     }
 
+

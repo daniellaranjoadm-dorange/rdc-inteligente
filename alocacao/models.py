@@ -74,3 +74,4 @@ class HistogramaPlanejado(TimeStampedModel):
 
     def __str__(self):
         return f"{self.data} - {self.equipe} - {self.funcao} ({self.quantidade_planejada})"
+

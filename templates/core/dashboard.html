@@ -30,7 +30,7 @@
   <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-primary h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">RDCs totais</div><div class="kpi-number">{{ total_rdcs }}</div></div><div class="kpi-icon">#</div></div><div class="kpi-desc">{{ total_rdcs_mes }} registrados no mês atual.</div></div></div></div>
   <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">Atividades com execução</div><div class="kpi-number">{{ atividades_execucao_hoje }}</div></div><div class="kpi-icon">A</div></div><div class="kpi-desc">{{ apontamentos_hoje }} apontamentos no dia.</div></div></div></div>
   <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">ObservAções do dia</div><div class="kpi-number">{{ apontamentos_obs_hoje }}</div></div><div class="kpi-icon">!</div></div><div class="kpi-desc">Registros com observação ou desvio informado.</div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-danger h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">ImportAções com erro</div><div class="kpi-number">{{ importacoes_com_erro }}</div></div><div class="kpi-icon">‡…</div></div><div class="kpi-desc">Monitoramento centralizado para carga de base.</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi-card-strong kpi-danger h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="kpi-label">Importações com erro</div><div class="kpi-number">{{ importacoes_com_erro }}</div></div><div class="kpi-icon">‡…</div></div><div class="kpi-desc">Monitoramento centralizado para carga de base.</div></div></div></div>
 </div>
 
 <div class="row g-4">
@@ -168,7 +168,7 @@
   </div>
   <div class="col-lg-5">
     <div class="soft-card p-3 p-lg-4 h-100">
-      <div class="section-title">ImportAções recentes</div>
+      <div class="section-title">Importações recentes</div>
       <div class="mini-muted mb-3">Últimos arquivos processados pelo sistema.</div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
@@ -183,7 +183,7 @@
                 <td>{{ item.get_status_display }}</td>
               </tr>
             {% empty %}
-              <tr><td colspan="3" class="text-center text-muted py-4">Sem importAções recentes.</td></tr>
+              <tr><td colspan="3" class="text-center text-muted py-4">Sem importações recentes.</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -192,6 +192,7 @@
   </div>
 </div>
 {% endblock %}
+
 
 
 

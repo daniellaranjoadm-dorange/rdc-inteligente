@@ -531,3 +531,22 @@ class MobileRDCApontamentoUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+
+
+from importacoes.models import ImportacaoArquivo
+
+class MobileImportacaoSerializer(serializers.ModelSerializer):
+    nome_arquivo = serializers.CharField(read_only=True)
+    total_erros = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ImportacaoArquivo
+        fields = [
+            "id",
+            "tipo",
+            "status",
+            "resumo",
+            "total_erros",
+            "created_at",
+            "nome_arquivo",
+        ]

@@ -100,3 +100,4 @@ class Error403Tests(SimpleTestCase):
         self.assertEqual(response.status_code, 403)
         joined = "\n".join(captured.output)
         self.assertIn("access_denied", joined)
+

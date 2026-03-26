@@ -7,3 +7,4 @@ urlpatterns = [
     path("", DashboardView.as_view(), name="dashboard"),
     path("importar/funcionarios/", ImportFuncionariosView.as_view(), name="import-funcionarios"),
 ]
+

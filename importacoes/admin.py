@@ -17,8 +17,8 @@ class ImportacaoErroInline(admin.TabularInline):
     can_delete = False
     ordering = ("linha",)
     show_change_link = False
-    verbose_name = "Erro da importAção"
-    verbose_name_plural = "Erros da importAção"
+    verbose_name = "Erro da importação"
+    verbose_name_plural = "Erros da importação"
 
 
 @admin.action(description="Limpar erros das importações selecionadas")
@@ -36,7 +36,7 @@ def reprocessar_importacoes(modeladmin, request, queryset):
     for importacao in queryset:
         executar_importacao(importacao.id)
         total += 1
-    modeladmin.message_user(request, f"{total} importAção(ões) reprocessada(s).", level=messages.SUCCESS)
+    modeladmin.message_user(request, f"{total} importação(ões) reprocessada(s).", level=messages.SUCCESS)
 
 
 @admin.register(ImportacaoArquivo)
@@ -91,7 +91,7 @@ class ImportacaoArquivoAdmin(admin.ModelAdmin):
             deletados, _ = obj.erros.all().delete()
             self.message_user(
                 request,
-                f"{deletados} erro(s) removido(s) da importAção {obj.id}.",
+                f"{deletados} erro(s) removido(s) da importação {obj.id}.",
                 level=messages.SUCCESS,
             )
             return redirect(request.path)
@@ -99,7 +99,7 @@ class ImportacaoArquivoAdmin(admin.ModelAdmin):
             executar_importacao(obj.id)
             self.message_user(
                 request,
-                f"ImportAção {obj.id} reprocessada com sucesso.",
+                f"Importação {obj.id} reprocessada com sucesso.",
                 level=messages.SUCCESS,
             )
             return redirect(request.path)
@@ -147,7 +147,7 @@ class ImportacaoErroAdmin(admin.ModelAdmin):
     list_select_related = ("importacao",)
     actions = (limpar_erros_selecionados, limpar_erros_filtrados)
 
-    @admin.display(description="ImportAção")
+    @admin.display(description="Importação")
     def importacao_link(self, obj: ImportacaoErro) -> str:
         url = reverse("admin:importacoes_importacaoarquivo_change", args=[obj.importacao_id])
         return format_html('<a href="{}">#{}</a>', url, obj.importacao_id)
@@ -163,5 +163,6 @@ class ImportacaoErroAdmin(admin.ModelAdmin):
     @admin.display(description="Mensagem")
     def mensagem_curta(self, obj: ImportacaoErro) -> str:
         return obj.mensagem[:140] + ("..." if len(obj.mensagem) > 140 else "")
+
 
 

@@ -48,3 +48,4 @@ class ImportFuncionariosView(View):
         context = self.get_context_data()
         context["ultimo_job"] = job
         return render(request, self.template_name, context)
+

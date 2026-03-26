@@ -131,3 +131,4 @@ class HomeDashboardService:
             "top_alertas": [],
         }
 
+

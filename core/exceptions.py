@@ -10,3 +10,4 @@ class ContextualPermissionDenied(PermissionDenied):
     def __init__(self, code="forbidden", message="Acesso negado."):
         self.code = code
         super().__init__(message)
+

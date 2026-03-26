@@ -70,3 +70,4 @@ class RDCDeleteLockTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertTrue(RDCAtividade.objects.filter(pk=self.atividade.pk).exists())
 
+

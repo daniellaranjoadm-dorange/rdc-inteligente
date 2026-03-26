@@ -23,3 +23,4 @@ urlpatterns = [
     path("equipes/nova/", EquipeCreateView.as_view(), name="equipe-create"),
 ]
 
+

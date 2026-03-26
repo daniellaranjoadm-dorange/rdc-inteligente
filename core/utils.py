@@ -8,3 +8,4 @@ def normalizar_texto(valor: str) -> str:
     valor = re.sub(r"\s+", " ", valor).strip().lower()
     return valor
 
+

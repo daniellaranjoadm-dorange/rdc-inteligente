@@ -3,3 +3,4 @@
 class PlanejamentoHomeView(TemplateView):
     template_name = "planejamento/home.html"
 
+

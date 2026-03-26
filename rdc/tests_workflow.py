@@ -100,3 +100,4 @@ class RDCWorkflowServiceTests(TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(self.rdc.status, "rascunho")
 
+

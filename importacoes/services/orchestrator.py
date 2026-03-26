@@ -28,3 +28,4 @@ def executar_importacao(importacao_id: int) -> None:
 
     importador = importador_cls(importacao)
     importador.processar()
+

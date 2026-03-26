@@ -133,3 +133,4 @@ class RDCInlineFuncionarioUpdateTests(TestCase):
         response = self.client.post(url, data={"field": "nome", "value": "Tentativa indevida"})
         self.assertEqual(response.status_code, 400)
 
+

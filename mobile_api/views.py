@@ -472,6 +472,44 @@ class MobileRDCApontamentoRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDe
 def _parse_sync_timestamp(value):
     if not value:
         return None
+
+def _parse_client_timestamp(value):
+    if not value:
+        return None
+    try:
+        dt = timezone.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if timezone.is_naive(dt):
+            dt = timezone.make_aware(dt, timezone.get_current_timezone())
+        return dt
+    except Exception:
+        return None
+
+
+def _server_is_newer(instance, item):
+    if not instance:
+        return False
+
+    client_dt = _parse_client_timestamp(item.get("client_changed_at"))
+    server_dt = getattr(instance, "sync_updated_at", None)
+
+    if not client_dt or not server_dt:
+        return False
+
+    if timezone.is_naive(server_dt):
+        server_dt = timezone.make_aware(server_dt, timezone.get_current_timezone())
+
+    return server_dt > client_dt
+
+
+def _append_conflict(response_data, scope, item, instance, reason="server_newer"):
+    response_data["conflicts"].append({
+        "scope": scope,
+        "reason": reason,
+        "item": item,
+        "server_id": getattr(instance, "pk", None),
+        "server_mobile_uuid": getattr(instance, "mobile_uuid", None),
+        "server_sync_updated_at": getattr(instance, "sync_updated_at", None),
+    })
     try:
         dt = timezone.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
         if timezone.is_naive(dt):
@@ -496,6 +534,7 @@ class MobileSyncAPIView(APIView):
                 "apontamentos": 0,
             },
             "errors": [],
+            "conflicts": [],
             "server_changes": {},
             "sync_time": timezone.now(),
         }
@@ -537,6 +576,9 @@ class MobileSyncAPIView(APIView):
             ).data,
             "apontamentos": MobileRDCApontamentoSerializer(
                 aps_qs.order_by("-sync_updated_at")[:500],
+                many=True,            ).data,
+            "importacoes": MobileImportacaoSerializer(
+                ImportacaoArquivo.objects.order_by("-created_at")[:200],
                 many=True,
             ).data,
         }
@@ -749,6 +791,24 @@ class MobileSyncAPIView(APIView):
                 response_data["errors"].append(
                     {"scope": "apontamentos", "item": item, "error": str(exc)}
                 )
+
+
+
+
+
+from importacoes.models import ImportacaoArquivo
+from .serializers import MobileImportacaoSerializer
+
+class MobileImportacaoListAPIView(generics.ListAPIView):
+    permission_classes = [PerfilRolePermission]
+    serializer_class = MobileImportacaoSerializer
+    allowed_roles = ["admin", "supervisor"]
+
+    def get_queryset(self):
+        return ImportacaoArquivo.objects.order_by("-created_at")[:100]
+
+
+
 
 
 

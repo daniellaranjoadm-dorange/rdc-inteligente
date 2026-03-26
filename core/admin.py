@@ -25,3 +25,4 @@ class ImportJobAdmin(admin.ModelAdmin):
         "resumo",
         "erros",
     )
+

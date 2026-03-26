@@ -111,3 +111,4 @@ class RDCInlineUpdateBaseView(RoleRequiredMixin, View):
     def handle_no_permission(self):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
+

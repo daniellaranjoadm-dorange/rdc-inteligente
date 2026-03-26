@@ -620,3 +620,4 @@ class ProgramacaoSemanal(TimeStampedModel):
         return f"{self.projeto} / {self.semana_codigo} / {self.codigo_atividade}"
 
 
+

@@ -59,3 +59,4 @@ class RDCDetailTabStateUITests(TestCase):
         self.assertContains(response, "const tabFromQuery = urlParams.get('tab');")
         self.assertContains(response, "#funcionarios")
 
+

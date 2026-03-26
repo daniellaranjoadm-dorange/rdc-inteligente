@@ -90,3 +90,4 @@ def buscar_clima_online_rio_grande(data):
             "visual": _classificar_clima_visual(descricao),
         }
 
+

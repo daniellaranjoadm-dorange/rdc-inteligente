@@ -2,6 +2,7 @@
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import (
+    MobileImportacaoListAPIView,
     BaseOperacionalAPIView,
     MeAPIView,
     MobileRDCAtividadeListCreateAPIView,
@@ -31,5 +32,5 @@ urlpatterns = [
     path("rdcs/<int:pk>/atividades/<int:item_pk>/", MobileRDCAtividadeRetrieveUpdateDestroyAPIView.as_view(), name="mobile-rdc-atividade-rud"),
     path("rdcs/<int:pk>/apontamentos/", MobileRDCApontamentoListCreateAPIView.as_view(), name="mobile-rdc-apontamentos"),
     path("rdcs/<int:pk>/apontamentos/<int:item_pk>/", MobileRDCApontamentoRetrieveUpdateDestroyAPIView.as_view(), name="mobile-rdc-apontamento-rud"),
+    path("importacoes/", MobileImportacaoListAPIView.as_view(), name="mobile-importacoes"),
 ]
-

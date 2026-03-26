@@ -9,3 +9,4 @@ class AtividadeCronogramaAdmin(admin.ModelAdmin):
     search_fields = ("codigo_atividade", "descr_atividade", "codigo_subatividade", "descr_subatividade")
     autocomplete_fields = ("projeto", "area_local", "disciplina")
 
+

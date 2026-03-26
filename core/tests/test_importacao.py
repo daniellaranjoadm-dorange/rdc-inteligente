@@ -47,3 +47,4 @@ class ImportJobTests(TestCase):
         self.assertEqual(result.linhas_processadas, 1)
         self.assertEqual(result.linhas_com_erro, 1)
         self.assertEqual(len(result.erros), 1)
+

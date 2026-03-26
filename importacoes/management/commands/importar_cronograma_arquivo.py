@@ -10,11 +10,11 @@ from importacoes.services import executar_importacao
 
 
 class Command(BaseCommand):
-    help = "Cria uma importAção de cronograma a partir de um arquivo local e processa imediatamente."
+    help = "Cria uma importação de cronograma a partir de um arquivo local e processa imediatamente."
 
     def add_arguments(self, parser):
         parser.add_argument("arquivo", help="Caminho do arquivo XLSX/CSV de cronograma")
-        parser.add_argument("--usuario", default="admin", help="Usuário responsável pela importAção")
+        parser.add_argument("--usuario", default="admin", help="Usuário responsável pela importação")
 
     def handle(self, *args, **options):
         caminho = Path(options["arquivo"])
@@ -36,7 +36,8 @@ class Command(BaseCommand):
 
         executar_importacao(importacao.pk)
         importacao.refresh_from_db()
-        self.stdout.write(self.style.SUCCESS(f"ImportAção #{importacao.pk} finalizada com status: {importacao.status}"))
+        self.stdout.write(self.style.SUCCESS(f"Importação #{importacao.pk} finalizada com status: {importacao.status}"))
         self.stdout.write(importacao.observacoes)
+
 
 

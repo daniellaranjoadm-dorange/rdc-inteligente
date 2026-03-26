@@ -334,3 +334,4 @@ def montar_rdc_simulado_por_cronograma(
     )
     return rdc, contexto
 
+

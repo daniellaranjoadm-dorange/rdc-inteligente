@@ -70,20 +70,37 @@ class ImportFuncionariosCSVService(BaseImportService):
         except Funcao.DoesNotExist:
             raise ValueError(f'Função "{funcao_nome}" não cadastrada.')
 
-        obj, created = Funcionario.objects.update_or_create(
-            matricula=row.get("matricula"),
-            defaults={
-                "nome": row.get("nome"),
-                "empresa": empresa,
-                "funcao": funcao,
-                "ativo": True,
-            },
-        )
+        matricula = row.get("matricula").strip()
+        nome = row.get("nome").strip()
 
-        return {
-            "matricula": obj.matricula,
-            "nome": obj.nome,
-            "empresa": empresa.nome,
-            "funcao": funcao.nome,
-            "created": created,
-        }
+        funcionario = Funcionario.objects.filter(matricula=matricula).first()
+
+        if not funcionario:
+            Funcionario.objects.create(
+                matricula=matricula,
+                nome=nome,
+                empresa=empresa,
+                funcao=funcao,
+            )
+            return "created"
+
+        changed = False
+
+        if funcionario.nome != nome:
+            funcionario.nome = nome
+            changed = True
+
+        if funcionario.empresa_id != empresa.id:
+            funcionario.empresa = empresa
+            changed = True
+
+        if funcionario.funcao_id != funcao.id:
+            funcionario.funcao = funcao
+            changed = True
+
+        if changed:
+            funcionario.save()
+            return "updated"
+
+        return "unchanged"
+

@@ -35,3 +35,4 @@ def exportar_auditoria_rdc_para_excel(rdc, logs):
 
     return out_path
 
+

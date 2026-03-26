@@ -10,3 +10,4 @@ class UsuarioLoginView(LoginView):
 class UsuarioLogoutView(LogoutView):
     next_page = reverse_lazy("login")
 
+

@@ -1,5 +1,6 @@
 ﻿from django.conf import settings
 from django.db import models
+from django.db.models import JSONField
 from django.urls import reverse
 
 from core.choices import StatusImportacaoChoices, TipoImportacaoChoices
@@ -22,6 +23,7 @@ class ImportacaoArquivo(TimeStampedModel):
         related_name="importacoes_arquivos",
     )
     observacoes = models.TextField(blank=True)
+    resumo = JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ("-created_at",)
@@ -59,4 +61,6 @@ class ImportacaoErro(models.Model):
 
     def __str__(self):
         return f"{self.importacao.nome_arquivo} - linha {self.linha}"
+
+
 
