@@ -1,0 +1,24 @@
+﻿services:
+  - type: web
+    name: rdc-inteligente
+    env: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: gunicorn rdc_inteligente.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.2
+      - key: DJANGO_SETTINGS_MODULE
+        value: rdc_inteligente.settings
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://SEU-SERVICO.onrender.com
+      - key: DJANGO_SESSION_COOKIE_SECURE
+        value: "1"
+      - key: DJANGO_CSRF_COOKIE_SECURE
+        value: "1"
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true

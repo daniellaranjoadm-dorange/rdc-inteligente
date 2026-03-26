@@ -183,3 +183,4 @@ PWA_APP_NAME = os.getenv("PWA_APP_NAME", "RDC Mobile")
 PWA_APP_SCOPE = os.getenv("PWA_APP_SCOPE", "/")
 PWA_START_URL = os.getenv("PWA_START_URL", "/m/")
 PWA_THEME_COLOR = os.getenv("PWA_THEME_COLOR", "#0b2239")
+
