@@ -15,36 +15,53 @@
     <button id="btn-sync" class="btn btn-primary w-100 py-3">
         🔄 Sincronizar dados
     </button>
+
+    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
+        <span id="conn-badge" class="badge text-bg-secondary">...</span>
+        <span id="queue-badge" class="badge text-bg-light border">Fila: 0</span>
+        <span id="pending-badge" class="badge text-bg-light border">Pendências: 0</span>
+    </div>
+
     <div id="sync-status" class="small text-muted mt-2 text-center"></div>
 </div>
 
 <script>
 const MOBILE_SYNC_URL = "/api/mobile/sync/";
+const MOBILE_SYNC_DEBUG = true;
 const MOBILE_SYNC_QUEUE_KEY = "mobile_sync_queue_v2";
 const MOBILE_LAST_SYNC_KEY = "mobile_last_sync_at_v2";
 const MOBILE_PENDING_KEY = "mobile_pending_changes_v2";
 
-document.getElementById("btn-sync").addEventListener("click", async function() {
+document.getElementById("btn-sync").addEventListener("click", async function () {
     const payload = buildSyncPayloadFromPending();
     enqueueSyncPayload(payload);
-    renderQueueStatus("Sincronização incremental adicionada à fila.");
-    await flushSyncQueue();
+    debugSync("enqueue_manual", payload);
+    setStatusMessage("Sincronização adicionada à fila.", "warning");
+    await flushSyncQueue(false);
 });
 
 document.addEventListener("DOMContentLoaded", async function () {
-    renderQueueStatus();
+    updateConnectionBadge();
+    updateSyncBadges();
+    setSyncButtonState("idle");
+    setStatusMessage("", "muted");
     await flushSyncQueue(true);
 });
+
+function debugSync(eventName, payload) {
+    if (!MOBILE_SYNC_DEBUG) {
+        return;
+    }
+    try {
+        console.log("[mobile-sync]", eventName, payload || {});
+    } catch (e) {
+    }
+}
 
 function getPendingChanges() {
     try {
         const raw = localStorage.getItem(MOBILE_PENDING_KEY);
-        const parsed = raw ? JSON.parse(raw) : {
-            rdcs: [],
-            funcionarios: [],
-            atividades: [],
-            apontamentos: []
-        };
+        const parsed = raw ? JSON.parse(raw) : {};
         return {
             rdcs: Array.isArray(parsed.rdcs) ? parsed.rdcs : [],
             funcionarios: Array.isArray(parsed.funcionarios) ? parsed.funcionarios : [],
@@ -72,17 +89,7 @@ function clearPendingChanges() {
         atividades: [],
         apontamentos: []
     });
-}
-
-function buildSyncPayloadFromPending() {
-    const pending = getPendingChanges();
-    return {
-        rdcs: pending.rdcs,
-        funcionarios: pending.funcionarios,
-        atividades: pending.atividades,
-        apontamentos: pending.apontamentos,
-        last_sync_at: localStorage.getItem(MOBILE_LAST_SYNC_KEY)
-    };
+    updateSyncBadges();
 }
 
 function getQueue() {
@@ -97,6 +104,18 @@ function getQueue() {
 
 function saveQueue(queue) {
     localStorage.setItem(MOBILE_SYNC_QUEUE_KEY, JSON.stringify(queue));
+    updateSyncBadges();
+}
+
+function buildSyncPayloadFromPending() {
+    const pending = getPendingChanges();
+    return {
+        rdcs: pending.rdcs,
+        funcionarios: pending.funcionarios,
+        atividades: pending.atividades,
+        apontamentos: pending.apontamentos,
+        last_sync_at: localStorage.getItem(MOBILE_LAST_SYNC_KEY)
+    };
 }
 
 function enqueueSyncPayload(payload) {
@@ -108,7 +127,7 @@ function enqueueSyncPayload(payload) {
         !!payload.last_sync_at;
 
     if (!hasChanges) {
-        renderQueueStatus("Nada novo para sincronizar.");
+        setStatusMessage("Nada novo para sincronizar.", "muted");
         return;
     }
 
@@ -126,28 +145,41 @@ function cryptoRandomId() {
     return "sync_" + Math.random().toString(36).slice(2) + "_" + Date.now();
 }
 
-async function flushSyncQueue(silent = false) {
-    const btn = document.getElementById("btn-sync");
+async function flushSyncQueue(silent) {
+    const queueBefore = getQueue();
+    debugSync("flush_start", {
+        silent: !!silent,
+        queue: queueBefore.length,
+        pending: getPendingChanges()
+    });
 
     if (!navigator.onLine) {
-        renderQueueStatus("Sem conexão. A fila será enviada quando a internet voltar.");
+        setStatusMessage("Sem conexão. A fila será enviada quando a internet voltar.", "warning");
+        setSyncButtonState("offline");
         return;
     }
 
     let queue = getQueue();
 
     if (queue.length === 0) {
-        renderQueueStatus(silent ? null : "Nada pendente para sincronizar.");
+        if (!silent) {
+            setStatusMessage("Nada pendente para sincronizar.", "muted");
+        } else {
+            updateConnectionBadge();
+            updateSyncBadges();
+            setSyncButtonState("idle");
+        }
         return;
     }
 
-    btn.disabled = true;
-    btn.innerText = "Sincronizando...";
+    setSyncButtonState("loading");
 
     while (queue.length > 0) {
         const item = queue[0];
 
         try {
+            debugSync("sending_item", item);
+
             const response = await fetch(MOBILE_SYNC_URL, {
                 method: "POST",
                 credentials: "same-origin",
@@ -168,6 +200,7 @@ async function flushSyncQueue(silent = false) {
             }
 
             const data = await response.json();
+            debugSync("sync_success", data);
 
             localStorage.setItem(
                 MOBILE_LAST_SYNC_KEY,
@@ -179,7 +212,7 @@ async function flushSyncQueue(silent = false) {
             queue.shift();
             saveQueue(queue);
 
-            renderQueueStatus("✔ Sync incremental concluído");
+            setStatusMessage("✔ Sync concluído", "success");
         } catch (e) {
             item.attempts = (item.attempts || 0) + 1;
             item.last_error = String(e);
@@ -187,106 +220,19 @@ async function flushSyncQueue(silent = false) {
             queue[0] = item;
             saveQueue(queue);
 
-            renderQueueStatus("Erro ao sincronizar. Alterações mantidas para retry.");
-            btn.disabled = false;
-            btn.innerText = "Tentar novamente";
+            debugSync("sync_error", {
+                error: String(e),
+                item: item
+            });
+
+            setStatusMessage("Erro ao sincronizar. Alterações mantidas para retry.", "error");
+            setSyncButtonState("error");
             return;
         }
     }
 
-    btn.disabled = false;
-    btn.innerText = "🔄 Sincronizar novamente";
-    renderQueueStatus("✔ Fila vazia");
-}
-
-function renderQueueStatus(message) {
-    const status = document.getElementById("sync-status");
-    const queue = getQueue();
-    const pending = getPendingChanges();
-
-    const totalLocalChanges =
-        pending.rdcs.length +
-        pending.funcionarios.length +
-        pending.atividades.length +
-        pending.apontamentos.length;
-
-    const base = "Fila: " + queue.length + " | Alterações locais: " + totalLocalChanges;
-    status.innerText = message ? (message + " | " + base) : base;
-}
-
-window.addEventListener("online", function () {
-    renderQueueStatus("Conexão restaurada. Tentando sincronizar...");
-    flushSyncQueue(true);
-});
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-/*
- * Helpers para uso futuro.
- * Quando a UI começar a editar dados offline, chame:
- *
- *   queueLocalChange("rdcs", { mobile_uuid: "...", op: "upsert", ... })
- *   queueLocalChange("apontamentos", { mobile_uuid: "...", op: "delete", ... })
- */
-function queueLocalChange(scope, item) {
-    const allowed = ["rdcs", "funcionarios", "atividades", "apontamentos"];
-    if (!allowed.includes(scope)) {
-        throw new Error("Escopo inválido: " + scope);
-    }
-
-    const entityKey = item.mobile_uuid;
-    if (!entityKey) {
-        throw new Error("mobile_uuid obrigatório");
-    }
-
-    const pending = getPendingChanges();
-    const list = pending[scope] || [];
-
-    const normalized = {
-        ...item,
-        client_changed_at: new Date().toISOString()
-    };
-
-    const index = list.findIndex(x => x.mobile_uuid === entityKey);
-
-    if (index >= 0) {
-        list[index] = mergeItem(list[index], normalized);
-    } else {
-        list.push(normalized);
-    }
-
-    pending[scope] = list;
-    savePendingChanges(pending);
-    renderQueueStatus("Alteração deduplicada.");
-}
-
-function mergeItem(prev, next) {
-    if (next.op === "delete") {
-        return {
-            ...prev,
-            ...next,
-            op: "delete"
-        };
-    }
-
-    return {
-        ...prev,
-        ...next,
-        op: next.op || "upsert"
-    };
+    setSyncButtonState("idle");
+    setStatusMessage("✔ Fila vazia", "success");
 }
 
 function resolveEntityKey(scope, item) {
@@ -342,6 +288,161 @@ function mergePendingItem(previousItem, nextItem) {
         ...nextItem,
         client_changed_at: nextItem.client_changed_at
     };
+}
+
+function queueLocalChange(scope, item) {
+    const allowed = ["rdcs", "funcionarios", "atividades", "apontamentos"];
+    if (!allowed.includes(scope)) {
+        throw new Error("Escopo inválido: " + scope);
+    }
+
+    const entityKey = resolveEntityKey(scope, item);
+    if (!entityKey) {
+        throw new Error("mobile_uuid ou chave equivalente obrigatória");
+    }
+
+    const pending = getPendingChanges();
+    const list = Array.isArray(pending[scope]) ? pending[scope] : [];
+
+    const normalized = {
+        ...item,
+        client_changed_at: item.client_changed_at || new Date().toISOString()
+    };
+
+    const index = list.findIndex(function (x) {
+        return resolveEntityKey(scope, x) === entityKey;
+    });
+
+    if (index >= 0) {
+        list[index] = mergePendingItem(list[index], normalized);
+    } else {
+        list.push(normalized);
+    }
+
+    pending[scope] = list;
+    savePendingChanges(pending);
+
+    debugSync("queue_local_change", {
+        scope: scope,
+        item: normalized
+    });
+
+    setStatusMessage("Alteração local registrada.", "warning");
+}
+
+function updateConnectionBadge() {
+    const el = document.getElementById("conn-badge");
+    if (!el) return;
+
+    if (navigator.onLine) {
+        el.className = "badge text-bg-success";
+        el.innerText = "Online";
+    } else {
+        el.className = "badge text-bg-warning";
+        el.innerText = "Offline";
+    }
+}
+
+function updateSyncBadges() {
+    const queue = getQueue();
+    const pending = getPendingChanges();
+
+    const totalLocalChanges =
+        pending.rdcs.length +
+        pending.funcionarios.length +
+        pending.atividades.length +
+        pending.apontamentos.length;
+
+    const queueEl = document.getElementById("queue-badge");
+    const pendingEl = document.getElementById("pending-badge");
+
+    if (queueEl) {
+        queueEl.innerText = "Fila: " + queue.length;
+        queueEl.className = queue.length > 0
+            ? "badge text-bg-danger"
+            : "badge text-bg-light border";
+    }
+
+    if (pendingEl) {
+        pendingEl.innerText = "Pendências: " + totalLocalChanges;
+        pendingEl.className = totalLocalChanges > 0
+            ? "badge text-bg-warning"
+            : "badge text-bg-light border";
+    }
+}
+
+function setSyncButtonState(state) {
+    const btn = document.getElementById("btn-sync");
+    if (!btn) return;
+
+    if (state === "loading") {
+        btn.disabled = true;
+        btn.innerText = "⏳ Sincronizando...";
+        return;
+    }
+
+    if (state === "error") {
+        btn.disabled = false;
+        btn.innerText = "❌ Tentar novamente";
+        return;
+    }
+
+    if (state === "offline") {
+        btn.disabled = false;
+        btn.innerText = "📴 Sem conexão";
+        return;
+    }
+
+    btn.disabled = false;
+    btn.innerText = "🔄 Sincronizar dados";
+}
+
+function setStatusMessage(message, tone) {
+    const status = document.getElementById("sync-status");
+    if (!status) return;
+
+    status.className = "small mt-2 text-center";
+
+    if (tone === "success") {
+        status.className += " text-success";
+    } else if (tone === "error") {
+        status.className += " text-danger";
+    } else if (tone === "warning") {
+        status.className += " text-warning";
+    } else {
+        status.className += " text-muted";
+    }
+
+    status.innerText = message || "";
+    updateConnectionBadge();
+    updateSyncBadges();
+}
+
+window.addEventListener("offline", function () {
+    debugSync("network_offline");
+    setStatusMessage("Sem conexão.", "warning");
+    setSyncButtonState("offline");
+});
+
+window.addEventListener("online", function () {
+    debugSync("network_online");
+    setStatusMessage("Conexão restaurada. Tentando sincronizar...", "success");
+    flushSyncQueue(true);
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 window.mobileSyncDebug = {
@@ -414,6 +515,11 @@ window.mobileSyncDebug = {
     </div>
 </div>
 {% endblock %}
+
+
+
+
+
 
 
 

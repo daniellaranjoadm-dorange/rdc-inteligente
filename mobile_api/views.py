@@ -1,7 +1,11 @@
-﻿from django.db import transaction
+﻿import logging
+import time
+from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -806,6 +810,7 @@ class MobileImportacaoListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return ImportacaoArquivo.objects.order_by("-created_at")[:100]
+
 
 
 

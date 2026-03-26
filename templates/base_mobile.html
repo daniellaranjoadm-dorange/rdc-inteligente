@@ -34,6 +34,12 @@
             border-radius: 12px;
         }
     </style>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0b2239">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="RDC Mobile">
+    <link rel="icon" href="/static/favicon.ico">
 </head>
 <body>
 
@@ -46,5 +52,26 @@
     {% block content %}{% endblock %}
 </div>
 
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/static/sw.js")
+                    .then(function (registration) {
+                        console.log("[pwa] service worker registrado", registration.scope);
+                    })
+                    .catch(function (error) {
+                        console.error("[pwa] falha ao registrar service worker", error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
+
+
+
+
+
+
+
+

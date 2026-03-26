@@ -1,7 +1,7 @@
 ﻿from django.views.generic import TemplateView
 
-from core.mixins import AuthenticatedTemplateMixin
 
 
-class MobileHomeView(AuthenticatedTemplateMixin, TemplateView):
+class MobileHomeView(TemplateView):
     template_name = "mobile_home.html"
+

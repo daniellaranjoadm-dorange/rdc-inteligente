@@ -1,4 +1,5 @@
 ﻿import os
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -159,3 +160,26 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 
+
+# DEPLOY_PWA_BLOCK
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
+
+_csrf_origins = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+if _csrf_origins.strip():
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(",") if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = []
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+USE_X_FORWARDED_HOST = True
+
+SESSION_COOKIE_SECURE = os.getenv("DJANGO_SESSION_COOKIE_SECURE", "0") == "1"
+CSRF_COOKIE_SECURE = os.getenv("DJANGO_CSRF_COOKIE_SECURE", "0") == "1"
+
+SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "0") == "1"
+
+PWA_APP_NAME = os.getenv("PWA_APP_NAME", "RDC Mobile")
+PWA_APP_SCOPE = os.getenv("PWA_APP_SCOPE", "/")
+PWA_START_URL = os.getenv("PWA_START_URL", "/m/")
+PWA_THEME_COLOR = os.getenv("PWA_THEME_COLOR", "#0b2239")

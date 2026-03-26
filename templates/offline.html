@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Sem conexão</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: system-ui;
+            background: #0b2239;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .box {
+            text-align: center;
+            max-width: 320px;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #2d6cdf;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="icon">📡</div>
+        <h2>Sem conexão</h2>
+        <p>Você está offline.<br>As alterações serão sincronizadas automaticamente.</p>
+        <button class="btn" onclick="location.reload()">Tentar novamente</button>
+    </div>
+</body>
+</html>
