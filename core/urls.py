@@ -1,10 +1,6 @@
-﻿from django.urls import path
-
-from core.views import DashboardView
-from core.views_importacao import ImportFuncionariosView
+from django.urls import path
+from .views import home_login
 
 urlpatterns = [
-    path("", DashboardView.as_view(), name="dashboard"),
-    path("importar/funcionarios/", ImportFuncionariosView.as_view(), name="import-funcionarios"),
+    path('', home_login, name='home'),
 ]
-

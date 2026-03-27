@@ -1,18 +1,22 @@
-ï»¿from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
 
-from core.dashboard_services import HomeDashboardService
+def home_login(request):
+    if request.user.is_authenticated:
+        return redirect("/m/")
 
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
-class DashboardView(TemplateView):
-    template_name = "core/dashboard.html"
+        user = authenticate(request, username=username, password=password)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(HomeDashboardService().build())
-        return context
+        if user is not None:
+            login(request, user)
+            return redirect("/m/")
+        else:
+            return render(request, "login.html", {
+                "error": "Usuário ou senha inválidos"
+            })
 
-
-def handler403(request, exception=None):
-    return render(request, "errors/403.html", status=403)
-
+    return render(request, "login.html")
