@@ -12,10 +12,8 @@
     startCommand: gunicorn rdc_inteligente.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     domains:
       - rdc.dorange.com.br
-    disk:
-      name: rdc-media
-      mountPath: /var/data
-      sizeGB: 1
+    # Disco persistente (rdc-media em /var/data) volta depois que o plano pago
+    # estiver ativo: o Render recusa disco enquanto o servico ainda e Free.
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.10
@@ -35,8 +33,6 @@
         value: "0"
       - key: DJANGO_CORS_ALLOWED_ORIGINS
         value: https://rdc.dorange.com.br
-      - key: DJANGO_MEDIA_ROOT
-        value: /var/data/media
       - key: DJANGO_SESSION_COOKIE_SECURE
         value: "1"
       - key: DJANGO_CSRF_COOKIE_SECURE
