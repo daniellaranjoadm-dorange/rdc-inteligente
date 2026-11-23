@@ -514,13 +514,6 @@ def _append_conflict(response_data, scope, item, instance, reason="server_newer"
         "server_mobile_uuid": getattr(instance, "mobile_uuid", None),
         "server_sync_updated_at": getattr(instance, "sync_updated_at", None),
     })
-    try:
-        dt = timezone.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-        if timezone.is_naive(dt):
-            dt = timezone.make_aware(dt, timezone.get_current_timezone())
-        return dt
-    except Exception:
-        return None
 
 
 class MobileSyncAPIView(APIView):

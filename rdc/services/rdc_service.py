@@ -20,7 +20,7 @@ from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Alignment
 from planejamento.models import AtividadeCronograma
-from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao
+from rdc.models import RDC, RDCApontamento, RDCAtividade, RDCFuncionario, RDCValidacao
 from . import rdc_clima_service as clima_service
 from .rdc_excel_layout_service import (
     CIDADE_OBRA,
@@ -727,21 +727,6 @@ def _hh_total_rdc(rdc):
     for f in rdc.funcionarios.all():
         total += f.hh_total or Decimal("0.00")
     return total
-
-
-
-
-
-    try:
-        img = XLImage(str(logo_path))
-        img.width = 185
-        img.height = 78
-        ws.add_image(img, "A1")
-        print(f"[RDC] Logo inserida com sucesso: {logo_path}")
-        return True
-    except Exception as exc:
-        print(f"[RDC] Falha ao inserir logo '{logo_path}': {exc}")
-        return False
 
 
 
