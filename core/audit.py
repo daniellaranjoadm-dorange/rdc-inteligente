@@ -18,6 +18,9 @@ def traduzir_acao_auditoria(action):
         "delete_rdc": "Excluiu RDC",
         "update_rdc": "Atualizou RDC",
         "create_rdc": "Criou RDC",
+        "create_paralisacao": "Registrou paralisação",
+        "update_paralisacao": "Alterou paralisação",
+        "delete_paralisacao": "Excluiu paralisação",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

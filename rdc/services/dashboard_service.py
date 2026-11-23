@@ -7,7 +7,8 @@ from django.db import connection
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
-from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario, RDCValidacao
+from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario, RDCParalisacao, RDCValidacao
+from rdc.services.paralisacao_service import resumir_paralisacoes
 
 
 STATUS_KEYS = ["rascunho", "pre_preenchido", "em_revisao", "aprovado", "fechado"]
@@ -74,7 +75,17 @@ def build_rdc_dashboard_home_context() -> dict[str, Any]:
 
     status_summary = _status_summary(rdcs_semana)
 
+    hh_semana = _safe_decimal(
+        RDCFuncionario.objects.filter(rdc__data__gte=inicio_semana, rdc__data__lte=hoje).aggregate(total=Sum("hh_total"))["total"]
+    )
+    paralisacoes_hoje = resumir_paralisacoes(RDCParalisacao.objects.filter(rdc__data=hoje), hh_trabalhado=hh_hoje)
+    paralisacoes_semana = resumir_paralisacoes(
+        RDCParalisacao.objects.filter(rdc__data__gte=inicio_semana, rdc__data__lte=hoje), hh_trabalhado=hh_semana
+    )
+
     return {
+        "paralisacoes_hoje": paralisacoes_hoje,
+        "paralisacoes_semana": paralisacoes_semana,
         "hoje": hoje,
         "data_hoje": hoje,
         "quick_actions": [
@@ -172,6 +183,8 @@ def build_rdc_detail_context(rdc, *, user=None) -> dict[str, Any]:
             "funcionarios": funcionarios_qs.count(),
             "hh_total": hh_total,
         },
+        "paralisacoes": list(rdc.paralisacoes.select_related("equipe", "rdc_atividade").all()),
+        "paralisacoes_resumo": resumir_paralisacoes(rdc.paralisacoes.all(), hh_trabalhado=hh_total),
         "status_badge": getattr(rdc, "workflow_badge", "secondary"),
         "can_edit_rdc": rdc.usuario_pode_editar(user),
         "can_force_close": rdc.usuario_pode_forcar_fechamento(user),

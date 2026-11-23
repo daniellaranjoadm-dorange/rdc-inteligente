@@ -1,6 +1,7 @@
-﻿from django.urls import path
+from django.urls import path
 from rdc.views import *
 from rdc.views import RDCApontamentoCreateView
+from rdc.views_paralisacao import RDCParalisacaoCreateView, RDCParalisacaoDeleteView, RDCParalisacaoUpdateView
 
 # ===== BASE =====
 base_patterns = [
@@ -61,6 +62,13 @@ apontamento_patterns = [
     path("<int:pk>/apontamentos/lote/", RDCApontamentoLoteView.as_view(), name="rdc-apontamento-lote"),
 ]
 
+# ===== PARALISAÇÕES =====
+paralisacao_patterns = [
+    path("<int:pk>/paralisacoes/nova/", RDCParalisacaoCreateView.as_view(), name="rdc-paralisacao-create"),
+    path("<int:pk>/paralisacoes/<int:pk2>/editar/", RDCParalisacaoUpdateView.as_view(), name="rdc-paralisacao-update"),
+    path("<int:pk>/paralisacoes/<int:pk2>/excluir/", RDCParalisacaoDeleteView.as_view(), name="rdc-paralisacao-delete"),
+]
+
 # ===== VALIDAÇÕES =====
 validacao_patterns = [
     path("<int:pk>/validacoes/", RDCValidacoesView.as_view(), name="rdc-validacoes"),
@@ -86,6 +94,7 @@ urlpatterns = (
     + atividade_patterns
     + funcionario_patterns
     + apontamento_patterns
+    + paralisacao_patterns
     + validacao_patterns
     + extra_patterns
 )

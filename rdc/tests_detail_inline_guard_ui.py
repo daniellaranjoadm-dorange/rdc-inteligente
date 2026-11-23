@@ -57,6 +57,6 @@ class RDCDetailInlineGuardUITests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "fetch(url")
-        self.assertContains(response, "Edi??o r?pida temporariamente indispon?vel nesta vers?o.")
+        self.assertContains(response, "Edição rápida temporariamente indisponível nesta versão.")
 
 

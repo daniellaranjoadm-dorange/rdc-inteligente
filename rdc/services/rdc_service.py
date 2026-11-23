@@ -22,6 +22,7 @@ from openpyxl.styles import Alignment
 from planejamento.models import AtividadeCronograma
 from rdc.models import RDC, RDCApontamento, RDCAtividade, RDCFuncionario, RDCValidacao
 from . import rdc_clima_service as clima_service
+from .paralisacao_service import texto_paralisacoes_excel
 from .rdc_excel_layout_service import (
     CIDADE_OBRA,
     HORARIO_INICIO_PADRAO,
@@ -934,8 +935,9 @@ def preencher_bloco_observacoes_elite(ws, rdc, clima):
         f"Área/local: {rdc.area_local.descricao}",
         f"Supervisor: {rdc.supervisor.nome if getattr(rdc, 'supervisor_id', None) else SUPERVISOR_PADRAO_NOME}",
         f"Clima: {clima.get('descricao')}",
+        texto_paralisacoes_excel(rdc),
     ]
-    ws["A35"] = f"COMENTÃRIOS EXECUTIVOS: {' | '.join(observacoes)}"
+    ws["A35"] = f"COMENTÁRIOS EXECUTIVOS: {' | '.join(observacoes)}"
     _aplicar_estilo_celula(ws["A35"], fill=FILL_RODAPE, bold=True, size=9, wrap=True)
 
 

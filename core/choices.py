@@ -103,3 +103,70 @@ class StatusImportacaoChoices:
 
 
 
+
+
+class MotivoParalisacaoChoices:
+    """Motivos de parada em obra naval. Agrupados para o relatorio de HH perdido."""
+
+    CHUVA = "chuva"
+    VENTO = "vento"
+    TROVOADA = "trovoada"
+    MARE = "mare"
+    FALTA_MATERIAL = "falta_material"
+    FALTA_LIBERACAO = "falta_liberacao"
+    AGUARDANDO_ICAMENTO = "aguardando_icamento"
+    AGUARDANDO_INSPECAO = "aguardando_inspecao"
+    UTILIDADES = "utilidades"
+    EQUIPAMENTO = "equipamento"
+    INTERFERENCIA = "interferencia"
+    SEGURANCA = "seguranca"
+    OUTROS = "outros"
+
+    CHOICES = (
+        (CHUVA, "Chuva"),
+        (VENTO, "Vento forte"),
+        (TROVOADA, "Trovoada / descargas atmosféricas"),
+        (MARE, "Maré / condição de mar"),
+        (FALTA_MATERIAL, "Falta de material"),
+        (FALTA_LIBERACAO, "Falta de liberação / PT"),
+        (AGUARDANDO_ICAMENTO, "Aguardando guindaste / içamento"),
+        (AGUARDANDO_INSPECAO, "Aguardando inspeção (CQ / cliente)"),
+        (UTILIDADES, "Falta de energia, ar ou gases"),
+        (EQUIPAMENTO, "Quebra de equipamento / ferramenta"),
+        (INTERFERENCIA, "Interferência de outra frente"),
+        (SEGURANCA, "Parada de segurança"),
+        (OUTROS, "Outros"),
+    )
+
+    CLIMATICOS = {CHUVA, VENTO, TROVOADA, MARE}
+
+
+class ResponsabilidadeParalisacaoChoices:
+    CLIMA = "clima"
+    CONTRATANTE = "contratante"
+    CONTRATADA = "contratada"
+    TERCEIROS = "terceiros"
+
+    CHOICES = (
+        (CLIMA, "Clima / força maior"),
+        (CONTRATANTE, "Contratante (cliente)"),
+        (CONTRATADA, "Contratada (nossa equipe)"),
+        (TERCEIROS, "Terceiros / outra frente"),
+    )
+
+    # Sugestao inicial por motivo; o supervisor pode trocar no formulario.
+    PADRAO_POR_MOTIVO = {
+        MotivoParalisacaoChoices.CHUVA: CLIMA,
+        MotivoParalisacaoChoices.VENTO: CLIMA,
+        MotivoParalisacaoChoices.TROVOADA: CLIMA,
+        MotivoParalisacaoChoices.MARE: CLIMA,
+        MotivoParalisacaoChoices.FALTA_LIBERACAO: CONTRATANTE,
+        MotivoParalisacaoChoices.AGUARDANDO_INSPECAO: CONTRATANTE,
+        MotivoParalisacaoChoices.UTILIDADES: CONTRATANTE,
+        MotivoParalisacaoChoices.AGUARDANDO_ICAMENTO: CONTRATANTE,
+        MotivoParalisacaoChoices.INTERFERENCIA: TERCEIROS,
+        MotivoParalisacaoChoices.FALTA_MATERIAL: CONTRATADA,
+        MotivoParalisacaoChoices.EQUIPAMENTO: CONTRATADA,
+        MotivoParalisacaoChoices.SEGURANCA: CONTRATADA,
+        MotivoParalisacaoChoices.OUTROS: CONTRATADA,
+    }

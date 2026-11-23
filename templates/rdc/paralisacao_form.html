@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Editar paralisação{% else %}Nova paralisação{% endif %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .pz-wrap { max-width: 760px; margin: 0 auto; }
+  .pz-head { margin-bottom: 1.25rem; }
+  .pz-head h1 { font-size: 1.5rem; font-weight: 800; margin: .15rem 0 .25rem; }
+  .pz-head .ctx { color: var(--dg-muted); font-size: .92rem; }
+  .pz-card { background: #fff; border: 1px solid var(--dg-border); border-radius: 18px; box-shadow: var(--dg-shadow); padding: 1.5rem; }
+  .pz-card label { font-weight: 600; font-size: .9rem; margin-bottom: .35rem; }
+  .pz-card .form-control, .pz-card .form-select { min-height: 48px; border-radius: 12px; }
+  .pz-card textarea.form-control { min-height: 90px; }
+  .pz-card .helptext, .pz-card .form-text { font-size: .8rem; color: var(--dg-muted); }
+  .pz-calc {
+    display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    background: var(--dg-navy-900); color: #fff; border-radius: 14px; padding: .9rem 1.1rem; margin: 1.25rem 0;
+    border-bottom: 3px solid var(--dg-orange-500);
+  }
+  .pz-calc .lbl { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--dg-silver-300); font-weight: 700; }
+  .pz-calc .val { font-size: 1.6rem; font-weight: 800; line-height: 1.1; }
+  .pz-calc .val.hl { color: var(--dg-orange-400); }
+  .pz-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+  .pz-actions .btn { min-height: 48px; padding-left: 1.4rem; padding-right: 1.4rem; }
+  .errorlist { list-style: none; padding: 0; margin: .3rem 0 0; color: #b42318; font-size: .85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pz-wrap">
+  <div class="pz-head">
+    <div class="dg-eyebrow">Paralisação</div>
+    <h1>{% if object %}Editar paralisação{% else %}Registrar parada da frente{% endif %}</h1>
+    <div class="ctx">
+      {{ rdc.projeto.nome }} · {{ rdc.area_local.descricao }} · {{ rdc.disciplina.nome }} ·
+      {{ rdc.data|date:"d/m/Y" }} · {{ rdc.get_turno_display }}
+    </div>
+  </div>
+
+  <form method="post" class="pz-card" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+    <div class="row g-3">
+      <div class="col-md-7">
+        <label for="{{ form.motivo.id_for_label }}">{{ form.motivo.label }}</label>
+        {{ form.motivo }}{{ form.motivo.errors }}
+      </div>
+      <div class="col-md-5">
+        <label for="{{ form.responsabilidade.id_for_label }}">{{ form.responsabilidade.label }}</label>
+        {{ form.responsabilidade }}{{ form.responsabilidade.errors }}
+        <div class="form-text">{{ form.responsabilidade.help_text }}</div>
+      </div>
+      <div class="col-6 col-md-4">
+        <label for="{{ form.inicio.id_for_label }}">{{ form.inicio.label }}</label>
+        {{ form.inicio }}{{ form.inicio.errors }}
+      </div>
+      <div class="col-6 col-md-4">
+        <label for="{{ form.fim.id_for_label }}">{{ form.fim.label }}</label>
+        {{ form.fim }}{{ form.fim.errors }}
+      </div>
+      <div class="col-12 col-md-4">
+        <label for="{{ form.pessoas_afetadas.id_for_label }}">{{ form.pessoas_afetadas.label }}</label>
+        {{ form.pessoas_afetadas }}{{ form.pessoas_afetadas.errors }}
+      </div>
+    </div>
+
+    <div class="pz-calc" aria-live="polite">
+      <div><div class="lbl">Tempo parado</div><div class="val" id="pz-horas">0,00 h</div></div>
+      <div><div class="lbl">HH perdido</div><div class="val hl" id="pz-hh">0,00</div></div>
+      <div class="small" style="color:var(--dg-silver-300);max-width:16rem">Horas paradas × pessoas. Se o fim for antes do início, conta como virada de turno.</div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="{{ form.equipe.id_for_label }}">{{ form.equipe.label }}</label>
+        {{ form.equipe }}{{ form.equipe.errors }}
+      </div>
+      <div class="col-md-6">
+        <label for="{{ form.rdc_atividade.id_for_label }}">{{ form.rdc_atividade.label }}</label>
+        {{ form.rdc_atividade }}{{ form.rdc_atividade.errors }}
+      </div>
+      <div class="col-12">
+        <label for="{{ form.descricao.id_for_label }}">{{ form.descricao.label }}</label>
+        {{ form.descricao }}{{ form.descricao.errors }}
+      </div>
+    </div>
+
+    <div class="pz-actions mt-4">
+      <button type="submit" class="btn btn-primary">{% if object %}Salvar alterações{% else %}Registrar paralisação{% endif %}</button>
+      <a class="btn btn-outline-secondary" href="{% url 'rdc-detail' rdc.pk %}?tab=paralisacoes#paralisacoes">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const ini = document.getElementById("{{ form.inicio.id_for_label }}");
+  const fim = document.getElementById("{{ form.fim.id_for_label }}");
+  const pes = document.getElementById("{{ form.pessoas_afetadas.id_for_label }}");
+  const outH = document.getElementById("pz-horas");
+  const outHH = document.getElementById("pz-hh");
+  const fmt = (n) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function minutos(v) { if (!v) return null; const [h, m] = v.split(":").map(Number); return h * 60 + m; }
+  function calc() {
+    const a = minutos(ini.value), b = minutos(fim.value);
+    let horas = 0;
+    if (a !== null && b !== null && a !== b) { let d = b - a; if (d < 0) d += 1440; horas = d / 60; }
+    const pessoas = Math.max(parseInt(pes.value || "0", 10) || 0, 0);
+    outH.textContent = fmt(horas) + " h";
+    outHH.textContent = fmt(horas * pessoas);
+  }
+  [ini, fim, pes].forEach((el) => el && el.addEventListener("input", calc));
+  calc();
+})();
+</script>
+{% endblock %}

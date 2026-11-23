@@ -8,7 +8,9 @@ from django.db import models
 from django.utils import timezone
 
 from core.choices import (
+    MotivoParalisacaoChoices,
     OrigemAtividadeChoices,
+    ResponsabilidadeParalisacaoChoices,
     StatusRDCChoices,
     StatusValidacaoChoices,
     TipoValidacaoChoices,
@@ -621,3 +623,87 @@ class ProgramacaoSemanal(TimeStampedModel):
 
 
 
+
+
+class RDCParalisacao(TimeStampedModel):
+    """Periodo em que a frente de trabalho ficou parada, com o HH perdido."""
+
+    rdc = models.ForeignKey(
+        "rdc.RDC",
+        on_delete=models.CASCADE,
+        related_name="paralisacoes",
+    )
+    motivo = models.CharField(max_length=30, choices=MotivoParalisacaoChoices.CHOICES)
+    responsabilidade = models.CharField(
+        max_length=20,
+        choices=ResponsabilidadeParalisacaoChoices.CHOICES,
+        blank=True,
+        help_text="Se ficar em branco, e sugerida pelo motivo.",
+    )
+    inicio = models.TimeField()
+    fim = models.TimeField()
+    pessoas_afetadas = models.PositiveIntegerField(default=1)
+    equipe = models.ForeignKey(
+        "cadastros.Equipe",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="paralisacoes",
+    )
+    rdc_atividade = models.ForeignKey(
+        "rdc.RDCAtividade",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="paralisacoes",
+    )
+    descricao = models.TextField(blank=True)
+    horas = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal("0.00"), editable=False)
+    hh_perdido = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("0.00"), editable=False)
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="paralisacoes_rdc",
+    )
+
+    class Meta:
+        ordering = ("inicio", "id")
+        verbose_name = "Paralisação do RDC"
+        verbose_name_plural = "Paralisações do RDC"
+
+    def __str__(self):
+        return f"{self.get_motivo_display()} {self.inicio:%H:%M}-{self.fim:%H:%M}"
+
+    @staticmethod
+    def calcular_horas(inicio, fim):
+        """Horas entre inicio e fim; se o fim for menor, a parada passou da meia-noite."""
+        if inicio is None or fim is None:
+            return Decimal("0.00")
+        minutos_inicio = inicio.hour * 60 + inicio.minute
+        minutos_fim = fim.hour * 60 + fim.minute
+        minutos = minutos_fim - minutos_inicio
+        if minutos < 0:
+            minutos += 24 * 60
+        return (Decimal(minutos) / Decimal(60)).quantize(Decimal("0.01"))
+
+    @property
+    def is_climatica(self):
+        return self.motivo in MotivoParalisacaoChoices.CLIMATICOS
+
+    def clean(self):
+        super().clean()
+        if self.inicio is not None and self.fim is not None and self.inicio == self.fim:
+            raise ValidationError({"fim": "O fim precisa ser diferente do início."})
+        if self.pessoas_afetadas is not None and self.pessoas_afetadas < 1:
+            raise ValidationError({"pessoas_afetadas": "Informe ao menos 1 pessoa."})
+
+    def save(self, *args, **kwargs):
+        if not self.responsabilidade:
+            self.responsabilidade = ResponsabilidadeParalisacaoChoices.PADRAO_POR_MOTIVO.get(
+                self.motivo, ResponsabilidadeParalisacaoChoices.CONTRATADA
+            )
+        self.horas = self.calcular_horas(self.inicio, self.fim)
+        self.hh_perdido = (self.horas * Decimal(self.pessoas_afetadas or 0)).quantize(Decimal("0.01"))
+        super().save(*args, **kwargs)

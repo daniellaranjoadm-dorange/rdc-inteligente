@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q, Sum
 
 from core.choices import StatusValidacaoChoices, TurnoChoices
-from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario, RDCValidacao
+from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario, RDCParalisacao, RDCValidacao
 
 
 DEFAULT_HORA_NORMAL = Decimal("8.00")
@@ -636,3 +636,60 @@ class RDCWorkflowActionForm(BootstrapFormMixin, forms.Form):
 
 
 
+
+
+class RDCParalisacaoForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = RDCParalisacao
+        fields = [
+            "motivo",
+            "responsabilidade",
+            "inicio",
+            "fim",
+            "pessoas_afetadas",
+            "equipe",
+            "rdc_atividade",
+            "descricao",
+        ]
+        labels = {
+            "motivo": "Motivo da parada",
+            "responsabilidade": "Responsabilidade",
+            "inicio": "Início",
+            "fim": "Fim",
+            "pessoas_afetadas": "Pessoas paradas",
+            "equipe": "Equipe afetada (opcional)",
+            "rdc_atividade": "Atividade afetada (opcional)",
+            "descricao": "O que aconteceu",
+        }
+        widgets = {
+            "inicio": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "fim": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "pessoas_afetadas": forms.NumberInput(attrs={"min": 1, "inputmode": "numeric"}),
+            "descricao": forms.Textarea(attrs={"rows": 3, "placeholder": "Ex.: chuva forte, área sem proteção; equipe recolhida ao vestiário."}),
+        }
+
+    def __init__(self, *args, rdc=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.rdc = rdc
+        from cadastros.models import Equipe
+
+        self.fields["responsabilidade"].required = False
+        self.fields["responsabilidade"].help_text = "Em branco: sugerida a partir do motivo."
+        self.fields["equipe"].queryset = Equipe.objects.filter(ativa=True).order_by("nome")
+        if rdc is not None:
+            self.fields["rdc_atividade"].queryset = rdc.atividades.all().order_by("codigo_atividade")
+            if not self.instance.pk and not self.is_bound:
+                presentes = rdc.funcionarios.count()
+                self.initial.setdefault("pessoas_afetadas", presentes or 1)
+                if rdc.horario_inicio:
+                    self.initial.setdefault("inicio", rdc.horario_inicio.strftime("%H:%M"))
+        for name in ("motivo", "responsabilidade", "equipe", "rdc_atividade"):
+            css = self.fields[name].widget.attrs.get("class", "").replace("form-control", "form-select")
+            self.fields[name].widget.attrs["class"] = css
+
+    def clean(self):
+        cleaned = super().clean()
+        inicio, fim = cleaned.get("inicio"), cleaned.get("fim")
+        if inicio and fim and inicio == fim:
+            self.add_error("fim", "O fim precisa ser diferente do início.")
+        return cleaned
