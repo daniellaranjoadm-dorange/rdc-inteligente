@@ -4,7 +4,9 @@ from core.exceptions import ContextualPermissionDenied
 
 
 class AuthenticatedTemplateMixin(LoginRequiredMixin):
-    raise_exception = True
+    # Visitante sem login vai para a tela de login (e volta para a pagina pedida).
+    # Usuario logado sem permissao continua recebendo 403 (Acesso negado).
+    raise_exception = False
     login_url = "/accounts/login/"
     redirect_field_name = "next"
 
