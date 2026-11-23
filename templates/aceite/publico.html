@@ -1,0 +1,156 @@
+{% extends "aceite/_base.html" %}
+{% block title %}Aceite do RDC #{{ rdc.pk }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .ac-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .6rem; }
+  .ac-kpi { background: var(--dg-silver-100); border-radius: 12px; padding: .7rem .8rem; }
+  .ac-kpi .l { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--dg-muted); }
+  .ac-kpi .v { font-size: 1.35rem; font-weight: 800; }
+  .ac-fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: .5rem; }
+  .ac-fotos a img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; border: 1px solid var(--dg-border); }
+  .ac-decisao { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .5rem; }
+  .ac-decisao label { display: flex; gap: .5rem; align-items: center; border: 1.5px solid var(--dg-border); border-radius: 12px; padding: .8rem .9rem; font-weight: 700; cursor: pointer; }
+  .ac-decisao input { width: 1.15rem; height: 1.15rem; accent-color: var(--dg-orange-500); }
+  .ac-decisao label:has(input:checked) { border-color: var(--dg-orange-500); background: var(--dg-orange-50); }
+  .ac-sig-wrap { border: 2px dashed #b8c3cf; border-radius: 14px; background: #fff; position: relative; touch-action: none; }
+  .ac-sig-wrap canvas { width: 100%; height: 200px; display: block; border-radius: 12px; cursor: crosshair; }
+  .ac-sig-wrap .dica { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; color: #9aa7b5; pointer-events: none; font-size: .85rem; }
+  .ac-sig-wrap .linha { position: absolute; left: 8%; right: 8%; bottom: 40px; border-bottom: 1px solid #d5dce4; pointer-events: none; }
+  .ac-card .form-control { min-height: 46px; border-radius: 12px; }
+  .ac-enviar { min-height: 52px; font-size: 1.05rem; font-weight: 700; border-radius: 12px; }
+  .errorlist { list-style: none; padding: 0; margin: .3rem 0 0; color: #b42318; font-size: .85rem; }
+  .ac-table td, .ac-table th { font-size: .88rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <div class="dg-eyebrow">Conferência e aceite</div>
+  <h1 class="h3 fw-bold mb-1">RDC #{{ rdc.pk }} · {{ rdc.data|date:"d/m/Y" }} ({{ rdc.get_turno_display }})</h1>
+  <div class="mini-muted">{{ rdc.projeto.nome }} · {{ rdc.area_local.descricao }}{% if rdc.area_local.resumo_naval %} ({{ rdc.area_local.resumo_naval }}){% endif %} · {{ rdc.disciplina.nome }}</div>
+  <div class="mini-muted mt-1">Link válido até {{ link.expira_em|date:"d/m/Y H:i" }}. Pode ser usado uma única vez.</div>
+</div>
+
+<section class="ac-card">
+  <h2>Resumo do dia</h2>
+  <div class="ac-kpis">
+    <div class="ac-kpi"><div class="l">Efetivo</div><div class="v">{{ funcionarios|length }}</div></div>
+    <div class="ac-kpi"><div class="l">HH trabalhado</div><div class="v">{{ hh_trabalhado }}</div></div>
+    <div class="ac-kpi"><div class="l">Atividades</div><div class="v">{{ atividades|length }}</div></div>
+    <div class="ac-kpi"><div class="l">HH perdido</div><div class="v" style="color:#b85407">{{ hh_perdido }}</div></div>
+  </div>
+  {% if rdc.observacoes %}<p class="mt-3 mb-0 small"><strong>Observações:</strong> {{ rdc.observacoes|linebreaksbr }}</p>{% endif %}
+</section>
+
+{% if atividades %}
+<section class="ac-card">
+  <h2>Atividades</h2>
+  <div class="table-responsive"><table class="table table-sm ac-table mb-0">
+    <thead><tr><th>Código</th><th>Descrição</th><th class="text-end">Executado</th></tr></thead>
+    <tbody>{% for a in atividades %}<tr><td>{{ a.codigo_atividade }}</td><td>{{ a.descr_atividade }}</td><td class="text-end">{{ a.qtd_executada }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+
+{% if funcionarios %}
+<section class="ac-card">
+  <h2>Equipe ({{ funcionarios|length }})</h2>
+  <div class="table-responsive"><table class="table table-sm ac-table mb-0">
+    <thead><tr><th>Nome</th><th>Função</th><th class="text-end">HH</th></tr></thead>
+    <tbody>{% for f in funcionarios %}<tr><td>{{ f.nome }}</td><td>{{ f.funcao|default:"-" }}</td><td class="text-end">{{ f.hh_total }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+
+{% if paralisacoes %}
+<section class="ac-card">
+  <h2>Paralisações</h2>
+  <div class="table-responsive"><table class="table table-sm ac-table mb-0">
+    <thead><tr><th>Motivo</th><th>Período</th><th class="text-end">Pessoas</th><th class="text-end">HH perdido</th></tr></thead>
+    <tbody>{% for p in paralisacoes %}<tr><td>{{ p.get_motivo_display }}<div class="mini-muted">{{ p.descricao|default:"" }}</div></td><td>{{ p.inicio|time:"H:i" }}–{{ p.fim|time:"H:i" }}</td><td class="text-end">{{ p.pessoas_afetadas }}</td><td class="text-end">{{ p.hh_perdido }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+
+{% if fotos %}
+<section class="ac-card">
+  <h2>Fotos ({{ fotos|length }})</h2>
+  <div class="ac-fotos">{% for f in fotos %}<a href="{% url 'aceite-publico-foto' token=link.token foto_id=f.pk %}?t=g" target="_blank" rel="noopener" title="{{ f.legenda }}"><img loading="lazy" src="{% url 'aceite-publico-foto' token=link.token foto_id=f.pk %}" alt="{{ f.legenda|default:'Foto do RDC' }}"></a>{% endfor %}</div>
+</section>
+{% endif %}
+
+<form method="post" class="ac-card" id="ac-form" novalidate>
+  {% csrf_token %}
+  <h2>Sua decisão</h2>
+  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  <div class="ac-decisao mb-1">
+    {% for radio in form.decisao %}<label>{{ radio.tag }} {{ radio.choice_label }}</label>{% endfor %}
+  </div>
+  {{ form.decisao.errors }}
+
+  <div class="row g-3 mt-1">
+    <div class="col-md-6"><label class="form-label fw-semibold small mb-1" for="{{ form.nome.id_for_label }}">{{ form.nome.label }} *</label>{{ form.nome }}{{ form.nome.errors }}</div>
+    <div class="col-md-3"><label class="form-label fw-semibold small mb-1" for="{{ form.cargo.id_for_label }}">{{ form.cargo.label }}</label>{{ form.cargo }}</div>
+    <div class="col-md-3"><label class="form-label fw-semibold small mb-1" for="{{ form.empresa.id_for_label }}">{{ form.empresa.label }}</label>{{ form.empresa }}</div>
+    <div class="col-12"><label class="form-label fw-semibold small mb-1" for="{{ form.observacao.id_for_label }}">{{ form.observacao.label }}</label>{{ form.observacao }}<div class="form-text">{{ form.observacao.help_text }}</div>{{ form.observacao.errors }}</div>
+  </div>
+
+  <div class="mt-3">
+    <div class="d-flex justify-content-between align-items-end mb-1">
+      <span class="form-label fw-semibold small mb-0">Assinatura *</span>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="ac-limpar">Limpar</button>
+    </div>
+    <div class="ac-sig-wrap"><canvas id="ac-canvas" aria-label="Quadro para assinar com o dedo ou o mouse"></canvas><div class="linha"></div><div class="dica" id="ac-dica">Assine aqui com o dedo ou o mouse</div></div>
+    {{ form.assinatura }}
+  </div>
+
+  <div class="form-check mt-3">
+    {{ form.declaro }} <label class="form-check-label" for="{{ form.declaro.id_for_label }}">{{ form.declaro.label }}</label>
+    {{ form.declaro.errors }}
+  </div>
+
+  <button type="submit" class="btn btn-primary w-100 mt-3 ac-enviar" id="ac-enviar">Assinar e enviar</button>
+  <p class="mini-muted mt-2 mb-0">Registramos nome, data, hora e IP junto com um retrato dos números deste RDC, para comprovar o que foi assinado.</p>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const canvas = document.getElementById("ac-canvas");
+  const ctx = canvas.getContext("2d");
+  const campo = document.getElementById("{{ form.assinatura.id_for_label }}");
+  const dica = document.getElementById("ac-dica");
+  let desenhando = false, tracou = false, ultimo = null;
+
+  function ajustar() {
+    const r = canvas.getBoundingClientRect(), dpr = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#142130";
+    tracou = false; campo.value = ""; dica.style.display = "";
+  }
+  function ponto(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  canvas.addEventListener("pointerdown", (e) => { desenhando = true; ultimo = ponto(e); canvas.setPointerCapture(e.pointerId); dica.style.display = "none"; });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!desenhando) return;
+    const p = ponto(e);
+    ctx.beginPath(); ctx.moveTo(ultimo.x, ultimo.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ultimo = p; tracou = true;
+  });
+  const parar = () => { if (desenhando && tracou) campo.value = canvas.toDataURL("image/png"); desenhando = false; };
+  canvas.addEventListener("pointerup", parar);
+  canvas.addEventListener("pointercancel", parar);
+  canvas.addEventListener("pointerleave", parar);
+  document.getElementById("ac-limpar").addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ajustar(); });
+  window.addEventListener("resize", () => { if (!tracou) ajustar(); });
+  ajustar();
+
+  document.getElementById("ac-form").addEventListener("submit", function (e) {
+    if (!campo.value) { e.preventDefault(); dica.style.display = ""; dica.textContent = "Assine antes de enviar"; dica.style.color = "#b42318"; canvas.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+    const b = document.getElementById("ac-enviar"); b.disabled = true; b.textContent = "Enviando...";
+  });
+})();
+</script>
+{% endblock %}

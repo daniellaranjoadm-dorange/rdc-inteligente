@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from core.choices import (
     CategoriaFotoChoices,
+    DecisaoAceiteChoices,
     MotivoParalisacaoChoices,
     OrigemAtividadeChoices,
     ResponsabilidadeParalisacaoChoices,
@@ -764,3 +765,75 @@ class RDCFoto(TimeStampedModel):
     def delete(self, *args, **kwargs):
         self.apagar_arquivos()
         return super().delete(*args, **kwargs)
+
+
+def _gerar_token_aceite():
+    import secrets
+
+    return secrets.token_urlsafe(32)
+
+
+def _caminho_assinatura(instance, filename):
+    return f"rdc_assinaturas/{timezone.localdate():%Y/%m}/rdc{instance.rdc_id}_{uuid.uuid4().hex[:12]}.png"
+
+
+class RDCLinkAceite(TimeStampedModel):
+    """Link de uso unico, sem login, para o fiscal conferir e assinar o RDC."""
+
+    rdc = models.ForeignKey("rdc.RDC", on_delete=models.CASCADE, related_name="links_aceite")
+    token = models.CharField(max_length=64, unique=True, default=_gerar_token_aceite, editable=False)
+    destinatario = models.CharField("Para quem", max_length=120, blank=True)
+    expira_em = models.DateTimeField()
+    usado_em = models.DateTimeField(null=True, blank=True)
+    revogado_em = models.DateTimeField(null=True, blank=True)
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="links_aceite_rdc"
+    )
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"Link de aceite do RDC {self.rdc_id}"
+
+    @property
+    def situacao(self):
+        if self.usado_em:
+            return "usado"
+        if self.revogado_em:
+            return "revogado"
+        if self.expira_em <= timezone.now():
+            return "expirado"
+        return "ativo"
+
+    @property
+    def ativo(self):
+        return self.situacao == "ativo"
+
+
+class RDCAceite(TimeStampedModel):
+    """Aceite (ou recusa) do fiscal, com assinatura e retrato do RDC no momento da assinatura."""
+
+    rdc = models.ForeignKey("rdc.RDC", on_delete=models.CASCADE, related_name="aceites")
+    link = models.OneToOneField(
+        "rdc.RDCLinkAceite", on_delete=models.SET_NULL, null=True, blank=True, related_name="aceite"
+    )
+    decisao = models.CharField(max_length=20, choices=DecisaoAceiteChoices.CHOICES)
+    nome = models.CharField(max_length=120)
+    cargo = models.CharField(max_length=120, blank=True)
+    empresa = models.CharField(max_length=120, blank=True)
+    observacao = models.TextField(blank=True)
+    assinatura = models.ImageField(upload_to=_caminho_assinatura)
+    assinado_em = models.DateTimeField(default=timezone.now)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    navegador = models.CharField(max_length=255, blank=True)
+    retrato = models.JSONField(default=dict, help_text="Numeros do RDC no momento da assinatura.")
+    hash_retrato = models.CharField(max_length=64, help_text="SHA-256 do retrato, para provar o que foi assinado.")
+
+    class Meta:
+        ordering = ("-assinado_em",)
+        verbose_name = "Aceite do RDC"
+        verbose_name_plural = "Aceites do RDC"
+
+    def __str__(self):
+        return f"{self.get_decisao_display()} por {self.nome}"

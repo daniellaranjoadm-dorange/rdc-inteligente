@@ -1,0 +1,11 @@
+{% extends "aceite/_base.html" %}
+{% block title %}Aceite registrado{% endblock %}
+{% block content %}
+<section class="ac-card text-center py-4">
+  <div class="dg-eyebrow mb-1">Aceite registrado</div>
+  <h1 class="h3 fw-bold">Obrigado, {{ aceite.nome }}.</h1>
+  <p class="mb-1">Sua decisão <strong>{{ aceite.get_decisao_display }}</strong> para o RDC #{{ rdc.pk }} de {{ rdc.data|date:"d/m/Y" }} foi registrada em {{ aceite.assinado_em|date:"d/m/Y" }} às {{ aceite.assinado_em|time:"H:i" }}.</p>
+  <p class="mini-muted mb-0">Código de verificação: <code>{{ aceite.hash_retrato|slice:":16" }}</code></p>
+  <p class="mini-muted mt-3 mb-0">Pode fechar esta página. Este link não pode ser usado de novo.</p>
+</section>
+{% endblock %}

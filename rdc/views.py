@@ -897,6 +897,8 @@ class RDCDetailView(AuthenticatedTemplateMixin, DetailView):
         }
         context["schema_fechamento_ok"] = rdc_tem_schema_fechamento()
         context.update(build_rdc_detail_context(rdc, user=self.request.user))
+        from rdc.views_aceite import contexto_aceite
+        context.update(contexto_aceite(rdc, self.request))
         context["resumo_montagem"] = _resumo_montagem_detalhe(rdc)
 
         context["montagem_excepcional"] = False

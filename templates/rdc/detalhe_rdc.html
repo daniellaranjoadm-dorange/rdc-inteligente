@@ -316,6 +316,53 @@
 </div>
 
 
+<div class="table-card p-3 p-lg-4 mb-4" id="aceite-fiscal">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+        <div>
+            <h5 class="mb-1">Aceite do fiscal</h5>
+            <div class="mini-muted">Gere um link de uso único para o fiscal conferir o RDC e assinar no celular, sem precisar de login.</div>
+        </div>
+        {% if aceites %}{% with ult=aceites.0 %}<span class="summary-badge {% if ult.decisao == 'aprovado' %}success{% elif ult.decisao == 'ressalvas' %}warning{% else %}danger{% endif %}">{{ ult.get_decisao_display }} por {{ ult.nome }}</span>{% endwith %}{% endif %}
+    </div>
+
+    {% for a in aceites %}
+    <div class="d-flex flex-wrap align-items-center gap-3 border rounded-3 p-2 mb-2">
+        <img src="{% url 'rdc-aceite-assinatura' pk=rdc.pk aceite_id=a.pk %}" alt="Assinatura de {{ a.nome }}" style="height:48px;max-width:160px;object-fit:contain;background:#fff">
+        <div class="flex-grow-1">
+            <div class="fw-semibold">{{ a.get_decisao_display }} · {{ a.nome }}{% if a.cargo or a.empresa %} <span class="mini-muted">({{ a.cargo }}{% if a.cargo and a.empresa %} · {% endif %}{{ a.empresa }})</span>{% endif %}</div>
+            <div class="mini-muted">{{ a.assinado_em|date:"d/m/Y H:i" }} · código {{ a.hash_retrato|slice:":12" }}{% if a.observacao %} · {{ a.observacao|truncatechars:90 }}{% endif %}</div>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-aceite-comprovante' pk=rdc.pk aceite_id=a.pk %}">Comprovante (PDF)</a>
+    </div>
+    {% endfor %}
+
+    {% if can_edit_rdc %}
+    <form method="post" action="{% url 'rdc-aceite-gerar-link' rdc.pk %}" class="row g-2 align-items-end mt-1">
+        {% csrf_token %}
+        <div class="col-md-6"><label class="form-label small fw-semibold mb-1" for="aceite-dest">Para quem (opcional)</label><input id="aceite-dest" type="text" name="destinatario" maxlength="120" class="form-control form-control-sm" placeholder="Ex.: Fiscal Transpetro - Eng. João"></div>
+        <div class="col-md-auto"><button class="btn btn-primary btn-sm">Gerar link de aceite</button></div>
+    </form>
+    {% endif %}
+
+    {% if links_aceite %}
+    <div class="table-responsive mt-3"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Para</th><th>Situação</th><th>Validade</th><th>Link</th><th></th></tr></thead>
+        <tbody>
+        {% for item in links_aceite %}{% with l=item.obj %}
+        <tr class="{% if l.pk == novo_link_id %}table-warning{% endif %}">
+            <td>{{ l.destinatario|default:"-" }}</td>
+            <td>{% if l.situacao == 'ativo' %}<span class="summary-badge primary">Ativo</span>{% elif l.situacao == 'usado' %}<span class="summary-badge success">Assinado</span>{% elif l.situacao == 'revogado' %}<span class="summary-badge secondary">Revogado</span>{% else %}<span class="summary-badge secondary">Expirado</span>{% endif %}</td>
+            <td class="mini-muted">{{ l.expira_em|date:"d/m/Y H:i" }}</td>
+            <td>{% if l.ativo %}<div class="input-group input-group-sm" style="min-width:260px"><input type="text" readonly class="form-control" value="{{ item.url }}" id="link-aceite-{{ l.pk }}"><button type="button" class="btn btn-outline-secondary" data-copiar="#link-aceite-{{ l.pk }}">Copiar</button><a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="https://wa.me/?text={{ 'Confira e assine o RDC #'|urlencode }}{{ rdc.pk }}{{ ' de '|urlencode }}{{ rdc.data|date:'d/m/Y'|urlencode }}%3A%20{{ item.url|urlencode }}">WhatsApp</a></div>{% else %}<span class="mini-muted">-</span>{% endif %}</td>
+            <td class="text-end">{% if l.ativo and can_edit_rdc %}<form method="post" action="{% url 'rdc-aceite-revogar-link' pk=rdc.pk link_id=l.pk %}" onsubmit="return confirm('Revogar este link? O fiscal não conseguirá mais abrir.');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Revogar</button></form>{% endif %}</td>
+        </tr>
+        {% endwith %}{% endfor %}
+        </tbody>
+    </table></div>
+    <div class="mini-muted mt-2">Assinando no campo? Abra o link ativo neste aparelho e entregue para o fiscal assinar.</div>
+    {% endif %}
+</div>
+
 <ul class="nav nav-tabs mb-3" id="rdcTabs" role="tablist">
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#atividades">Atividades</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#funcionarios">Funcionários</button></li>
@@ -549,6 +596,13 @@
         const trigger = document.querySelector(`[data-bs-target="${targetTab}"]`);
         if (trigger) bootstrap.Tab.getOrCreateInstance(trigger).show();
     }
+    document.querySelectorAll('[data-copiar]').forEach(function(btn){
+        btn.addEventListener('click', async function(){
+            const campo = document.querySelector(btn.dataset.copiar);
+            try { await navigator.clipboard.writeText(campo.value); } catch (e) { campo.select(); document.execCommand('copy'); }
+            btn.textContent = 'Copiado'; setTimeout(function(){ btn.textContent = 'Copiar'; }, 1800);
+        });
+    });
     document.querySelectorAll('[data-open-tab]').forEach(function(link){
         link.addEventListener('click', function(ev){
             const t = document.querySelector(`[data-bs-target="${link.dataset.openTab}"]`);

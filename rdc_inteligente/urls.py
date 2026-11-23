@@ -17,6 +17,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
 from core.mobile_views import MobileHomeView
+from rdc.views_aceite import AceitePublicoFotoView, AceitePublicoView
 
 from django.views.generic import TemplateView
 
@@ -32,6 +33,10 @@ urlpatterns = [
     ),
     path("accounts/logout/", auth_views.LogoutView.as_view(next_page="/accounts/login/"), name="logout"),
     path("admin/", admin.site.urls),
+
+    # aceite do fiscal (link publico de uso unico, sem login)
+    path("aceite/<str:token>/", AceitePublicoView.as_view(), name="aceite-publico"),
+    path("aceite/<str:token>/foto/<int:foto_id>/", AceitePublicoFotoView.as_view(), name="aceite-publico-foto"),
 
     # mobile app entry
     path("m/", MobileHomeView.as_view(), name="mobile-home"),

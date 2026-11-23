@@ -24,6 +24,9 @@ def traduzir_acao_auditoria(action):
         "create_foto": "Adicionou fotos",
         "delete_foto": "Excluiu foto",
         "exportar_relatorio_fotografico": "Gerou relatório fotográfico",
+        "gerar_link_aceite": "Gerou link de aceite do fiscal",
+        "revogar_link_aceite": "Revogou link de aceite",
+        "aceite_fiscal": "Aceite do fiscal registrado",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

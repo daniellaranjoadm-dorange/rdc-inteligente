@@ -240,3 +240,15 @@ class CategoriaFotoChoices:
         (QUALIDADE, "Qualidade / inspeção"),
         (MATERIAL, "Material / recebimento"),
     )
+
+
+class DecisaoAceiteChoices:
+    APROVADO = "aprovado"
+    RESSALVAS = "ressalvas"
+    REPROVADO = "reprovado"
+
+    CHOICES = (
+        (APROVADO, "Aprovado"),
+        (RESSALVAS, "Aprovado com ressalvas"),
+        (REPROVADO, "Reprovado"),
+    )

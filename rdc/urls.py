@@ -4,6 +4,9 @@ from rdc.views import RDCApontamentoCreateView
 from rdc.views_foto import (
     RDCFotoArquivoView, RDCFotoDeleteView, RDCFotoUpdateView, RDCFotoUploadView, RDCRelatorioFotograficoView,
 )
+from rdc.views_aceite import (
+    RDCAceiteAssinaturaView, RDCComprovanteAceiteView, RDCGerarLinkAceiteView, RDCRevogarLinkAceiteView,
+)
 from rdc.views_hh import PainelHHView
 from rdc.views_paralisacao import RDCParalisacaoCreateView, RDCParalisacaoDeleteView, RDCParalisacaoUpdateView
 
@@ -83,6 +86,14 @@ foto_patterns = [
     path("<int:pk>/fotos/relatorio.pdf", RDCRelatorioFotograficoView.as_view(), name="rdc-relatorio-fotografico"),
 ]
 
+# ===== ACEITE DO FISCAL =====
+aceite_patterns = [
+    path("<int:pk>/aceite/link/", RDCGerarLinkAceiteView.as_view(), name="rdc-aceite-gerar-link"),
+    path("<int:pk>/aceite/link/<int:link_id>/revogar/", RDCRevogarLinkAceiteView.as_view(), name="rdc-aceite-revogar-link"),
+    path("<int:pk>/aceite/<int:aceite_id>/assinatura.png", RDCAceiteAssinaturaView.as_view(), name="rdc-aceite-assinatura"),
+    path("<int:pk>/aceite/<int:aceite_id>/comprovante.pdf", RDCComprovanteAceiteView.as_view(), name="rdc-aceite-comprovante"),
+]
+
 # ===== VALIDAÇÕES =====
 validacao_patterns = [
     path("<int:pk>/validacoes/", RDCValidacoesView.as_view(), name="rdc-validacoes"),
@@ -111,6 +122,7 @@ urlpatterns = (
     + apontamento_patterns
     + paralisacao_patterns
     + foto_patterns
+    + aceite_patterns
     + validacao_patterns
     + extra_patterns
 )

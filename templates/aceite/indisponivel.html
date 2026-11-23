@@ -1,0 +1,13 @@
+{% extends "aceite/_base.html" %}
+{% block title %}Link indisponível{% endblock %}
+{% block content %}
+<section class="ac-card text-center py-4">
+  <h1 class="h4 fw-bold">Este link não está mais disponível</h1>
+  <p class="mb-0">
+    {% if link.situacao == "usado" %}O aceite deste RDC já foi registrado.
+    {% elif link.situacao == "revogado" %}O link foi cancelado pela equipe da obra.
+    {% else %}O prazo do link terminou em {{ link.expira_em|date:"d/m/Y H:i" }}.{% endif %}
+    Se precisar, peça um novo link a quem enviou.
+  </p>
+</section>
+{% endblock %}

@@ -719,3 +719,34 @@ class RDCFotoDadosForm(BootstrapFormMixin, forms.ModelForm):
         for name in ("categoria", "rdc_atividade", "paralisacao"):
             css = self.fields[name].widget.attrs.get("class", "").replace("form-control", "form-select")
             self.fields[name].widget.attrs["class"] = css
+
+
+class AceiteFiscalForm(forms.Form):
+    from core.choices import DecisaoAceiteChoices as _D
+
+    decisao = forms.ChoiceField(label="Sua decisão", choices=_D.CHOICES, widget=forms.RadioSelect)
+    nome = forms.CharField(label="Nome completo", max_length=120)
+    cargo = forms.CharField(label="Cargo / função", max_length=120, required=False)
+    empresa = forms.CharField(label="Empresa", max_length=120, required=False)
+    observacao = forms.CharField(
+        label="Observações", required=False, widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="Obrigatório quando houver ressalvas ou reprovação.",
+    )
+    declaro = forms.BooleanField(
+        label="Conferi as informações deste RDC e assino eletronicamente esta decisão.", required=True,
+        error_messages={"required": "Marque a declaração para assinar."},
+    )
+    assinatura = forms.CharField(widget=forms.HiddenInput, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for nome in ("nome", "cargo", "empresa", "observacao"):
+            self.fields[nome].widget.attrs["class"] = "form-control"
+        self.fields["nome"].widget.attrs["autocomplete"] = "name"
+        self.fields["empresa"].widget.attrs["placeholder"] = "Ex.: Transpetro, Estaleiro Rio Grande"
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("decisao") in ("ressalvas", "reprovado") and not (cleaned.get("observacao") or "").strip():
+            self.add_error("observacao", "Descreva as ressalvas ou o motivo da reprovação.")
+        return cleaned
