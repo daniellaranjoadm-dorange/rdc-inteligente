@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+ï»¿from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 
 def home_login(request):
@@ -16,7 +16,7 @@ def home_login(request):
             return redirect("/m/")
         else:
             return render(request, "login.html", {
-                "error": "Usuário ou senha inválidos"
+                "error": "Usuario ou senha invalidos"
             })
 
     return render(request, "login.html")

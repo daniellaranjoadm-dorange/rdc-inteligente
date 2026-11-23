@@ -1,24 +1,52 @@
 ﻿services:
   - type: web
     name: rdc-inteligente
-    env: python
-    plan: free
+    runtime: python
+    plan: starter
+    region: virginia
+    branch: main
+    autoDeploy: false
     buildCommand: bash build.sh
-    startCommand: gunicorn rdc_inteligente.wsgi:application
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: gunicorn rdc_inteligente.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    domains:
+      - rdc.dorange.com.br
+    disk:
+      name: rdc-media
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.2
+        value: 3.12.10
       - key: DJANGO_SETTINGS_MODULE
         value: rdc_inteligente.settings
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rdc-db
+          property: connectionString
       - key: DJANGO_ALLOWED_HOSTS
-        value: .onrender.com
+        value: rdc.dorange.com.br,.onrender.com
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
-        value: https://SEU-SERVICO.onrender.com
+        value: https://rdc.dorange.com.br,https://rdc-inteligente.onrender.com
+      - key: DJANGO_CORS_ALLOW_ALL
+        value: "0"
+      - key: DJANGO_CORS_ALLOWED_ORIGINS
+        value: https://rdc.dorange.com.br
+      - key: DJANGO_MEDIA_ROOT
+        value: /var/data/media
       - key: DJANGO_SESSION_COOKIE_SECURE
         value: "1"
       - key: DJANGO_CSRF_COOKIE_SECURE
         value: "1"
       - key: DJANGO_SECURE_SSL_REDIRECT
         value: "1"
-      - key: SECRET_KEY
-        generateValue: true
+      - key: DJANGO_SECURE_HSTS_PRELOAD
+        value: "False"
+
+databases:
+  - name: rdc-db
+    databaseName: rdc_inteligente
+    plan: basic-256mb
+    region: virginia

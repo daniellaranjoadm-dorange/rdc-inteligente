@@ -1,13 +1,21 @@
 ﻿import os
-import os
 from pathlib import Path
 from datetime import timedelta
+from urllib.parse import parse_qsl, unquote, urlparse
+
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me-in-production")
+# Render define RENDER=true em todo servico; usado para exigir configuracao segura.
+ON_RENDER = os.getenv("RENDER", "").lower() == "true"
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY") or "change-me-in-production"
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
 IS_TEST = "test" in os.sys.argv
+
+if ON_RENDER and SECRET_KEY == "change-me-in-production":
+    raise ImproperlyConfigured("Defina DJANGO_SECRET_KEY no Render.")
 
 raw_allowed_hosts = os.getenv("ALLOWED_HOSTS", "")
 env_allowed_hosts = [h.strip() for h in raw_allowed_hosts.split(",") if h.strip()]
@@ -70,12 +78,37 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "rdc_inteligente.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+def _database_from_url(url):
+    """Converte DATABASE_URL (postgres://user:pass@host:port/db?sslmode=...) para o Django."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ("postgres", "postgresql"):
+        raise ImproperlyConfigured(f"DATABASE_URL com esquema nao suportado: {parsed.scheme}")
+    return {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": unquote(parsed.path.lstrip("/")),
+        "USER": unquote(parsed.username or ""),
+        "PASSWORD": unquote(parsed.password or ""),
+        "HOST": parsed.hostname or "",
+        "PORT": str(parsed.port or ""),
+        "CONN_MAX_AGE": int(os.getenv("DJANGO_DB_CONN_MAX_AGE", "60")),
+        "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": dict(parse_qsl(parsed.query)),
     }
-}
+
+
+_database_url = os.getenv("DATABASE_URL", "").strip()
+if _database_url:
+    DATABASES = {"default": _database_from_url(_database_url)}
+elif ON_RENDER:
+    # No Render o disco do servico e apagado a cada deploy: SQLite perderia os dados.
+    raise ImproperlyConfigured("Defina DATABASE_URL (Postgres) no Render.")
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = []
 
@@ -89,7 +122,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# No Render aponta para o disco persistente (ex.: /var/data/media).
+MEDIA_ROOT = Path(os.getenv("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media")))
 
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
@@ -116,15 +150,22 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
 }
 
-RDC_TEMPLATE_PATH = BASE_DIR.parent / "RDC - MODELO.xlsx"
+# Modelo do RDC: variavel de ambiente > copia versionada em assets/ > arquivo ao lado do projeto.
+_rdc_template_candidates = [
+    Path(p) for p in [os.getenv("RDC_TEMPLATE_PATH", "")] if p
+] + [BASE_DIR / "assets" / "RDC - MODELO.xlsx", BASE_DIR.parent / "RDC - MODELO.xlsx"]
+RDC_TEMPLATE_PATH = next((p for p in _rdc_template_candidates if p.exists()), _rdc_template_candidates[0])
 
 # Limites de upload/formulários
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 20000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400
 DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
 
-# CORS para desenvolvimento local do Flutter Web
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS: liberado por padrao para o Flutter Web local; em producao use a lista explicita.
+CORS_ALLOW_ALL_ORIGINS = os.getenv("DJANGO_CORS_ALLOW_ALL", "1") == "1"
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # ===== Segurança para produção =====
