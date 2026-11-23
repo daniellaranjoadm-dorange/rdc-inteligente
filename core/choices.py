@@ -170,3 +170,55 @@ class ResponsabilidadeParalisacaoChoices:
         MotivoParalisacaoChoices.SEGURANCA: CONTRATADA,
         MotivoParalisacaoChoices.OUTROS: CONTRATADA,
     }
+
+
+class TipoAreaNavalChoices:
+    """Como a area/local se encaixa na obra do navio."""
+
+    BLOCO = "bloco"
+    MEGABLOCO = "megabloco"
+    ANEL = "anel"
+    CASCO = "casco"
+    DIQUE = "dique"
+    CAIS = "cais"
+    OFICINA = "oficina"
+    APOIO = "apoio"
+    OUTRO = "outro"
+
+    CHOICES = (
+        (BLOCO, "Bloco"),
+        (MEGABLOCO, "Megabloco"),
+        (ANEL, "Anel"),
+        (CASCO, "Casco / navio inteiro"),
+        (DIQUE, "Dique / carreira"),
+        (CAIS, "Cais de acabamento"),
+        (OFICINA, "Oficina"),
+        (APOIO, "Área de apoio"),
+        (OUTRO, "Outro"),
+    )
+
+
+class EtapaConstrucaoNavalChoices:
+    """Etapa de construcao em que a area esta."""
+
+    FABRICACAO = "fabricacao"
+    SUBMONTAGEM = "submontagem"
+    MONTAGEM_BLOCO = "montagem_bloco"
+    PRE_EDIFICACAO = "pre_edificacao"
+    EDIFICACAO = "edificacao"
+    OUTFITTING = "outfitting"
+    PINTURA = "pintura"
+    COMISSIONAMENTO = "comissionamento"
+    PROVAS = "provas"
+
+    CHOICES = (
+        (FABRICACAO, "Fabricação (painéis / peças)"),
+        (SUBMONTAGEM, "Submontagem"),
+        (MONTAGEM_BLOCO, "Montagem de bloco"),
+        (PRE_EDIFICACAO, "Pré-edificação"),
+        (EDIFICACAO, "Edificação no dique / carreira"),
+        (OUTFITTING, "Outfitting (acabamento)"),
+        (PINTURA, "Pintura / tratamento de superfície"),
+        (COMISSIONAMENTO, "Comissionamento"),
+        (PROVAS, "Provas de cais e de mar"),
+    )

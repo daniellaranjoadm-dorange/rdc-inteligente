@@ -1,0 +1,11 @@
+{% with p=request.path %}
+<nav class="dg-subnav mb-3" aria-label="Cadastros">
+  <a class="{% if p|slice:':20' == '/cadastros/projetos/' %}active{% endif %}" href="{% url 'projeto-list' %}">Projetos</a>
+  <a class="{% if p|slice:':17' == '/cadastros/areas/' %}active{% endif %}" href="{% url 'area-list' %}">Áreas e blocos</a>
+  <a class="{% if p|slice:':23' == '/cadastros/disciplinas/' %}active{% endif %}" href="{% url 'disciplina-list' %}">Disciplinas</a>
+  <a class="{% if p|slice:':19' == '/cadastros/equipes/' %}active{% endif %}" href="{% url 'equipe-list' %}">Equipes</a>
+  <a class="{% if p|slice:':24' == '/cadastros/funcionarios/' %}active{% endif %}" href="{% url 'funcionario-list' %}">Funcionários</a>
+  <a class="{% if p|slice:':19' == '/cadastros/funcoes/' %}active{% endif %}" href="{% url 'funcao-list' %}">Funções</a>
+  <a class="{% if p|slice:':20' == '/cadastros/empresas/' %}active{% endif %}" href="{% url 'empresa-list' %}">Empresas</a>
+</nav>
+{% endwith %}

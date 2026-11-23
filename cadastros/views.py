@@ -1,6 +1,6 @@
 ﻿from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, ListView, UpdateView
 
 from cadastros.forms import AreaLocalForm, DisciplinaForm, EmpresaForm, EquipeForm, FuncaoForm, FuncionarioForm, ProjetoForm
 from cadastros.models import AreaLocal, Disciplina, Empresa, Equipe, Funcao, Funcionario, Projeto
@@ -33,12 +33,18 @@ class BaseCadastroListView(AuthenticatedTemplateMixin, ListView):
 
 class BaseCadastroCreateView(AuthenticatedTemplateMixin, CreateView):
     template_name = "cadastros/form.html"
-    success_url = reverse_lazy("dashboard")
     titulo = "Novo cadastro"
+    # Rota da lista para onde voltar depois de salvar. Antes apontava para "dashboard",
+    # que nao existe, e todo cadastro terminava em erro 500 depois de gravado.
+    lista_url_name = None
+
+    def get_success_url(self):
+        return reverse_lazy(self.lista_url_name) if self.lista_url_name else "/m/"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["titulo"] = self.titulo
+        context["voltar_url"] = self.get_success_url()
         return context
 
 
@@ -50,6 +56,7 @@ class ProjetoListView(BaseCadastroListView):
 
 
 class ProjetoCreateView(BaseCadastroCreateView):
+    lista_url_name = "projeto-list"
     model = Projeto
     form_class = ProjetoForm
     titulo = "Novo projeto"
@@ -63,6 +70,7 @@ class DisciplinaListView(BaseCadastroListView):
 
 
 class DisciplinaCreateView(BaseCadastroCreateView):
+    lista_url_name = "disciplina-list"
     model = Disciplina
     form_class = DisciplinaForm
     titulo = "Nova disciplina"
@@ -70,12 +78,17 @@ class DisciplinaCreateView(BaseCadastroCreateView):
 
 class AreaLocalListView(BaseCadastroListView):
     model = AreaLocal
-    titulo = "Áreas/Locais"
+    template_name = "cadastros/areas_lista.html"
+    titulo = "Áreas e blocos da obra"
     botao_novo_url = reverse_lazy("area-create")
-    campos_busca = ("codigo", "descricao", "projeto__nome")
+    campos_busca = ("codigo", "descricao", "projeto__nome", "casco")
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("projeto", "disciplina_padrao")
 
 
 class AreaLocalCreateView(BaseCadastroCreateView):
+    lista_url_name = "area-list"
     model = AreaLocal
     form_class = AreaLocalForm
     titulo = "Nova área/local"
@@ -89,6 +102,7 @@ class EmpresaListView(BaseCadastroListView):
 
 
 class EmpresaCreateView(BaseCadastroCreateView):
+    lista_url_name = "empresa-list"
     model = Empresa
     form_class = EmpresaForm
     titulo = "Nova empresa"
@@ -102,6 +116,7 @@ class FuncaoListView(BaseCadastroListView):
 
 
 class FuncaoCreateView(BaseCadastroCreateView):
+    lista_url_name = "funcao-list"
     model = Funcao
     form_class = FuncaoForm
     titulo = "Nova função"
@@ -115,6 +130,7 @@ class FuncionarioListView(BaseCadastroListView):
 
 
 class FuncionarioCreateView(BaseCadastroCreateView):
+    lista_url_name = "funcionario-list"
     model = Funcionario
     form_class = FuncionarioForm
     titulo = "Novo funcionário"
@@ -128,6 +144,7 @@ class EquipeListView(BaseCadastroListView):
 
 
 class EquipeCreateView(BaseCadastroCreateView):
+    lista_url_name = "equipe-list"
     model = Equipe
     form_class = EquipeForm
     titulo = "Nova equipe"
@@ -135,3 +152,16 @@ class EquipeCreateView(BaseCadastroCreateView):
 
 
 
+
+
+class AreaLocalUpdateView(AuthenticatedTemplateMixin, UpdateView):
+    model = AreaLocal
+    form_class = AreaLocalForm
+    template_name = "cadastros/form.html"
+    success_url = reverse_lazy("area-list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["titulo"] = f"Editar área: {self.object.descricao}"
+        context["voltar_url"] = self.success_url
+        return context

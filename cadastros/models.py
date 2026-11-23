@@ -1,5 +1,7 @@
 ﻿from django.core.exceptions import ValidationError
 from django.db import models
+
+from core.choices import EtapaConstrucaoNavalChoices, TipoAreaNavalChoices
 from django.db.models import Q
 
 from core.models import TimeStampedModel
@@ -91,6 +93,15 @@ class AreaLocal(TimeStampedModel):
         blank=True,
         related_name="areas_padrao",
     )
+    tipo = models.CharField(
+        "Tipo", max_length=20, choices=TipoAreaNavalChoices.CHOICES, blank=True,
+        help_text="Bloco, megabloco, anel, dique, cais, oficina...",
+    )
+    casco = models.CharField(
+        "Casco / navio", max_length=60, blank=True,
+        help_text="Identificação do navio, ex.: Handymax 01 ou número do casco.",
+    )
+    etapa = models.CharField("Etapa", max_length=20, choices=EtapaConstrucaoNavalChoices.CHOICES, blank=True)
     ativo = models.BooleanField(default=True)
 
     class Meta:
@@ -101,6 +112,12 @@ class AreaLocal(TimeStampedModel):
 
     def __str__(self):
         return f"{self.projeto.codigo} - {self.codigo} - {self.descricao}"
+
+    @property
+    def resumo_naval(self):
+        """Ex.: "Bloco · Handymax 01 · Edificação no dique / carreira" (so o que estiver preenchido)."""
+        partes = [self.get_tipo_display() if self.tipo else "", self.casco, self.get_etapa_display() if self.etapa else ""]
+        return " · ".join(p for p in partes if p)
 
 
 class Equipe(TimeStampedModel):

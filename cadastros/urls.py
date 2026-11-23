@@ -1,7 +1,7 @@
 ﻿from django.urls import path
 
 from cadastros.views import (
-    AreaLocalCreateView, AreaLocalListView, DisciplinaCreateView, DisciplinaListView, EmpresaCreateView, EmpresaListView,
+    AreaLocalCreateView, AreaLocalListView, AreaLocalUpdateView, DisciplinaCreateView, DisciplinaListView, EmpresaCreateView, EmpresaListView,
     EquipeCreateView, EquipeListView, FuncaoCreateView, FuncaoListView, FuncionarioCreateView, FuncionarioListView,
     ProjetoCreateView, ProjetoListView,
 )
@@ -13,6 +13,7 @@ urlpatterns = [
     path("disciplinas/nova/", DisciplinaCreateView.as_view(), name="disciplina-create"),
     path("areas/", AreaLocalListView.as_view(), name="area-list"),
     path("areas/nova/", AreaLocalCreateView.as_view(), name="area-create"),
+    path("areas/<int:pk>/editar/", AreaLocalUpdateView.as_view(), name="area-update"),
     path("empresas/", EmpresaListView.as_view(), name="empresa-list"),
     path("empresas/nova/", EmpresaCreateView.as_view(), name="empresa-create"),
     path("funcoes/", FuncaoListView.as_view(), name="funcao-list"),

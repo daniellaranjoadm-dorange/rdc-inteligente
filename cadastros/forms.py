@@ -11,7 +11,9 @@ class BaseBootstrapModelForm(forms.ModelForm):
             classes = widget.attrs.get("class", "")
             if isinstance(widget, (forms.CheckboxInput,)):
                 widget.attrs["class"] = f"{classes} form-check-input".strip()
-            elif isinstance(widget, (forms.Select, forms.SelectMultiple, forms.DateInput, forms.DateTimeInput, forms.TimeInput, forms.TextInput, forms.NumberInput, forms.EmailInput, forms.URLInput, forms.PasswordInput, forms.Textarea)):
+            elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
+                widget.attrs["class"] = f"{classes} form-select".strip()
+            elif isinstance(widget, (forms.DateInput, forms.DateTimeInput, forms.TimeInput, forms.TextInput, forms.NumberInput, forms.EmailInput, forms.URLInput, forms.PasswordInput, forms.Textarea)):
                 widget.attrs["class"] = f"{classes} form-control".strip()
             else:
                 widget.attrs["class"] = f"{classes} form-control".strip()
@@ -32,7 +34,18 @@ class DisciplinaForm(BaseBootstrapModelForm):
 class AreaLocalForm(BaseBootstrapModelForm):
     class Meta:
         model = AreaLocal
-        fields = ["projeto", "codigo", "descricao", "disciplina_padrao", "ativo"]
+        fields = ["projeto", "codigo", "descricao", "tipo", "casco", "etapa", "disciplina_padrao", "ativo"]
+        labels = {
+            "projeto": "Projeto",
+            "codigo": "Código",
+            "descricao": "Descrição",
+            "disciplina_padrao": "Disciplina padrão",
+            "ativo": "Ativa",
+        }
+        widgets = {
+            "casco": forms.TextInput(attrs={"placeholder": "Ex.: Handymax 01"}),
+            "descricao": forms.TextInput(attrs={"placeholder": "Ex.: Bloco D02P"}),
+        }
 
 
 class EmpresaForm(BaseBootstrapModelForm):
