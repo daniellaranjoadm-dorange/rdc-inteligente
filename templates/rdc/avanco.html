@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Avanço físico{% endblock %}
+
+{% block extra_head %}
+<style>
+  .av-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .82rem; color: var(--dg-muted); }
+  .av-legend i { display: inline-block; width: 14px; height: 3px; margin-right: .35rem; vertical-align: 3px; border-radius: 2px; }
+  .av-legend .prev { background: var(--dg-silver-500, #8a97a6); }
+  .av-legend .real { background: var(--dg-orange-500); }
+  .av-svg { width: 100%; height: auto; display: block; }
+  .av-svg .grade { stroke: var(--dg-border); stroke-width: 1; }
+  .av-svg .eixo { fill: var(--dg-muted); font-size: 11px; }
+  .av-svg .prev { fill: none; stroke: #8a97a6; stroke-width: 2.5; stroke-dasharray: 6 4; }
+  .av-svg .real { fill: none; stroke: var(--dg-orange-500); stroke-width: 3; }
+  .av-svg .corte { stroke: var(--dg-navy-700); stroke-width: 1; stroke-dasharray: 3 3; }
+  .av-svg .pt-real { fill: var(--dg-orange-500); }
+  .av-svg .hit { fill: transparent; }
+  .av-svg .hit:hover + .pt { opacity: 1; }
+  .av-bar { position: relative; height: 14px; border-radius: 999px; background: var(--dg-silver-100); overflow: hidden; min-width: 120px; }
+  .av-bar .real { position: absolute; inset: 0 auto 0 0; background: var(--dg-orange-500); border-radius: 999px; }
+  .av-bar .prev { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--dg-navy-700); }
+  .av-sit { font-size: .74rem; font-weight: 700; border-radius: 999px; padding: .2rem .55rem; white-space: nowrap; }
+  .av-sit.atrasado { background: #fde8e8; color: #b42318; }
+  .av-sit.adiantado { background: #e3f4ea; color: #146c43; }
+  .av-sit.no_prazo { background: #e8eef7; color: #1f3a5f; }
+  .av-sit.concluido { background: #146c43; color: #fff; }
+  .av-sit.nao_iniciado { background: var(--dg-silver-100); color: var(--dg-muted); }
+  .av-desvio.neg { color: #b42318; font-weight: 700; }
+  .av-desvio.pos { color: #146c43; font-weight: 700; }
+  .av-table th { white-space: nowrap; }
+  .av-table tr.sel { background: var(--dg-orange-50); }
+  @media (max-width: 767.98px) { .av-bar-col { display: none; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Planejamento</div>
+    <h1 class="h3 fw-bold mb-1">Avanço físico</h1>
+    <div class="mini-muted">Previsto no cronograma × realizado nos RDCs, por bloco e disciplina · corte em {{ corte|date:"d/m/Y" }}</div>
+  </div>
+  {% if pode_planejar %}
+  <a class="btn btn-primary" href="{% url 'rdc-atividade-planejada-create' %}{% if projeto_id %}?projeto={{ projeto_id }}{% endif %}">+ Atividade planejada</a>
+  {% endif %}
+</div>
+
+<form method="get" class="table-card p-3 mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-4">
+      <label class="form-label small fw-semibold mb-1" for="f-projeto">Projeto</label>
+      <select id="f-projeto" name="projeto" class="form-select">
+        <option value="">Todos os projetos</option>
+        {% for pr in projetos %}<option value="{{ pr.pk }}" {% if projeto_id == pr.pk|stringformat:'s' %}selected{% endif %}>{{ pr.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="form-label small fw-semibold mb-1" for="f-casco">Casco / navio</label>
+      <select id="f-casco" name="casco" class="form-select">
+        <option value="">Todos</option>
+        {% for c in cascos %}<option value="{{ c }}" {% if c == casco %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="form-label small fw-semibold mb-1" for="f-corte">Data de corte</label>
+      <input id="f-corte" type="date" name="corte" value="{{ corte|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-12 col-md-2"><button class="btn btn-primary w-100" type="submit">Aplicar</button></div>
+  </div>
+</form>
+
+{% if not tem_dados %}
+  <div class="table-card p-4 text-center">
+    <div class="section-title mb-2">Ainda não há atividades planejadas</div>
+    <p class="mini-muted mb-3">O avanço compara o cronograma com o que é lançado nos RDCs. Importe o cronograma (Primavera P6 ou planilha) ou cadastre as atividades de cada bloco com quantidade total, unidade e datas previstas.</p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a class="btn btn-outline-secondary" href="/importacoes/">Importar cronograma</a>
+      {% if pode_planejar %}<a class="btn btn-primary" href="{% url 'rdc-atividade-planejada-create' %}">Cadastrar atividade</a>{% endif %}
+    </div>
+  </div>
+{% else %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-secondary h-100"><div class="card-body"><div class="kpi-label">Previsto</div><div class="kpi-number">{{ total.previsto }}%</div><div class="kpi-desc">conforme cronograma em {{ corte|date:"d/m" }}</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-primary h-100"><div class="card-body"><div class="kpi-label">Realizado</div><div class="kpi-number">{{ total.realizado }}%</div><div class="kpi-desc">lançado nos RDCs</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="kpi-label">Desvio</div><div class="kpi-number av-desvio {% if total.situacao == 'atrasado' %}neg{% elif total.situacao == 'adiantado' %}pos{% endif %}">{% if total.desvio > 0 %}+{% endif %}{{ total.desvio }} pp</div><div class="kpi-desc"><span class="av-sit {{ total.situacao }}">{{ total.situacao_label }}</span></div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="kpi-label">Índice de prazo (IDP)</div><div class="kpi-number">{% if total.spi is not None %}{{ total.spi }}{% else %}-{% endif %}</div><div class="kpi-desc">realizado ÷ previsto · {{ total.atrasadas }} atividade(s) atrasada(s)</div></div></div></div>
+</div>
+
+<div class="table-card p-3 p-lg-4 mb-4">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+    <div>
+      <div class="section-title mb-1">Curva S</div>
+      <div class="mini-muted">Avanço acumulado de {{ inicio|date:"d/m/Y" }} a {{ fim|date:"d/m/Y" }}{% if usa_peso %}, ponderado pelo HH orçado{% else %} (todas as atividades com o mesmo peso){% endif %}.</div>
+    </div>
+    <div class="av-legend"><span><i class="prev"></i>Previsto</span><span><i class="real"></i>Realizado</span></div>
+  </div>
+  {% if svg %}
+  <svg class="av-svg" viewBox="0 0 {{ svg.largura }} {{ svg.altura }}" role="img" aria-label="Curva S: previsto {{ total.previsto }}%, realizado {{ total.realizado }}%">
+    {% for g in svg.grade %}<line class="grade" x1="{{ svg.margem }}" x2="{{ svg.fim_x }}" y1="{{ g.y }}" y2="{{ g.y }}"/><text class="eixo" x="{{ svg.tx }}" y="{{ g.ty }}" text-anchor="end">{{ g.v }}%</text>{% endfor %}
+    {% for r in svg.rotulos %}<text class="eixo" x="{{ r.x }}" y="{{ svg.ty_rot }}" text-anchor="middle">{{ r.texto }}</text>{% endfor %}
+    <polyline class="prev" points="{{ svg.prev }}"/>
+    {% if svg.real %}<polyline class="real" points="{{ svg.real }}"/>{% endif %}
+    {% for m in svg.marcadores %}<g><title>{{ m.titulo }}</title><rect class="hit" x="{{ m.rx }}" y="0" width="12" height="{{ svg.base_y }}"/>{% if m.yr is not None %}<circle class="pt-real" cx="{{ m.x }}" cy="{{ m.yr }}" r="2.5"/>{% endif %}</g>{% endfor %}
+  </svg>
+  {% endif %}
+  {% if sem_escopo %}<div class="small text-warning-emphasis mt-2">{{ sem_escopo }} atividade(s) sem quantidade total cadastrada contam como 0% realizado.</div>{% endif %}
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-xl-7">
+    <div class="table-card p-3 h-100">
+      <div class="section-title mb-1">Por bloco / área</div>
+      <div class="mini-muted mb-2">Piores desvios primeiro. A barra laranja é o realizado; o traço escuro marca onde deveria estar. Clique para ver as atividades.</div>
+      <div class="table-responsive">
+      <table class="table table-sm align-middle av-table mb-0">
+        <thead><tr><th>Bloco</th><th class="av-bar-col">Avanço</th><th class="text-end">Prev.</th><th class="text-end">Real.</th><th class="text-end">Desvio</th><th>Situação</th></tr></thead>
+        <tbody>
+        {% for l in por_area %}
+          <tr class="{% if area_id == l.area.pk|stringformat:'s' %}sel{% endif %}">
+            <td><a class="fw-semibold" href="?{{ filtros_qs }}&area={{ l.area.pk }}#detalhe">{{ l.codigo }}</a><div class="mini-muted">{{ l.nome }}{% if l.area.casco %} · {{ l.area.casco }}{% endif %}</div></td>
+            <td class="av-bar-col"><div class="av-bar" title="Previsto {{ l.previsto }}% · realizado {{ l.realizado }}%"><span class="real" style="width:{{ l.realizado|stringformat:'.1f' }}%"></span><span class="prev" style="left:calc({{ l.previsto|stringformat:'.1f' }}% - 1px)"></span></div></td>
+            <td class="text-end">{{ l.previsto }}%</td>
+            <td class="text-end">{{ l.realizado }}%</td>
+            <td class="text-end av-desvio {% if l.situacao == 'atrasado' %}neg{% elif l.situacao == 'adiantado' %}pos{% endif %}">{% if l.desvio > 0 %}+{% endif %}{{ l.desvio }}</td>
+            <td><span class="av-sit {{ l.situacao }}">{{ l.situacao_label }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="table-card p-3 mb-4">
+      <div class="section-title mb-2">Por disciplina / departamento</div>
+      <div class="table-responsive">
+      <table class="table table-sm align-middle av-table mb-0">
+        <thead><tr><th>Disciplina</th><th class="text-end">Prev.</th><th class="text-end">Real.</th><th class="text-end">Desvio</th><th></th></tr></thead>
+        <tbody>
+        {% for l in por_disciplina %}
+          <tr><td class="fw-semibold">{{ l.nome }}</td><td class="text-end">{{ l.previsto }}%</td><td class="text-end">{{ l.realizado }}%</td><td class="text-end av-desvio {% if l.situacao == 'atrasado' %}neg{% elif l.situacao == 'adiantado' %}pos{% endif %}">{% if l.desvio > 0 %}+{% endif %}{{ l.desvio }}</td><td><span class="av-sit {{ l.situacao }}">{{ l.situacao_label }}</span></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div class="table-card p-3">
+      <div class="section-title mb-1">Quantidades físicas</div>
+      <div class="mini-muted mb-2">Total executado × escopo por unidade (ex.: t de aço, m de solda).</div>
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Unidade</th><th class="text-end">Executado</th><th class="text-end">Escopo</th><th class="text-end">%</th></tr></thead>
+        <tbody>
+        {% for u in por_unidade %}<tr><td class="fw-semibold">{{ u.unidade }}</td><td class="text-end">{{ u.executado|floatformat:"-2g" }}</td><td class="text-end">{{ u.escopo|floatformat:"-2g" }}</td><td class="text-end">{% if u.percentual is not None %}{{ u.percentual }}%{% else %}-{% endif %}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if detalhe %}
+<div class="table-card p-3 p-lg-4 mb-4" id="detalhe">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+    <div>
+      <div class="section-title mb-1">Atividades do bloco {{ detalhe.area.codigo }}</div>
+      <div class="mini-muted">{{ detalhe.area.descricao }}{% if detalhe.area.resumo_naval %} · {{ detalhe.area.resumo_naval }}{% endif %}</div>
+    </div>
+    <div class="d-flex gap-2">
+      {% if pode_planejar %}<a class="btn btn-sm btn-outline-primary" href="{% url 'rdc-atividade-planejada-create' %}?area={{ detalhe.area.pk }}">+ Atividade neste bloco</a>{% endif %}
+      <a class="btn btn-sm btn-outline-secondary" href="?{{ filtros_qs }}">Fechar</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+  <table class="table table-sm align-middle av-table mb-0">
+    <thead><tr><th>Código</th><th>Atividade</th><th>Disciplina</th><th>Período previsto</th><th class="text-end">Executado / escopo</th><th class="text-end">Prev.</th><th class="text-end">Real.</th><th>Situação</th>{% if pode_planejar %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for i in detalhe.itens %}
+      <tr>
+        <td class="fw-semibold">{{ i.obj.codigo_atividade }}</td>
+        <td>{{ i.obj.descr_atividade }}</td>
+        <td>{{ i.obj.disciplina.nome }}</td>
+        <td class="text-nowrap">{{ i.obj.data_inicio|date:"d/m/y" }} – {{ i.obj.data_fim|date:"d/m/y" }}</td>
+        <td class="text-end text-nowrap">{{ i.executado|floatformat:"-2g" }} / {{ i.obj.qtd_escopo|floatformat:"-2g" }} {{ i.obj.unidade }}</td>
+        <td class="text-end">{{ i.previsto }}%</td>
+        <td class="text-end">{{ i.realizado }}%</td>
+        <td><span class="av-sit {{ i.situacao }}">{{ i.situacao_label }}</span></td>
+        {% if pode_planejar %}<td><a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-atividade-planejada-update' pk=i.obj.pk %}">Editar</a></td>{% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endif %}
+
+<p class="mini-muted small">Como é calculado: o previsto de cada atividade cresce em linha reta entre o início e o fim do cronograma; o realizado soma as quantidades executadas lançadas nos RDCs até a data de corte, dividida pela quantidade total. Desvio dentro de ±5 pontos conta como "no prazo".</p>
+{% endif %}
+{% endblock %}

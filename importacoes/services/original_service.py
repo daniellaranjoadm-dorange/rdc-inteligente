@@ -528,6 +528,7 @@ class ImportadorCronograma(LeitorPlanilhaBase):
         "schedule_percent_complete": ["Schedule % Complete", "schedule_percent_complete", "% completo", "progresso"],
         "budgeted_nonlabor_units": ["Budgeted Nonlabor Units", "budgeted_nonlabor_units", "qtd escopo"],
         "at_completion_nonlabor_units": ["At Completion Nonlabor Units", "at_completion_nonlabor_units"],
+        "peso": ["Budgeted Labor Units", "budgeted_labor_units", "peso", "hh orcado", "hh orçado"],
     }
 
     def __init__(self, importacao: ImportacaoArquivo):
@@ -625,6 +626,7 @@ class ImportadorCronograma(LeitorPlanilhaBase):
                 "data_fim": data_fim,
                 "turno": self._inferir_turno(descricao),
                 "status_planejado": status_planejado,
+                "peso": self._valor_peso(linha.get("peso")),
             },
         )
         return ResultadoLinhaImportacao(True)
@@ -753,6 +755,15 @@ class ImportadorCronograma(LeitorPlanilhaBase):
         if percentual > Decimal("0"):
             return "Em andamento"
         return "Não iniciada"
+
+    def _valor_peso(self, valor: Any) -> Decimal:
+        """Peso (HH orçado) opcional; número do Excel não passa pelo tratamento de milhar em texto."""
+        if isinstance(valor, (int, float, Decimal)):
+            return Decimal(str(valor)).quantize(Decimal("0.01"))
+        try:
+            return self.valor_decimal(valor, default=Decimal("0"))
+        except ValueError:
+            return Decimal("0")
 
     def _obter_qtd_escopo(self, linha: dict[str, Any]) -> Decimal:
         valor = linha.get("at_completion_nonlabor_units")

@@ -35,6 +35,8 @@ def traduzir_acao_auditoria(action):
         "delete_ocorrencia": "Excluiu ocorrência",
         "enviar_email_rdc": "Enviou RDC por e-mail",
         "copiar_rdc": "Criou RDC copiando outro",
+        "criar_atividade_planejada": "Cadastrou atividade planejada",
+        "editar_atividade_planejada": "Editou atividade planejada",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

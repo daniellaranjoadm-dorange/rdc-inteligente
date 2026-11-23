@@ -1,4 +1,4 @@
-﻿from django.db import models
+from django.db import models
 
 from core.choices import TurnoChoices
 from core.models import TimeStampedModel
@@ -17,6 +17,10 @@ class AtividadeCronograma(TimeStampedModel):
     data_fim = models.DateField()
     turno = models.CharField(max_length=20, choices=TurnoChoices.CHOICES, default=TurnoChoices.INTEGRAL)
     status_planejado = models.CharField(max_length=50)
+    peso = models.DecimalField(
+        "Peso no avanço", max_digits=12, decimal_places=2, default=0,
+        help_text="HH orçado (ou outro peso) da atividade na curva de avanço. Zero = mesmo peso das demais.",
+    )
 
     class Meta:
         ordering = ("data_inicio", "codigo_atividade")
