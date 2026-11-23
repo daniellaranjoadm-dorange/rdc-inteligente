@@ -21,6 +21,7 @@ from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Alignment
 from planejamento.models import AtividadeCronograma
 from rdc.models import RDC, RDCAtividade, RDCFuncionario, RDCValidacao
+from . import rdc_clima_service as clima_service
 from .rdc_excel_layout_service import (
     CIDADE_OBRA,
     HORARIO_INICIO_PADRAO,
