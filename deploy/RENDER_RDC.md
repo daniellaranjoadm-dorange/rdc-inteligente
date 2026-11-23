@@ -10,11 +10,16 @@ Custo aproximado no Render: web *starter* (~US$ 7/mes) + Postgres *basic-256mb*
 
 Fazer commit e push destas mudancas na `main` do repositorio `rdc-inteligente`.
 
-## 2. Criar o Blueprint no Render
+## 2. Sincronizar o Blueprint no Render
 
-1. Render > **New** > **Blueprint** > escolher o repositorio `rdc-inteligente`.
-2. Conferir que ele vai criar `rdc-inteligente` (web) e `rdc-db` (Postgres) e aplicar.
-3. Como `autoDeploy` esta desligado, os proximos deploys sao pelo botao **Manual Deploy**.
+O servico `rdc-inteligente` ja existe e e gerenciado pelo Blueprint **Rdc Inteligente**
+(regiao oregon, que nao pode ser trocada). O Blueprint sincroniza sozinho a cada push
+na `main`; se nao sincronizar, use **Blueprints > Rdc Inteligente > Manual sync**.
+
+1. Conferir na sincronizacao que o `rdc-inteligente` passa para o plano *starter*,
+   ganha o disco `rdc-media` e que o Postgres `rdc-db` e criado.
+2. Depois do sync, o `autoDeploy` fica desligado: os proximos deploys sao pelo botao
+   **Manual Deploy**.
 
 O `DJANGO_SECRET_KEY` e gerado pelo Render. O `DATABASE_URL` vem do `rdc-db`.
 Se faltar algum dos dois, o app nao sobe (de proposito, para nao rodar inseguro

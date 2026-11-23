@@ -3,7 +3,8 @@
     name: rdc-inteligente
     runtime: python
     plan: starter
-    region: virginia
+    # A regiao do servico existente nao pode ser alterada pelo Blueprint.
+    region: oregon
     branch: main
     autoDeploy: false
     buildCommand: bash build.sh
@@ -49,4 +50,4 @@ databases:
   - name: rdc-db
     databaseName: rdc_inteligente
     plan: basic-256mb
-    region: virginia
+    region: oregon
