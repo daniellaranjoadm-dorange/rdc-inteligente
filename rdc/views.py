@@ -1815,20 +1815,24 @@ class RDCUpdateView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMi
 
     model = RDC
     form_class = RDCForm
+    template_name = "rdc/editar_rdc.html"
 
-    @audit_action(
-        action="update_rdc",
-        target_model="RDC",
-        get_target_id=lambda self, request, *a, **k: self.get_object().pk,
-        detail_func=lambda self, request, *a, **k: "RDC atualizado",
-    )
+    # O decorador de auditoria estava em get_context_data (que nao recebe request) e a tela
+    # usava self.rdc, inexistente: "Editar RDC" sempre dava erro 500.
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['rdc'] = self.rdc
+        context["rdc"] = self.object
         return context
 
     def form_valid(self, form):
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        registrar_auditoria(self.request.user, "update_rdc", target_model="RDC", target_id=self.object.pk,
+                            detail="RDC atualizado")
+        messages.success(self.request, "RDC atualizado.")
+        return response
+
+    def get_success_url(self):
+        return reverse("rdc-detail", kwargs={"pk": self.object.pk})
 class RDCDeleteView(AuthenticatedTemplateMixin, RoleRequiredMixin, RDCEditableMixin, DeleteView):
     allowed_roles = ["admin"]
 

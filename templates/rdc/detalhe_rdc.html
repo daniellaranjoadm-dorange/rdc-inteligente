@@ -16,6 +16,7 @@
     <div class="d-flex gap-2 flex-wrap">
         <form method="post" action="{% url 'rdc-revalidar' rdc.pk %}">{% csrf_token %}<button class="btn btn-outline-secondary">Revalidar</button></form>
         {% if can_edit_rdc %}<a class="btn btn-outline-dark" href="{% url 'rdc-update' rdc.pk %}">Editar RDC</a>{% endif %}
+        <a class="btn btn-outline-secondary" href="{% url 'rdc-copiar' rdc.pk %}" title="Criar o RDC de outro dia com a mesma equipe e atividades">Copiar p/ outro dia</a>
         <a class="btn btn-outline-primary" href="{% url 'rdc-exportar-modelo' rdc.pk %}">Modelo Excel</a>
         <a class="btn btn-outline-secondary" href="{% url 'rdc-auditoria-exportar' rdc.pk %}">Auditoria Excel</a>
         {% if not rdc.is_fechado %}
@@ -34,81 +35,8 @@
     <span class="mini-muted">·</span><span>{{ rdc.data|date:"d/m/Y" }} ({{ rdc.get_turno_display }})</span>
 </div>
 
-<div class="table-card p-3 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <div>
-            <h5 class="mb-0">Resumo da montagem automática</h5>
-<div class="mt-2">
-    {% if resumo_montagem.status_geral == "critico" %}
-        <span class="badge text-bg-danger">CRÍTICO</span>
-    {% elif resumo_montagem.status_geral == "atencao" %}
-        <span class="badge text-bg-warning">ATENÇÃO</span>
-    {% else %}
-        <span class="badge text-bg-success">OK</span>
-    {% endif %}
-</div>
-            <div class="mini-muted">Visão rápida de como este RDC foi pré-preenchido.</div>
-        </div>
-    </div>
-    <div class="row g-3">
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Ativ. planejamento</div>
-                <div class="metric-value">{{ resumo_montagem.atividades_planejamento }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Ativ. cronograma</div>
-                <div class="metric-value">{{ resumo_montagem.atividades_cronograma }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Atividades total</div>
-                <div class="metric-value">{{ resumo_montagem.atividades_total }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Com catraca</div>
-                <div class="metric-value text-success">{{ resumo_montagem.funcionarios_com_catraca }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Sem catraca</div>
-                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.funcionarios_sem_catraca }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Não elegíveis</div>
-                <div class="metric-value text-danger">{{ resumo_montagem.funcionarios_nao_elegiveis }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="row g-3 mt-1">
-        <div class="col-md-4 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Funcionários total</div>
-                <div class="metric-value">{{ resumo_montagem.funcionarios_total }}</div>
-            </div>
-        </div>
-        <div class="col-md-4 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Alertas</div>
-                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.alertas }}</div>
-            </div>
-        </div>
-        <div class="col-md-4 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Bloqueios</div>
-                <div class="metric-value text-danger">{{ resumo_montagem.bloqueios }}</div>
-            </div>
-        </div>
-    </div>
-</div>
+{% if not can_edit_rdc %}<div class="alert alert-warning">Este RDC está fechado. Edição somente com liberação especial.</div>{% endif %}
+{% if rdc.justificativa_fechamento %}<div class="alert alert-light border"><strong>Justificativa do fechamento:</strong> {{ rdc.justificativa_fechamento }}</div>{% endif %}
 
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3 col-xl"><div class="card kpi"><div class="card-body"><div class="small text-muted">Atividades</div><div class="fs-4 fw-bold">{{ dashboard.total_atividades }}</div></div></div></div>
@@ -119,150 +47,6 @@
     <div class="col-6 col-md-3 col-xl"><div class="card kpi"><div class="card-body"><div class="small text-muted">Bloqueios</div><div class="fs-4 fw-bold text-danger">{{ dashboard.bloqueios }}</div></div></div></div>
     <div class="col-6 col-md-3 col-xl"><div class="card kpi"><div class="card-body"><div class="small text-muted">Presentes</div><div class="fs-4 fw-bold">{{ dashboard.funcionarios_presentes }}</div></div></div></div>
 </div>
-
-<div class="table-card p-3 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <div>
-            <h5 class="mb-0">Resumo da montagem automática</h5>
-<div class="mt-2">
-    {% if resumo_montagem.status_geral == "critico" %}
-        <span class="badge text-bg-danger">CRÍTICO</span>
-    {% elif resumo_montagem.status_geral == "atencao" %}
-        <span class="badge text-bg-warning">ATENÇÃO</span>
-    {% else %}
-        <span class="badge text-bg-success">OK</span>
-    {% endif %}
-</div>
-            <div class="mini-muted">Visão rápida de como este RDC foi pré-preenchido.</div>
-        </div>
-    </div>
-    <div class="row g-3">
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Ativ. planejamento</div>
-                <div class="metric-value">{{ resumo_montagem.atividades_planejamento }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Ativ. cronograma</div>
-                <div class="metric-value">{{ resumo_montagem.atividades_cronograma }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Atividades total</div>
-                <div class="metric-value">{{ resumo_montagem.atividades_total }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Com catraca</div>
-                <div class="metric-value text-success">{{ resumo_montagem.funcionarios_com_catraca }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Sem catraca</div>
-                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.funcionarios_sem_catraca }}</div>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Não elegíveis</div>
-                <div class="metric-value text-danger">{{ resumo_montagem.funcionarios_nao_elegiveis }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="row g-3 mt-1">
-        <div class="col-md-4 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Funcionários total</div>
-                <div class="metric-value">{{ resumo_montagem.funcionarios_total }}</div>
-            </div>
-        </div>
-        <div class="col-md-4 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Alertas</div>
-                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.alertas }}</div>
-            </div>
-        </div>
-        <div class="col-md-4 col-6">
-            <div class="metric-box">
-                <div class="mini-muted">Bloqueios</div>
-                <div class="metric-value text-danger">{{ resumo_montagem.bloqueios }}</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-lg-8">
-        {% if not can_edit_rdc %}<div class="alert alert-warning">Este RDC está fechado. Edição somente com Liberação especial.</div>{% endif %}
-        {% if rdc.justificativa_fechamento %}<div class="alert alert-light border"><strong>Justificativa do fechamento:</strong> {{ rdc.justificativa_fechamento }}</div>{% endif %}
-        <div class="table-card p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h5 class="mb-0">Resumo de fechamento</h5>
-                    <div class="mini-muted">Pronto para fechamento e visão operacional do dia.</div>
-                </div>
-                <span class="badge text-bg-{{ dashboard.nivel }}">{{ dashboard.rotulo }}</span>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Bloqueios</div><div class="metric-value text-danger">{{ fechamento_resumo.bloqueios }}</div></div></div>
-                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Alertas</div><div class="metric-value text-warning-emphasis">{{ fechamento_resumo.alertas }}</div></div></div>
-                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Funcionários</div><div class="metric-value">{{ fechamento_resumo.funcionarios }}</div></div></div>
-                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">HH total</div><div class="metric-value text-success">{{ fechamento_resumo.hh_total }}</div></div></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="table-card p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-    <h5 class="mb-1">Auditoria recente</h5>
-    <form method="get" class="d-flex gap-2 flex-wrap">
-        <select name="acao" class="form-select form-select-sm" onchange="this.form.submit()">
-            {% for value, label in acoes_disponiveis %}
-                <option value="{{ value }}" {% if value == filtro_acao %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-        <select name="usuario" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="">Todos os usuários</option>
-            {% for username in usuarios_auditoria %}
-                <option value="{{ username }}" {% if username == filtro_usuario %}selected{% endif %}>{{ username }}</option>
-            {% endfor %}
-        </select>
-    </form>
-</div>
-            <div class="mini-muted mb-3">Últimos eventos deste RDC.</div>
-            {% if auditorias_grupos %}
-                {% for grupo in auditorias_grupos %}
-                    <div class="mb-3">
-                        <div class="small text-uppercase text-muted fw-bold mb-2">{{ grupo.data }}</div>
-                        <div class="audit-timeline">
-                            {% for evento in grupo.eventos %}
-                                <div class="audit-item">
-                                    <div class="audit-dot"></div>
-                                    <div class="audit-content">
-                                        <div class="d-flex justify-content-between gap-2 flex-wrap">
-                                            <span class="badge bg-{{ evento.cor }} me-2">{{ evento.resumo }}</span>
-                                    <span class="mini-muted">{{ evento.created_at|date:'d/m/Y H:i' }}</span>
-                                </div>
-                                <div class="mini-muted">{{ evento.usuario|default:'Sistema' }} · {{ evento.acao }}{% if evento.secao %} · {{ evento.secao }}{% endif %}</div>
-                                {% if evento.detalhe %}<div class="small mt-1">{{ evento.detalhe }}</div>{% endif %}
-                            </div>
-                        </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="text-muted small">Sem eventos de auditoria registrados ainda.</div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
 
 <div class="table-card p-3 mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -312,74 +96,6 @@
     <div class="alert alert-light border mb-0">
         Nenhuma ação de workflow está disponível para este RDC no momento.
     </div>
-    {% endif %}
-</div>
-
-
-<div class="table-card p-3 p-lg-4 mb-4" id="envio-email">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
-        <div>
-            <h5 class="mb-1">Relatório e envio</h5>
-            <div class="mini-muted">PDF completo do dia. Ao fechar o RDC, ele vai automaticamente para os e-mails do projeto{% if rdc.projeto.emails_relatorio %} ({{ rdc.projeto.emails_relatorio|truncatechars:80 }}){% else %} (nenhum cadastrado: Cadastros › Projetos){% endif %}.</div>
-        </div>
-        <div class="d-flex gap-2 flex-wrap">
-            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-pdf' rdc.pk %}?ver=1" target="_blank" rel="noopener">Ver PDF do RDC</a>
-            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-pdf' rdc.pk %}">Baixar PDF</a>
-        </div>
-    </div>
-    {% if can_edit_rdc %}
-    <form method="post" action="{% url 'rdc-enviar-email' rdc.pk %}" class="row g-2 align-items-end">
-        {% csrf_token %}
-        <div class="col-md-8"><label class="form-label small fw-semibold mb-1" for="email-dest">Enviar agora para</label><input id="email-dest" type="text" name="destinatarios" class="form-control form-control-sm" value="{{ rdc.projeto.emails_relatorio }}" placeholder="email1@empresa.com.br, email2@cliente.com.br"></div>
-        <div class="col-md-auto"><button class="btn btn-primary btn-sm">Enviar por e-mail</button></div>
-    </form>
-    {% endif %}
-</div>
-
-<div class="table-card p-3 p-lg-4 mb-4" id="aceite-fiscal">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
-        <div>
-            <h5 class="mb-1">Aceite do fiscal</h5>
-            <div class="mini-muted">Gere um link de uso único para o fiscal conferir o RDC e assinar no celular, sem precisar de login.</div>
-        </div>
-        {% if aceites %}{% with ult=aceites.0 %}<span class="summary-badge {% if ult.decisao == 'aprovado' %}success{% elif ult.decisao == 'ressalvas' %}warning{% else %}danger{% endif %}">{{ ult.get_decisao_display }} por {{ ult.nome }}</span>{% endwith %}{% endif %}
-    </div>
-
-    {% for a in aceites %}
-    <div class="d-flex flex-wrap align-items-center gap-3 border rounded-3 p-2 mb-2">
-        <img src="{% url 'rdc-aceite-assinatura' pk=rdc.pk aceite_id=a.pk %}" alt="Assinatura de {{ a.nome }}" style="height:48px;max-width:160px;object-fit:contain;background:#fff">
-        <div class="flex-grow-1">
-            <div class="fw-semibold">{{ a.get_decisao_display }} · {{ a.nome }}{% if a.cargo or a.empresa %} <span class="mini-muted">({{ a.cargo }}{% if a.cargo and a.empresa %} · {% endif %}{{ a.empresa }})</span>{% endif %}</div>
-            <div class="mini-muted">{{ a.assinado_em|date:"d/m/Y H:i" }} · código {{ a.hash_retrato|slice:":12" }}{% if a.observacao %} · {{ a.observacao|truncatechars:90 }}{% endif %}</div>
-        </div>
-        <a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-aceite-comprovante' pk=rdc.pk aceite_id=a.pk %}">Comprovante (PDF)</a>
-    </div>
-    {% endfor %}
-
-    {% if can_edit_rdc %}
-    <form method="post" action="{% url 'rdc-aceite-gerar-link' rdc.pk %}" class="row g-2 align-items-end mt-1">
-        {% csrf_token %}
-        <div class="col-md-6"><label class="form-label small fw-semibold mb-1" for="aceite-dest">Para quem (opcional)</label><input id="aceite-dest" type="text" name="destinatario" maxlength="120" class="form-control form-control-sm" placeholder="Ex.: Fiscal Transpetro - Eng. João"></div>
-        <div class="col-md-auto"><button class="btn btn-primary btn-sm">Gerar link de aceite</button></div>
-    </form>
-    {% endif %}
-
-    {% if links_aceite %}
-    <div class="table-responsive mt-3"><table class="table table-sm align-middle mb-0">
-        <thead><tr><th>Para</th><th>Situação</th><th>Validade</th><th>Link</th><th></th></tr></thead>
-        <tbody>
-        {% for item in links_aceite %}{% with l=item.obj %}
-        <tr class="{% if l.pk == novo_link_id %}table-warning{% endif %}">
-            <td>{{ l.destinatario|default:"-" }}</td>
-            <td>{% if l.situacao == 'ativo' %}<span class="summary-badge primary">Ativo</span>{% elif l.situacao == 'usado' %}<span class="summary-badge success">Assinado</span>{% elif l.situacao == 'revogado' %}<span class="summary-badge secondary">Revogado</span>{% else %}<span class="summary-badge secondary">Expirado</span>{% endif %}</td>
-            <td class="mini-muted">{{ l.expira_em|date:"d/m/Y H:i" }}</td>
-            <td>{% if l.ativo %}<div class="input-group input-group-sm" style="min-width:260px"><input type="text" readonly class="form-control" value="{{ item.url }}" id="link-aceite-{{ l.pk }}"><button type="button" class="btn btn-outline-secondary" data-copiar="#link-aceite-{{ l.pk }}">Copiar</button><a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="https://wa.me/?text={{ 'Confira e assine o RDC #'|urlencode }}{{ rdc.pk }}{{ ' de '|urlencode }}{{ rdc.data|date:'d/m/Y'|urlencode }}%3A%20{{ item.url|urlencode }}">WhatsApp</a></div>{% else %}<span class="mini-muted">-</span>{% endif %}</td>
-            <td class="text-end">{% if l.ativo and can_edit_rdc %}<form method="post" action="{% url 'rdc-aceite-revogar-link' pk=rdc.pk link_id=l.pk %}" onsubmit="return confirm('Revogar este link? O fiscal não conseguirá mais abrir.');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Revogar</button></form>{% endif %}</td>
-        </tr>
-        {% endwith %}{% endfor %}
-        </tbody>
-    </table></div>
-    <div class="mini-muted mt-2">Assinando no campo? Abra o link ativo neste aparelho e entregue para o fiscal assinar.</div>
     {% endif %}
 </div>
 
@@ -610,6 +326,243 @@
     </tbody></table></div></form>
 </div>
 
+<div class="mb-4" id="secoes-rdc">
+  <div class="dg-eyebrow mb-2">Fechamento, documentos e histórico</div>
+  <div class="accordion" id="acordeaoRdc">
+  <div class="accordion-item">
+    <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sec-aceite" aria-expanded="false" aria-controls="sec-aceite">
+      <span class="fw-semibold me-2">Aceite do fiscal</span>{% if aceites %}{% with ult=aceites.0 %}<span class="summary-badge {% if ult.decisao == 'aprovado' %}success{% elif ult.decisao == 'ressalvas' %}warning{% else %}danger{% endif %}">{{ ult.get_decisao_display }} · {{ ult.nome }}</span>{% endwith %}{% else %}<span class="mini-muted">Sem aceite ainda</span>{% endif %}
+    </button></h2>
+    <div id="sec-aceite" class="accordion-collapse collapse"><div class="accordion-body p-2 p-md-3">
+<div class="table-card p-3 p-lg-4 mb-4" id="aceite-fiscal">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+        <div>
+            <h5 class="mb-1">Aceite do fiscal</h5>
+            <div class="mini-muted">Gere um link de uso único para o fiscal conferir o RDC e assinar no celular, sem precisar de login.</div>
+        </div>
+        {% if aceites %}{% with ult=aceites.0 %}<span class="summary-badge {% if ult.decisao == 'aprovado' %}success{% elif ult.decisao == 'ressalvas' %}warning{% else %}danger{% endif %}">{{ ult.get_decisao_display }} por {{ ult.nome }}</span>{% endwith %}{% endif %}
+    </div>
+
+    {% for a in aceites %}
+    <div class="d-flex flex-wrap align-items-center gap-3 border rounded-3 p-2 mb-2">
+        <img src="{% url 'rdc-aceite-assinatura' pk=rdc.pk aceite_id=a.pk %}" alt="Assinatura de {{ a.nome }}" style="height:48px;max-width:160px;object-fit:contain;background:#fff">
+        <div class="flex-grow-1">
+            <div class="fw-semibold">{{ a.get_decisao_display }} · {{ a.nome }}{% if a.cargo or a.empresa %} <span class="mini-muted">({{ a.cargo }}{% if a.cargo and a.empresa %} · {% endif %}{{ a.empresa }})</span>{% endif %}</div>
+            <div class="mini-muted">{{ a.assinado_em|date:"d/m/Y H:i" }} · código {{ a.hash_retrato|slice:":12" }}{% if a.observacao %} · {{ a.observacao|truncatechars:90 }}{% endif %}</div>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-aceite-comprovante' pk=rdc.pk aceite_id=a.pk %}">Comprovante (PDF)</a>
+    </div>
+    {% endfor %}
+
+    {% if can_edit_rdc %}
+    <form method="post" action="{% url 'rdc-aceite-gerar-link' rdc.pk %}" class="row g-2 align-items-end mt-1">
+        {% csrf_token %}
+        <div class="col-md-6"><label class="form-label small fw-semibold mb-1" for="aceite-dest">Para quem (opcional)</label><input id="aceite-dest" type="text" name="destinatario" maxlength="120" class="form-control form-control-sm" placeholder="Ex.: Fiscal Transpetro - Eng. João"></div>
+        <div class="col-md-auto"><button class="btn btn-primary btn-sm">Gerar link de aceite</button></div>
+    </form>
+    {% endif %}
+
+    {% if links_aceite %}
+    <div class="table-responsive mt-3"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Para</th><th>Situação</th><th>Validade</th><th>Link</th><th></th></tr></thead>
+        <tbody>
+        {% for item in links_aceite %}{% with l=item.obj %}
+        <tr class="{% if l.pk == novo_link_id %}table-warning{% endif %}">
+            <td>{{ l.destinatario|default:"-" }}</td>
+            <td>{% if l.situacao == 'ativo' %}<span class="summary-badge primary">Ativo</span>{% elif l.situacao == 'usado' %}<span class="summary-badge success">Assinado</span>{% elif l.situacao == 'revogado' %}<span class="summary-badge secondary">Revogado</span>{% else %}<span class="summary-badge secondary">Expirado</span>{% endif %}</td>
+            <td class="mini-muted">{{ l.expira_em|date:"d/m/Y H:i" }}</td>
+            <td>{% if l.ativo %}<div class="input-group input-group-sm" style="min-width:260px"><input type="text" readonly class="form-control" value="{{ item.url }}" id="link-aceite-{{ l.pk }}"><button type="button" class="btn btn-outline-secondary" data-copiar="#link-aceite-{{ l.pk }}">Copiar</button><a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="https://wa.me/?text={{ 'Confira e assine o RDC #'|urlencode }}{{ rdc.pk }}{{ ' de '|urlencode }}{{ rdc.data|date:'d/m/Y'|urlencode }}%3A%20{{ item.url|urlencode }}">WhatsApp</a></div>{% else %}<span class="mini-muted">-</span>{% endif %}</td>
+            <td class="text-end">{% if l.ativo and can_edit_rdc %}<form method="post" action="{% url 'rdc-aceite-revogar-link' pk=rdc.pk link_id=l.pk %}" onsubmit="return confirm('Revogar este link? O fiscal não conseguirá mais abrir.');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Revogar</button></form>{% endif %}</td>
+        </tr>
+        {% endwith %}{% endfor %}
+        </tbody>
+    </table></div>
+    <div class="mini-muted mt-2">Assinando no campo? Abra o link ativo neste aparelho e entregue para o fiscal assinar.</div>
+    {% endif %}
+</div>
+    </div></div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sec-envio" aria-expanded="false" aria-controls="sec-envio">
+      <span class="fw-semibold me-2">Relatório e envio</span><span class="mini-muted">PDF do RDC e e-mail</span>
+    </button></h2>
+    <div id="sec-envio" class="accordion-collapse collapse"><div class="accordion-body p-2 p-md-3">
+<div class="table-card p-3 p-lg-4 mb-4" id="envio-email">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+        <div>
+            <h5 class="mb-1">Relatório e envio</h5>
+            <div class="mini-muted">PDF completo do dia. Ao fechar o RDC, ele vai automaticamente para os e-mails do projeto{% if rdc.projeto.emails_relatorio %} ({{ rdc.projeto.emails_relatorio|truncatechars:80 }}){% else %} (nenhum cadastrado: Cadastros › Projetos){% endif %}.</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-pdf' rdc.pk %}?ver=1" target="_blank" rel="noopener">Ver PDF do RDC</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-pdf' rdc.pk %}">Baixar PDF</a>
+        </div>
+    </div>
+    {% if can_edit_rdc %}
+    <form method="post" action="{% url 'rdc-enviar-email' rdc.pk %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-8"><label class="form-label small fw-semibold mb-1" for="email-dest">Enviar agora para</label><input id="email-dest" type="text" name="destinatarios" class="form-control form-control-sm" value="{{ rdc.projeto.emails_relatorio }}" placeholder="email1@empresa.com.br, email2@cliente.com.br"></div>
+        <div class="col-md-auto"><button class="btn btn-primary btn-sm">Enviar por e-mail</button></div>
+    </form>
+    {% endif %}
+</div>
+    </div></div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sec-fechamento" aria-expanded="false" aria-controls="sec-fechamento">
+      <span class="fw-semibold me-2">Resumo de fechamento e auditoria</span><span class="summary-badge {% if dashboard.nivel == 'danger' %}danger{% elif dashboard.nivel == 'warning' %}warning{% else %}success{% endif %}">{{ dashboard.rotulo }}</span>
+    </button></h2>
+    <div id="sec-fechamento" class="accordion-collapse collapse"><div class="accordion-body p-2 p-md-3">
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="table-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-0">Resumo de fechamento</h5>
+                    <div class="mini-muted">Pronto para fechamento e visão operacional do dia.</div>
+                </div>
+                <span class="badge text-bg-{{ dashboard.nivel }}">{{ dashboard.rotulo }}</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Bloqueios</div><div class="metric-value text-danger">{{ fechamento_resumo.bloqueios }}</div></div></div>
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Alertas</div><div class="metric-value text-warning-emphasis">{{ fechamento_resumo.alertas }}</div></div></div>
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Funcionários</div><div class="metric-value">{{ fechamento_resumo.funcionarios }}</div></div></div>
+                <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">HH total</div><div class="metric-value text-success">{{ fechamento_resumo.hh_total }}</div></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="table-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <h5 class="mb-1">Auditoria recente</h5>
+    <form method="get" class="d-flex gap-2 flex-wrap">
+        <select name="acao" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for value, label in acoes_disponiveis %}
+                <option value="{{ value }}" {% if value == filtro_acao %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="usuario" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todos os usuários</option>
+            {% for username in usuarios_auditoria %}
+                <option value="{{ username }}" {% if username == filtro_usuario %}selected{% endif %}>{{ username }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+            <div class="mini-muted mb-3">Últimos eventos deste RDC.</div>
+            {% if auditorias_grupos %}
+                {% for grupo in auditorias_grupos %}
+                    <div class="mb-3">
+                        <div class="small text-uppercase text-muted fw-bold mb-2">{{ grupo.data }}</div>
+                        <div class="audit-timeline">
+                            {% for evento in grupo.eventos %}
+                                <div class="audit-item">
+                                    <div class="audit-dot"></div>
+                                    <div class="audit-content">
+                                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                                            <span class="badge bg-{{ evento.cor }} me-2">{{ evento.resumo }}</span>
+                                    <span class="mini-muted">{{ evento.created_at|date:'d/m/Y H:i' }}</span>
+                                </div>
+                                <div class="mini-muted">{{ evento.usuario|default:'Sistema' }} · {{ evento.acao }}{% if evento.secao %} · {{ evento.secao }}{% endif %}</div>
+                                {% if evento.detalhe %}<div class="small mt-1">{{ evento.detalhe }}</div>{% endif %}
+                            </div>
+                        </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-muted small">Sem eventos de auditoria registrados ainda.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+    </div></div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sec-montagem" aria-expanded="false" aria-controls="sec-montagem">
+      <span class="fw-semibold me-2">Montagem automática</span><span class="mini-muted">Como o RDC foi pré-preenchido</span>
+    </button></h2>
+    <div id="sec-montagem" class="accordion-collapse collapse"><div class="accordion-body p-2 p-md-3">
+<div class="table-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">Resumo da montagem automática</h5>
+<div class="mt-2">
+    {% if resumo_montagem.status_geral == "critico" %}
+        <span class="badge text-bg-danger">CRÍTICO</span>
+    {% elif resumo_montagem.status_geral == "atencao" %}
+        <span class="badge text-bg-warning">ATENÇÃO</span>
+    {% else %}
+        <span class="badge text-bg-success">OK</span>
+    {% endif %}
+</div>
+            <div class="mini-muted">Visão rápida de como este RDC foi pré-preenchido.</div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Ativ. planejamento</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_planejamento }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Ativ. cronograma</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_cronograma }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Atividades total</div>
+                <div class="metric-value">{{ resumo_montagem.atividades_total }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Com catraca</div>
+                <div class="metric-value text-success">{{ resumo_montagem.funcionarios_com_catraca }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Sem catraca</div>
+                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.funcionarios_sem_catraca }}</div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Não elegíveis</div>
+                <div class="metric-value text-danger">{{ resumo_montagem.funcionarios_nao_elegiveis }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mt-1">
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Funcionários total</div>
+                <div class="metric-value">{{ resumo_montagem.funcionarios_total }}</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Alertas</div>
+                <div class="metric-value text-warning-emphasis">{{ resumo_montagem.alertas }}</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="metric-box">
+                <div class="mini-muted">Bloqueios</div>
+                <div class="metric-value text-danger">{{ resumo_montagem.bloqueios }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div></div>
+  </div>
+  </div>
+</div>
 
 <div class="modal fade" id="modalFechamento" tabindex="-1">
   <div class="modal-dialog">
@@ -650,6 +603,15 @@
         const trigger = document.querySelector(`[data-bs-target="${targetTab}"]`);
         if (trigger) bootstrap.Tab.getOrCreateInstance(trigger).show();
     }
+    // Links com #secao (ex.: depois de gerar link de aceite) abrem a secao certa do acordeao
+    (function(){
+        const alvo = window.location.hash && document.querySelector(window.location.hash);
+        const painel = alvo && alvo.closest('.accordion-collapse');
+        if (painel) {
+            bootstrap.Collapse.getOrCreateInstance(painel, {toggle: false}).show();
+            setTimeout(function(){ alvo.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 250);
+        }
+    })();
     document.querySelectorAll('[data-copiar]').forEach(function(btn){
         btn.addEventListener('click', async function(){
             const campo = document.querySelector(btn.dataset.copiar);

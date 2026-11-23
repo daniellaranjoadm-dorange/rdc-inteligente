@@ -1,0 +1,16 @@
+{% extends "registration/_simples.html" %}
+{% block title %}Esqueci minha senha{% endblock %}
+{% block content %}
+<h2>Esqueci minha senha</h2>
+<p class="lead-sm">Informe o e-mail cadastrado no seu usuário. Se ele existir, enviaremos um link para criar uma senha nova.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="id_email">E-mail</label>
+    <input type="email" name="email" id="id_email" class="form-control" autocomplete="email" required value="{{ form.email.value|default:'' }}">
+    {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+  </div>
+  <button class="btn btn-primary w-100" type="submit">Enviar link</button>
+</form>
+<p class="dg-auth-help"><a href="/accounts/login/">Voltar para o login</a></p>
+{% endblock %}

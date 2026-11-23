@@ -66,3 +66,32 @@ class EstruturaNavalTelasTests(TestCase):
         )
         self.assertRedirects(response, reverse("area-list"))
         self.assertEqual(AreaLocal.objects.get(codigo="DQ1").get_tipo_display(), "Dique / carreira")
+
+
+class EdicaoCadastrosTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_superuser("admin_ed", "a@example.com", "x")
+        self.client.force_login(self.user)
+
+    def test_lista_de_projetos_tem_editar_e_edita_emails(self):
+        p = Projeto.objects.create(codigo="HMX", nome="Handymax", cliente="Transpetro")
+        lista = self.client.get(reverse("projeto-list"))
+        self.assertContains(lista, reverse("projeto-update", args=[p.pk]))
+        r = self.client.post(reverse("projeto-update", args=[p.pk]), {
+            "codigo": "HMX", "nome": "Handymax", "cliente": "Transpetro",
+            "emails_relatorio": "plan@example.com; fiscal@example.com", "ativo": "on",
+        })
+        self.assertRedirects(r, reverse("projeto-list"))
+        p.refresh_from_db()
+        self.assertEqual(p.lista_emails_relatorio, ["plan@example.com", "fiscal@example.com"])
+
+    def test_todas_as_telas_de_edicao_abrem(self):
+        from cadastros.models import Empresa, Equipe, Funcao, Funcionario
+        disc = Disciplina.objects.create(codigo="X1", nome="Disc X")
+        emp = Empresa.objects.create(nome="Empresa X")
+        fun = Funcao.objects.create(codigo="F1", nome="Soldador")
+        func = Funcionario.objects.create(matricula="M1", nome="Fulano", funcao=fun, empresa=emp)
+        eq = Equipe.objects.create(codigo="E1", nome="Equipe 1", disciplina=disc, empresa=emp)
+        for nome, obj in [("disciplina-update", disc), ("empresa-update", emp), ("funcao-update", fun),
+                          ("funcionario-update", func), ("equipe-update", eq)]:
+            self.assertEqual(self.client.get(reverse(nome, args=[obj.pk])).status_code, 200, nome)

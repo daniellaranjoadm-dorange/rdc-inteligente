@@ -42,7 +42,7 @@ class RDCMontagemForm(BootstrapFormMixin, forms.Form):
     projeto = forms.ModelChoiceField(queryset=None)
     area_local = forms.ModelChoiceField(queryset=None, label="Área/local")
     disciplina = forms.ModelChoiceField(queryset=None)
-    data = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    data = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
     turno = forms.ChoiceField(choices=TurnoChoices.CHOICES)
     equipe = forms.ModelChoiceField(queryset=None, required=False)
 
@@ -125,7 +125,7 @@ class RDCForm(BootstrapFormMixin, forms.ModelForm):
             "status",
         ]
         widgets = {
-            "data": forms.DateInput(attrs={"type": "date"}),
+            "data": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "horario_inicio": forms.TimeInput(attrs={"type": "time"}),
             "horario_fim": forms.TimeInput(attrs={"type": "time"}),
             "observacoes": forms.Textarea(attrs={"rows": 6}),

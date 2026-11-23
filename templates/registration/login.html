@@ -36,9 +36,13 @@
       <h2>Entrar</h2>
       <p class="lead-sm">Use o seu usuário e senha do RDC.</p>
 
-      {% if form.errors %}
+      {% if bloqueado %}
         <div class="alert alert-danger" role="alert">
-          Usuário ou senha incorretos. Confira e tente de novo.
+          Muitas tentativas com senha errada. Por segurança, o acesso deste usuário ficou bloqueado por 15 minutos.
+        </div>
+      {% elif form.errors %}
+        <div class="alert alert-danger" role="alert">
+          Usuário ou senha incorretos. Confira e tente de novo.{% if restantes is not None and restantes <= 2 %} Restam {{ restantes }} tentativa(s) antes do bloqueio temporário.{% endif %}
         </div>
       {% endif %}
 
@@ -59,7 +63,7 @@
         <button class="btn btn-primary w-100" type="submit">Entrar</button>
       </form>
 
-      <p class="dg-auth-help">Esqueceu a senha? Fale com o administrador do sistema.</p>
+      <p class="dg-auth-help"><a href="{% url 'password_reset' %}">Esqueci minha senha</a></p>
     </div>
   </section>
 </main>

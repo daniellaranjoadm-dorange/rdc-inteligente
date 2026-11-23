@@ -250,3 +250,6 @@ body {
 .oc-media { border-left: 4px solid #f59e0b !important; }
 .oc-baixa { border-left: 4px solid #94a3b8 !important; }
 .hh-lost { color: #b85407; }
+
+/* Tabelas largas rolam dentro do cartao no celular, sem estourar a pagina */
+.table-card { overflow-x: auto; }

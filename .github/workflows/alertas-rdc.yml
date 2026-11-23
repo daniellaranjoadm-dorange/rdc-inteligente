@@ -1,0 +1,19 @@
+name: Alertas diarios do RDC
+
+# Seg a sab, 18h de Brasilia (21h UTC). Precisa do segredo ALERTAS_TOKEN no GitHub
+# (Settings > Secrets and variables > Actions) com o mesmo valor do ALERTAS_TOKEN do Render.
+on:
+  schedule:
+    - cron: "0 21 * * 1-6"
+  workflow_dispatch: {}
+
+jobs:
+  disparar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar alertas
+        env:
+          TOKEN: ${{ secrets.ALERTAS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "Segredo ALERTAS_TOKEN nao configurado"; exit 1; fi
+          curl -fsS --max-time 120 -X POST -H "X-Tarefa-Token: $TOKEN" https://rdc.dorange.com.br/tarefas/alertas/

@@ -1,0 +1,11 @@
+{% autoescape off %}Olá, {{ user.get_full_name|default:user.username }}.
+
+Recebemos um pedido para criar uma senha nova no RDC Inteligente (D'OR@NGE).
+Para continuar, abra o link abaixo (vale por 24 horas):
+
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+Seu usuário: {{ user.get_username }}
+
+Se não foi você, ignore este e-mail: sua senha atual continua valendo.
+{% endautoescape %}

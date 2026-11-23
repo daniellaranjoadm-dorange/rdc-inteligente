@@ -98,3 +98,43 @@ def agendar_envio_no_fechamento(rdc, usuario=None):
             log.exception("Falha ao enviar RDC %s por e-mail no fechamento", rdc.pk)
 
     transaction.on_commit(_enviar)
+
+
+def enviar_alertas_por_email(hoje=None):
+    """Um e-mail por projeto (para a lista do projeto) com os alertas do dia. Devolve quantos e-mails saíram."""
+    from cadastros.models import Projeto
+    from rdc.services.alertas_service import gerar_alertas
+
+    if not getattr(settings, "EMAIL_CONFIGURADO", False):
+        raise ValueError("O envio de e-mail não está configurado (falta RESEND_API_KEY).")
+    enviados = 0
+    base = getattr(settings, "APP_URL", "").rstrip("/")
+    cores = {"danger": "#b91c1c", "warning": "#b45309", "info": "#1d4ed8"}
+    for projeto in Projeto.objects.filter(ativo=True):
+        destinatarios = projeto.lista_emails_relatorio
+        alertas = gerar_alertas(hoje=hoje, projeto_id=projeto.pk) if destinatarios else []
+        if not alertas:
+            continue
+        itens_txt = "\n".join(f"- {a['titulo']} ({a['detalhe']}) {base}{a['url']}" for a in alertas)
+        itens_html = "".join(
+            f"<li style=\"margin:0 0 10px\"><strong style=\"color:{cores.get(a['nivel'], '#142130')}\">{escape(a['titulo'])}</strong>"
+            f"<br><span style=\"color:#5b6b7d;font-size:13px\">{escape(a['detalhe'])}</span>"
+            f"<br><a href=\"{escape(base + a['url'])}\">{escape(a['acao'])}</a></li>"
+            for a in alertas
+        )
+        msg = EmailMultiAlternatives(
+            f"RDC · {len(alertas)} alerta(s) hoje · {projeto.nome}",
+            f"Alertas do RDC Inteligente para {projeto.nome}:\n\n{itens_txt}",
+            settings.DEFAULT_FROM_EMAIL, destinatarios,
+        )
+        msg.attach_alternative(
+            "<div style=\"font-family:Arial,sans-serif;color:#142130;max-width:600px\">"
+            "<div style=\"background:#172432;color:#fff;padding:14px 18px;border-bottom:3px solid #f07a12\">"
+            f"<div style=\"font-size:18px;font-weight:700\">Alertas do dia · {escape(projeto.nome)}</div>"
+            "<div style=\"font-size:12px;color:#c9d1da\">RDC Inteligente · D&#39;OR@NGE</div></div>"
+            f"<ul style=\"padding-left:18px;margin:16px 0\">{itens_html}</ul></div>",
+            "text/html",
+        )
+        msg.send(fail_silently=False)
+        enviados += 1
+    return enviados

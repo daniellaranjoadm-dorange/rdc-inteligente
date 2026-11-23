@@ -1,0 +1,26 @@
+{% extends "registration/_simples.html" %}
+{% block title %}Nova senha{% endblock %}
+{% block content %}
+{% if validlink %}
+<h2>Criar senha nova</h2>
+<p class="lead-sm">Use pelo menos 8 caracteres, sem ser só números.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="id_new_password1">Senha nova</label>
+    <input type="password" name="new_password1" id="id_new_password1" class="form-control" autocomplete="new-password" required>
+    {% for e in form.new_password1.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="mb-4">
+    <label for="id_new_password2">Repita a senha</label>
+    <input type="password" name="new_password2" id="id_new_password2" class="form-control" autocomplete="new-password" required>
+    {% for e in form.new_password2.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+  </div>
+  <button class="btn btn-primary w-100" type="submit">Salvar senha</button>
+</form>
+{% else %}
+<h2>Link inválido</h2>
+<p class="lead-sm">Este link já foi usado ou expirou. Peça um novo em "Esqueci minha senha".</p>
+<p class="dg-auth-help"><a href="{% url 'password_reset' %}">Pedir novo link</a></p>
+{% endif %}
+{% endblock %}

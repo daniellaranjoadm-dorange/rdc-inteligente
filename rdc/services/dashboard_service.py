@@ -8,6 +8,7 @@ from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
 from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario, RDCParalisacao, RDCValidacao
+from rdc.services.alertas_service import gerar_alertas
 from rdc.services.paralisacao_service import resumir_paralisacoes
 
 
@@ -84,6 +85,7 @@ def build_rdc_dashboard_home_context() -> dict[str, Any]:
     )
 
     return {
+        "alertas_dia": gerar_alertas(hoje=hoje),
         "paralisacoes_hoje": paralisacoes_hoje,
         "paralisacoes_semana": paralisacoes_semana,
         "hoje": hoje,

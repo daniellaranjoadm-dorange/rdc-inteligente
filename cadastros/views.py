@@ -28,6 +28,7 @@ class BaseCadastroListView(AuthenticatedTemplateMixin, ListView):
         context["titulo"] = self.titulo
         context["termo_busca"] = self.request.GET.get("q", "").strip()
         context["botao_novo_url"] = getattr(self, "botao_novo_url", "")
+        context["editar_url_name"] = getattr(self, "editar_url_name", "")
         return context
 
 
@@ -49,6 +50,7 @@ class BaseCadastroCreateView(AuthenticatedTemplateMixin, CreateView):
 
 
 class ProjetoListView(BaseCadastroListView):
+    editar_url_name = "projeto-update"
     model = Projeto
     titulo = "Projetos"
     botao_novo_url = reverse_lazy("projeto-create")
@@ -63,6 +65,7 @@ class ProjetoCreateView(BaseCadastroCreateView):
 
 
 class DisciplinaListView(BaseCadastroListView):
+    editar_url_name = "disciplina-update"
     model = Disciplina
     titulo = "Disciplinas"
     botao_novo_url = reverse_lazy("disciplina-create")
@@ -95,6 +98,7 @@ class AreaLocalCreateView(BaseCadastroCreateView):
 
 
 class EmpresaListView(BaseCadastroListView):
+    editar_url_name = "empresa-update"
     model = Empresa
     titulo = "Empresas"
     botao_novo_url = reverse_lazy("empresa-create")
@@ -109,6 +113,7 @@ class EmpresaCreateView(BaseCadastroCreateView):
 
 
 class FuncaoListView(BaseCadastroListView):
+    editar_url_name = "funcao-update"
     model = Funcao
     titulo = "Funções"
     botao_novo_url = reverse_lazy("funcao-create")
@@ -123,6 +128,7 @@ class FuncaoCreateView(BaseCadastroCreateView):
 
 
 class FuncionarioListView(BaseCadastroListView):
+    editar_url_name = "funcionario-update"
     model = Funcionario
     titulo = "Funcionários"
     botao_novo_url = reverse_lazy("funcionario-create")
@@ -137,6 +143,7 @@ class FuncionarioCreateView(BaseCadastroCreateView):
 
 
 class EquipeListView(BaseCadastroListView):
+    editar_url_name = "equipe-update"
     model = Equipe
     titulo = "Equipes"
     botao_novo_url = reverse_lazy("equipe-create")
@@ -165,3 +172,58 @@ class AreaLocalUpdateView(AuthenticatedTemplateMixin, UpdateView):
         context["titulo"] = f"Editar área: {self.object.descricao}"
         context["voltar_url"] = self.success_url
         return context
+
+
+
+class BaseCadastroUpdateView(AuthenticatedTemplateMixin, UpdateView):
+    """Edicao generica de cadastro: volta para a lista ao salvar."""
+
+    template_name = "cadastros/form.html"
+    lista_url_name = None
+    campo_titulo = "nome"
+
+    def get_success_url(self):
+        return reverse_lazy(self.lista_url_name)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        nome = getattr(self.object, self.campo_titulo, "") or str(self.object)
+        context["titulo"] = f"Editar {self.model._meta.verbose_name}: {nome}"
+        context["voltar_url"] = self.get_success_url()
+        return context
+
+
+class ProjetoUpdateView(BaseCadastroUpdateView):
+    model = Projeto
+    form_class = ProjetoForm
+    lista_url_name = "projeto-list"
+
+
+class DisciplinaUpdateView(BaseCadastroUpdateView):
+    model = Disciplina
+    form_class = DisciplinaForm
+    lista_url_name = "disciplina-list"
+
+
+class EmpresaUpdateView(BaseCadastroUpdateView):
+    model = Empresa
+    form_class = EmpresaForm
+    lista_url_name = "empresa-list"
+
+
+class FuncaoUpdateView(BaseCadastroUpdateView):
+    model = Funcao
+    form_class = FuncaoForm
+    lista_url_name = "funcao-list"
+
+
+class FuncionarioUpdateView(BaseCadastroUpdateView):
+    model = Funcionario
+    form_class = FuncionarioForm
+    lista_url_name = "funcionario-list"
+
+
+class EquipeUpdateView(BaseCadastroUpdateView):
+    model = Equipe
+    form_class = EquipeForm
+    lista_url_name = "equipe-list"

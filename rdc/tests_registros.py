@@ -98,3 +98,56 @@ class OcorrenciaTests(RegistrosBase):
         self.client.force_login(sup)
         self.assertEqual(self.client.get(reverse("rdc-ocorrencia-create", kwargs={"pk": self.rdc.pk})).status_code, 403)
         self.assertEqual(self.client.get(reverse("rdc-equipamento-create", kwargs={"pk": self.rdc.pk})).status_code, 403)
+
+
+class CopiarRDCTests(RegistrosBase):
+    def test_copia_equipe_atividades_e_equipamentos_zerando_o_dia(self):
+        from cadastros.models import Empresa, Funcao, Funcionario
+        from rdc.models import RDCAtividade, RDCFuncionario
+        emp = Empresa.objects.create(nome="Emp")
+        fun = Funcao.objects.create(codigo="SOL", nome="Soldador")
+        f = Funcionario.objects.create(matricula="M1", nome="Fulano", funcao=fun, empresa=emp)
+        RDCFuncionario.objects.create(rdc=self.rdc, funcionario=f, funcao=fun, matricula="M1", nome="Fulano",
+                                      hora_normal=8, hora_extra=2, presente_catraca=True, confirmado_supervisor=True)
+        RDCAtividade.objects.create(rdc=self.rdc, codigo_atividade="A1", descr_atividade="Solda anel 3",
+                                    qtd_escopo=10, qtd_executada=4, origem="manual")
+        RDCEquipamento.objects.create(rdc=self.rdc, tipo="guindaste", identificacao="GD-03", horas_trabalhadas=6)
+        RDCOcorrencia.objects.create(rdc=self.rdc, tipo="quase_acidente", descricao="x")
+
+        r = self.client.post(reverse("rdc-copiar", kwargs={"pk": self.rdc.pk}), {
+            "data": "2026-11-24", "turno": "manha", "funcionarios": "on", "atividades": "on", "equipamentos": "on"})
+        self.assertEqual(r.status_code, 302)
+        novo = RDC.objects.exclude(pk=self.rdc.pk).get()
+        self.assertEqual(novo.status, "rascunho")
+        nf = novo.funcionarios.get()
+        self.assertEqual((nf.hh_total, nf.presente_catraca, nf.confirmado_supervisor), (Decimal("10.00"), False, False))
+        self.assertEqual(novo.atividades.get().qtd_executada, Decimal("0"))
+        self.assertEqual(novo.equipamentos.get().horas_trabalhadas, Decimal("0"))
+        self.assertFalse(novo.ocorrencias.exists())
+        self.assertNotEqual(nf.mobile_uuid, self.rdc.funcionarios.get().mobile_uuid)
+
+    def test_nao_duplica_rdc_do_mesmo_dia_e_turno(self):
+        r = self.client.post(reverse("rdc-copiar", kwargs={"pk": self.rdc.pk}), {"data": "2026-11-23", "turno": "manha"})
+        self.assertEqual(r.status_code, 400)
+        self.assertContains(r, "Já existe RDC", status_code=400)
+
+    def test_tela_sugere_o_dia_seguinte(self):
+        r = self.client.get(reverse("rdc-copiar", kwargs={"pk": self.rdc.pk}))
+        self.assertContains(r, 'value="2026-11-24"')
+
+
+class EditarRDCDataTests(RegistrosBase):
+    def test_editar_rdc_mostra_a_data_preenchida(self):
+        r = self.client.get(reverse("rdc-update", kwargs={"pk": self.rdc.pk}))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'value="2026-11-23"')
+
+    def test_editar_rdc_salva_e_volta_para_o_detalhe(self):
+        r = self.client.post(reverse("rdc-update", kwargs={"pk": self.rdc.pk}), {
+            "projeto": self.rdc.projeto_id, "area_local": self.rdc.area_local_id, "disciplina": self.rdc.disciplina_id,
+            "data": "2026-11-23", "turno": "manha", "observacoes": "Ajuste de teste", "status": self.rdc.status,
+        })
+        self.assertEqual(r.status_code, 302, getattr(r, "context", {}) and r.context["form"].errors)
+        self.assertEqual(r["Location"], reverse("rdc-detail", kwargs={"pk": self.rdc.pk}))
+        self.rdc.refresh_from_db()
+        self.assertEqual(self.rdc.observacoes, "Ajuste de teste")

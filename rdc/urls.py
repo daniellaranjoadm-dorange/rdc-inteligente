@@ -7,6 +7,7 @@ from rdc.views_foto import (
 from rdc.views_aceite import (
     RDCAceiteAssinaturaView, RDCComprovanteAceiteView, RDCGerarLinkAceiteView, RDCRevogarLinkAceiteView,
 )
+from rdc.views_copiar import RDCCopiarView
 from rdc.views_email import RDCEnviarEmailView, RDCPdfView
 from rdc.views_hh import PainelHHView
 from rdc.views_registros import (
@@ -108,6 +109,7 @@ registro_patterns = [
     path("<int:pk>/ocorrencias/<int:pk2>/editar/", RDCOcorrenciaUpdateView.as_view(), name="rdc-ocorrencia-update"),
     path("<int:pk>/ocorrencias/<int:pk2>/excluir/", RDCOcorrenciaDeleteView.as_view(), name="rdc-ocorrencia-delete"),
     path("<int:pk>/pdf/", RDCPdfView.as_view(), name="rdc-pdf"),
+    path("<int:pk>/copiar/", RDCCopiarView.as_view(), name="rdc-copiar"),
     path("<int:pk>/enviar-email/", RDCEnviarEmailView.as_view(), name="rdc-enviar-email"),
 ]
 

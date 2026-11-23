@@ -110,7 +110,12 @@ else:
         }
     }
 
-AUTH_PASSWORD_VALIDATORS = []
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
 
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
@@ -249,3 +254,21 @@ EMAIL_TIMEOUT = 20
 EMAIL_CONFIGURADO = bool(_resend_key or os.getenv("EMAIL_HOST"))
 
 APP_URL = os.getenv("APP_URL", "https://rdc.dorange.com.br")
+
+# ===== Log de erros =====
+# Erros 500 e falhas de e-mail vao para o console com o traceback (aparecem em Render > Logs).
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"padrao": {"format": "[{levelname}] {asctime} {name}: {message}", "style": "{"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "padrao"}},
+    "loggers": {
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+        "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "rdc": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+    },
+    "root": {"handlers": ["console"], "level": "WARNING"},
+}
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # link de nova senha vale 24 h
+
+ALERTAS_TOKEN = os.getenv("ALERTAS_TOKEN", "")  # chave do agendador diario de alertas
