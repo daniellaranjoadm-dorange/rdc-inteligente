@@ -105,7 +105,7 @@ def gerar_pdf_rdc(rdc, *, gerado_por=None):
     story += _secao("Ocorrências de segurança e qualidade", _tabela(
         ["Tipo", "Gravidade", "Hora / local", "Descrição e ação", "Situação"],
         [[o.get_tipo_display(), o.get_gravidade_display(), (f"{o.hora:%H:%M} · " if o.hora else "") + (o.local or ""),
-          f"{o.descricao}\nAção: {o.acao_imediata}" if o.acao_imediata else o.descricao, o.get_status_display()] for o in ocs],
+          f"{o.descricao}\nação: {o.acao_imediata}" if o.acao_imediata else o.descricao, o.get_status_display()] for o in ocs],
         [32 * mm, 22 * mm, 30 * mm, largura_util - 108 * mm, 24 * mm],
     ) if ocs else None, "Nenhuma ocorrência.")
 

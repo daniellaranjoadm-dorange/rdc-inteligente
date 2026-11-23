@@ -343,7 +343,7 @@ class RDCFuncionario(SyncableMobileMixin, TimeStampedModel):
                 )
             if not self.justificativa_liberacao.strip():
                 raise ValidationError(
-                    {"justificativa_liberacao": "Informe a justificativa da liberAção manual."}
+                    {"justificativa_liberacao": "Informe a justificativa da liberação manual."}
                 )
 
         self.atualizar_status_elegibilidade()
@@ -617,7 +617,7 @@ class ProgramacaoSemanal(TimeStampedModel):
     origem_arquivo = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        verbose_name = "ProgramAção semanal"
+        verbose_name = "Programação semanal"
         verbose_name_plural = "Programações semanais"
         ordering = ("projeto__codigo", "semana_codigo", "codigo_atividade")
         indexes = [

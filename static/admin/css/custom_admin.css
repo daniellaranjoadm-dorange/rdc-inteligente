@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --dorange-bg: #f4f7fb;
     --dorange-surface: #ffffff;
     --dorange-primary: #0f2742;
@@ -372,3 +372,49 @@ html[data-theme="dark"] .dorange-admin-hero p {
     color: #ffffff !important;
 }
 
+
+
+/* ==== Identidade 2026: igual ao site dorange.com.br e ao RDC ==== */
+:root, html[data-theme="light"] {
+  --primary: #12171c; --secondary: #12171c; --accent: #e8611f; --primary-fg: #fff;
+  --header-bg: #0b0e11; --header-color: #a9b3bc; --header-link-color: #fff; --header-branding-color: #fff;
+  --breadcrumbs-bg: #12171c; --breadcrumbs-fg: #a9b3bc; --breadcrumbs-link-fg: #fff;
+  --link-fg: #c94d12; --link-hover-color: #e8611f; --link-selected-fg: #c94d12;
+  --button-bg: #e8611f; --button-hover-bg: #c94d12; --default-button-bg: #111827; --default-button-hover-bg: #1f2937;
+  --selected-row: #fdf1ea; --body-bg: #f8f7f4; --darkened-bg: #f1f0ec; --hairline-color: #e6e3dd;
+  --font-family-primary: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+body { font-family: var(--font-family-primary) !important; background: #f8f7f4 !important; color: #111827; }
+#header { background: #0b0e11 !important; box-shadow: inset 0 -2px 0 #e8611f !important; border-bottom: 1px solid #2a333c; }
+.dorange-admin-brand { display: flex; align-items: center; gap: .7rem; }
+.dg-wordmark { font-family: "Outfit", sans-serif; font-weight: 800; font-size: 1.4rem; color: #fff; letter-spacing: .01em; }
+.dg-wordmark .at { color: #e8611f; }
+.dg-wordmark-tag { font-size: .66rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #f3a06f; border-left: 1px solid #2a333c; padding-left: .7rem; }
+#user-tools, #user-tools a, #user-tools button { color: #a9b3bc !important; border-bottom-color: transparent !important; }
+#user-tools strong { color: #fff; }
+#user-tools a:hover, #user-tools button:hover { color: #fff !important; }
+.dorange-admin-links a { background: transparent !important; border: 1px solid #2a333c !important; color: #fff !important; border-radius: 10px !important; }
+.dorange-admin-links a:hover { border-color: #e8611f !important; }
+.breadcrumbs { background: #12171c !important; color: #a9b3bc !important; }
+.breadcrumbs a { color: #fff !important; }
+.dorange-admin-hero {
+  background: radial-gradient(circle at 88% 0%, rgba(232, 97, 31, .30), transparent 45%), linear-gradient(#0b0e11, #12171c) !important;
+  border: 0 !important; border-radius: 16px !important;
+}
+.dorange-admin-hero h1, .dorange-admin-hero h1 * { color: #fff !important; font-family: "Outfit", sans-serif !important; font-weight: 600 !important; }
+.dorange-admin-hero p { color: #a9b3bc !important; }
+.dorange-kicker { color: #f3a06f !important; }
+.dorange-hero-actions .button { background: rgba(255,255,255,.06) !important; border: 1px solid #2a333c !important; color: #fff !important; border-radius: 10px !important; }
+.dorange-hero-actions .button:hover { border-color: #e8611f !important; }
+.dorange-quick-card, .dorange-side-card, .module { border: 1px solid #e6e3dd !important; border-radius: 14px !important; box-shadow: 0 1px 2px rgba(17,24,39,.04), 0 8px 24px rgba(17,24,39,.06) !important; background: #fff !important; }
+.dorange-quick-card .label { color: #c94d12 !important; }
+.dorange-quick-card strong, .dorange-side-card h3 { font-family: "Outfit", sans-serif; color: #111827 !important; }
+.module h2, .module caption, .inline-group h2 { background: #f1f0ec !important; color: #111827 !important; font-family: "Outfit", sans-serif; letter-spacing: .04em; }
+.button, input[type=submit], input[type=button], .submit-row input, a.button { border-radius: 10px !important; }
+.button.default, input[type=submit].default { background: #e8611f !important; }
+#content .dorange-admin-hero h1, .dorange-admin-home .dorange-admin-hero h1 { color: #fff !important; }
+#content .dorange-admin-hero .dorange-kicker { color: #f3a06f !important; }
+#content .dorange-admin-hero p { color: #a9b3bc !important; }
+.dashboard .module th, .dashboard .module td, #content .module th { background: #fff !important; }
+.dashboard .module tr:hover th, .dashboard .module tr:hover td { background: #fdf1ea !important; }
+.dashboard .module th a, .module th a { color: #111827 !important; }

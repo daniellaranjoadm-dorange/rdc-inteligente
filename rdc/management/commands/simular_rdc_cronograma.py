@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("arquivo", help="Caminho do arquivo XLSX/CSV de cronograma")
-        parser.add_argument("--usuario", default="admin", help="Usuário responsável pela simulAção")
+        parser.add_argument("--usuario", default="admin", help="Usuário responsável pela simulação")
         parser.add_argument("--data", help="Data do RDC no formato YYYY-MM-DD")
         parser.add_argument("--turno", default=TurnoChoices.INTEGRAL, choices=[c[0] for c in TurnoChoices.CHOICES])
         parser.add_argument("--projeto", help="Código do projeto já importado")

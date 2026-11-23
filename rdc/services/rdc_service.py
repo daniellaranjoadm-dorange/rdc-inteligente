@@ -180,7 +180,7 @@ def popular_metadados_profissionais_do_rdc(rdc):
             f"Temperatura: mín {clima['temperatura_min']}°C / máx {clima['temperatura_max']}°C"
         )
     if clima.get("chuva_mm") is not None:
-        observacoes_linhas.append(f"PrecipitAção: {clima['chuva_mm']} mm")
+        observacoes_linhas.append(f"Precipitação: {clima['chuva_mm']} mm")
     if clima.get("vento_kmh") is not None:
         observacoes_linhas.append(f"Vento: {clima['vento_kmh']} km/h")
 
@@ -200,7 +200,7 @@ def _peso_funcao(nome_funcao):
     txt = str(nome_funcao or "").upper()
     if "SUPERVISOR" in txt:
         return 1
-    if "LÃDER" in txt or "LIDER" in txt:
+    if "LÍDER" in txt or "LIDER" in txt:
         return 2
     if "ENCARREGADO" in txt:
         return 3
@@ -217,7 +217,7 @@ def _peso_funcao(nome_funcao):
 
 def _funcao_eh_lideranca(nome_funcao):
     txt = str(nome_funcao or "").upper()
-    return any(x in txt for x in ["SUPERVISOR", "LÃDER", "LIDER", "ENCARREGADO", "ENGENHEIRO"])
+    return any(x in txt for x in ["SUPERVISOR", "LÍDER", "LIDER", "ENCARREGADO", "ENGENHEIRO"])
 
 
 def _alocacoes_priorizadas(alocacoes_queryset):
@@ -269,7 +269,7 @@ def popular_funcionarios_rdc_por_alocacao_sem_histograma(rdc, projeto_id, discip
             hh_total=Decimal("8.00"),
             presente_catraca=presente,
             elegivel=True,
-            motivo_bloqueio="" if presente else "Sem catraca no dia - incluído por simulAção de alocAção",
+            motivo_bloqueio="" if presente else "Sem catraca no dia - incluído por simulação de alocação",
         )
         vistos.add(funcionario.id)
 
@@ -278,7 +278,7 @@ def popular_funcionarios_rdc_por_alocacao_sem_histograma(rdc, projeto_id, discip
                 rdc,
                 TipoValidacaoChoices.FUNCIONARIO_SEM_CATRACA,
                 StatusValidacaoChoices.ALERTA,
-                f"{funcionario.nome} sem catraca em {data}, incluído por simulAção de alocAção.",
+                f"{funcionario.nome} sem catraca em {data}, incluído por simulação de alocação.",
                 referencia=funcionario.matricula,
             )
 
@@ -412,7 +412,7 @@ def montar_rdc_pre_preenchido(projeto_id, area_local_id, disciplina_id, data, tu
             rdc,
             TipoValidacaoChoices.EQUIPE_FORA_HISTOGRAMA,
             StatusValidacaoChoices.ALERTA,
-            "Nenhum histograma planejado encontrado para o contexto informado. O RDC será preenchido por alocAção, com catraca apenas como referência.",
+            "Nenhum histograma planejado encontrado para o contexto informado. O RDC será preenchido por alocação, com catraca apenas como referência.",
             referencia=f"{projeto_id}-{area_local_id}-{disciplina_id}-{data}-{turno}",
         )
         popular_funcionarios_rdc_por_alocacao_sem_histograma(
@@ -452,12 +452,12 @@ def montar_rdc_pre_preenchido(projeto_id, area_local_id, disciplina_id, data, tu
                 motivo_bloqueio = "Funcionário inativo."
             elif not alocacao.esta_valido_em(data):
                 elegivel = False
-                motivo_bloqueio = "Funcionário sem alocAção ativa no contexto."
+                motivo_bloqueio = "Funcionário sem alocação ativa no contexto."
                 registrar_validacao(
                     rdc,
                     TipoValidacaoChoices.FUNCIONARIO_SEM_ALOCACAO,
                     StatusValidacaoChoices.BLOQUEIO,
-                    f"{funcionario.nome} sem alocAção ativa para o projeto/disciplina/data.",
+                    f"{funcionario.nome} sem alocação ativa para o projeto/disciplina/data.",
                     referencia=funcionario.matricula,
                 )
             elif not presente:
@@ -759,18 +759,18 @@ def preencher_quadro_climatico(ws, clima_info):
 
     if cel_noite and col_destino:
         alvo = ws.cell(row=cel_noite.row, column=col_destino)
-        alvo.value = "€¢"
+        alvo.value = "·"
         _aplicar_estilo_celula(alvo, fill=fill, bold=True, size=12, align_center=True)
 
 
 def preencher_bloco_horario(ws):
-    cab = _localizar_celula_por_texto(ws, "HORÃRIO DE TRABALHO")
+    cab = _localizar_celula_por_texto(ws, "HORÁRIO DE TRABALHO")
     if not cab:
         return
 
     linhas = [
         f"Início: {HORARIO_INICIO_PADRAO}",
-        f"Intervalo: {HORARIO_INTERVALO_INICIO_PADRAO} Ã s {HORARIO_INTERVALO_FIM_PADRAO}",
+        f"Intervalo: {HORARIO_INTERVALO_INICIO_PADRAO} às {HORARIO_INTERVALO_FIM_PADRAO}",
         f"Término: {HORARIO_TERMINO_PADRAO}",
     ]
     for idx, texto in enumerate(linhas, start=1):
@@ -789,7 +789,7 @@ def preencher_header_limpo(ws, rdc, clima):
         "Wednesday": "QUARTA-FEIRA",
         "Thursday": "QUINTA-FEIRA",
         "Friday": "SEXTA-FEIRA",
-        "Saturday": "SÃBADO",
+        "Saturday": "SÁBADO",
         "Sunday": "DOMINGO",
     }
     dia_semana = dias_semana_pt.get(rdc.data.strftime("%A"), rdc.data.strftime("%A"))
@@ -801,7 +801,7 @@ def preencher_header_limpo(ws, rdc, clima):
             pass
 
     titulo = _resolver_celula_editavel(ws, "G1")
-    titulo.value = "RELATÓRIO DIÃRIO DE CAMPO - RDC"
+    titulo.value = "RELATÓRIO DIÁRIO DE CAMPO - RDC"
     _aplicar_estilo_celula(
         titulo,
         fill=FILL_HEADER_BOX,
@@ -876,12 +876,12 @@ def preencher_header_limpo(ws, rdc, clima):
         resumo.value = (
             f"CLIMA: {clima.get('descricao')} | "
             f"TEMP: {clima.get('temperatura_min')}°C / {clima.get('temperatura_max')}°C | "
-            f"HORÃRIO: {HORARIO_INICIO_PADRAO}-{HORARIO_TERMINO_PADRAO}"
+            f"HORÁRIO: {HORARIO_INICIO_PADRAO}-{HORARIO_TERMINO_PADRAO}"
         )
     else:
         resumo.value = (
             f"CLIMA: {clima.get('descricao')} | "
-            f"HORÃRIO: {HORARIO_INICIO_PADRAO}-{HORARIO_TERMINO_PADRAO}"
+            f"HORÁRIO: {HORARIO_INICIO_PADRAO}-{HORARIO_TERMINO_PADRAO}"
         )
     _aplicar_estilo_celula(
         resumo,
@@ -964,7 +964,7 @@ def preencher_bloco_restricoes_elite(ws, rdc):
 def preencher_bloco_assinatura_elite(ws, rdc):
     assinatura = [
         f"Emitido automaticamente em {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}",
-        f"Responsável pela gerAção: {getattr(getattr(rdc, 'criado_por', None), 'username', 'sistema')}",
+        f"Responsável pela geração: {getattr(getattr(rdc, 'criado_por', None), 'username', 'sistema')}",
         f"Supervisor de referência: {rdc.supervisor.nome if getattr(rdc, 'supervisor_id', None) else SUPERVISOR_PADRAO_NOME}",
     ]
     ws["A37"] = "ASSINATURA / EMISSÃO: " + " | ".join(assinatura)
@@ -990,7 +990,7 @@ def exportar_rdc_para_modelo_excel(rdc):
 
     logo_ok = inserir_logo(ws)
     if not logo_ok:
-        print("[RDC] ExportAção seguirá sem logo.")
+        print("[RDC] Exportação seguirá sem logo.")
 
     preencher_quadro_climatico(ws, clima)
     preencher_bloco_horario(ws)

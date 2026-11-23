@@ -187,7 +187,7 @@ def montar_avanco(data_corte, projeto_id=None, casco="", area_id=None):
     }
 
 
-def svg_curva(pontos, largura=760, altura=240, margem=34):
+def svg_curva(pontos, largura=960, altura=260, margem=46):
     """Coordenadas prontas para o template desenhar a curva S em SVG (sem biblioteca externa)."""
     if not pontos:
         return None

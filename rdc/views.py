@@ -1211,6 +1211,7 @@ class RDCConsolidadoView(AuthenticatedTemplateMixin, TemplateView):
                 * Decimal("100")
             )
 
+        context["workflow_summary"] = _status_summary_for_queryset(rdcs)
         context["executivos"] = {
             "conformidade": {
                 "nivel": "success" if conformidade >= 90 else "warning" if conformidade >= 70 else "danger",
@@ -2180,9 +2181,9 @@ class RDCValidacaoLoteView(AuthenticatedTemplateMixin, View):
 
         if acao == "excluir":
             qs.delete()
-            messages.success(request, f"{total} validAção(Ãµes) excluída(s).")
+            messages.success(request, f"{total} validação(ões) excluída(s).")
         else:
-            messages.warning(request, "Selecione uma Ação válida para validaçÃµes.")
+            messages.warning(request, "Selecione uma Ação válida para validações.")
 
         _atualizar_validacoes_automaticas(rdc)
         from django.core.exceptions import PermissionDenied
@@ -2258,7 +2259,7 @@ def _resolve_funcionario_autofill_payload(rdc, funcionario, equipe_id=None, equi
         alertas.append("Não foi possível validar a catraca do dia.")
 
     if not equipe_id:
-        alertas.append("Equipe/alocAção não encontrada automaticamente para o contexto do RDC.")
+        alertas.append("Equipe/alocação não encontrada automaticamente para o contexto do RDC.")
 
     motivo_bloqueio = " ; ".join(alertas)
     hora_normal = Decimal("8.00")
@@ -2450,7 +2451,7 @@ class RDCImportarFuncionariosAlocacaoView(AuthenticatedTemplateMixin, View):
             criados += 1
 
         _atualizar_validacoes_automaticas(rdc)
-        messages.success(request, f"{criados} funcionário(s) importado(s) da alocAção.")
+        messages.success(request, f"{criados} funcionário(s) importado(s) da alocação.")
         return redirect(f"{reverse('rdc-detail', kwargs={'pk': rdc.pk})}#funcionarios")
 
 
@@ -2490,7 +2491,7 @@ class RDCWorkflowView(AuthenticatedTemplateMixin, RoleRequiredMixin, View):
             messages.warning(request, resultado["message"])
 
         if observacao and not resultado["ok"]:
-            messages.info(request, f"ObservAção: {observacao}")
+            messages.info(request, f"Observação: {observacao}")
         return redirect("rdc-detail", pk=rdc.pk)
 
 

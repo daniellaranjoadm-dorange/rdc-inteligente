@@ -62,7 +62,7 @@ def process_rdc_workflow_action(rdc: RDC, *, action: str, user=None, observacao:
             if hasattr(rdc, "fechado_por"):
                 rdc.fechado_por = None
             rdc.save()
-            _registrar_auditoria(rdc, user, "devolver", "RDC devolvido para elaborAção.", observacao)
+            _registrar_auditoria(rdc, user, "devolver", "RDC devolvido para elaboração.", observacao)
 
         elif action == "reabrir":
             if not rdc.usuario_pode_reabrir(user):
@@ -99,7 +99,7 @@ def process_rdc_workflow_action(rdc: RDC, *, action: str, user=None, observacao:
     messages = {
         "enviar_revisao": "RDC enviado para revisão.",
         "aprovar": "RDC aprovado com sucesso.",
-        "devolver": "RDC devolvido para elaborAção.",
+        "devolver": "RDC devolvido para elaboração.",
         "reabrir": "RDC reaberto com sucesso.",
         "fechar": "RDC fechado com sucesso.",
     }

@@ -7,6 +7,7 @@ from unittest import mock
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
+from django.utils import timezone
 
 from cadastros.models import AreaLocal, Disciplina, Projeto
 from planejamento.models import AtividadeCronograma
@@ -54,8 +55,10 @@ class ProjetoDemoTests(TestCase):
         self.assertGreater(RDC.objects.filter(projeto=projeto).count(), 100)
         self.assertTrue(RDCParalisacao.objects.filter(rdc__projeto=projeto, motivo="falta_material").exists())
         self.assertEqual(RDCOcorrencia.objects.filter(rdc__projeto=projeto).count(), 3)
+        from rdc.models import CalendarioPlanejamento, PerfilOperacionalUsuario
+        self.assertTrue(CalendarioPlanejamento.objects.filter(projeto=projeto, data=timezone.localdate()).exists())
+        self.assertTrue(PerfilOperacionalUsuario.objects.filter(user__username="admin_demo").exists())
 
-        from django.utils import timezone
         avanco = montar_avanco(timezone.localdate(), projeto_id=projeto.pk)
         blocos = {l["codigo"]: l for l in avanco["por_area"]}
         self.assertEqual(blocos["B202"]["situacao"], "atrasado")

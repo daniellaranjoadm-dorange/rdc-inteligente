@@ -7,7 +7,7 @@
   {% if funcionario and not funcionario.pode_apontar %}
     <div class="alert alert-danger" role="alert">
       <strong>Apontamento bloqueado.</strong>
-      O funcionário está sem catraca e sem liberAção manual no momento.
+      O funcionário está sem catraca e sem liberação manual no momento.
     </div>
   {% elif funcionario and funcionario.liberado_sem_catraca and not funcionario.presente_catraca %}
     <div class="alert alert-info" role="alert">

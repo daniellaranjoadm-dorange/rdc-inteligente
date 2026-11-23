@@ -331,9 +331,9 @@ class ImportadorFuncionarios(LeitorPlanilhaBase):
         "cpf": ["cpf"],
         "rg": ["rg"],
         "funcao": ["funcao", "função", "cargo", "ocupacao", "ocupação"],
-        "empresa": ["empresa", "empreiteira", "contratada", "relAção social", "relacao social"],
+        "empresa": ["empresa", "empreiteira", "contratada", "relação social", "relacao social"],
         "cnpj": ["cnpj"],
-        "ativo": ["ativo", "status", "situacao", "situAção"],
+        "ativo": ["ativo", "status", "situacao", "situação"],
     }
 
     def processar_linha(self, linha: dict[str, Any]) -> ResultadoLinhaImportacao:
@@ -471,7 +471,7 @@ class ImportadorAlocacao(LeitorPlanilhaBase):
         "equipe": ["equipe", "time", "turma"],
         "data_inicio": ["data_inicio", "data inicio", "início", "inicio"],
         "data_fim": ["data_fim", "data fim", "fim"],
-        "ativo": ["ativo", "status", "situacao", "situAção"],
+        "ativo": ["ativo", "status", "situacao", "situação"],
     }
 
     def processar_linha(self, linha: dict[str, Any]) -> ResultadoLinhaImportacao:
@@ -660,7 +660,7 @@ class ImportadorCronograma(LeitorPlanilhaBase):
         mapeamento = {
             "ELETRICA": ("ELE", "Elétrica"),
             "INSTRUMENTACAO": ("INS", "Instrumentação"),
-            "MECANICA": ("MEC", "MecÃ¢nica"),
+            "MECANICA": ("MEC", "Mecânica"),
             "CIVIL": ("CIV", "Civil"),
             "TUBULACAO": ("TUB", "Tubulação"),
             "COMISSIONAMENTO": ("COM", "Comissionamento"),

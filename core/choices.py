@@ -50,7 +50,7 @@ class TipoValidacaoChoices:
 
     CHOICES = (
         (FUNCIONARIO_SEM_CATRACA, "Funcionário sem catraca"),
-        (FUNCIONARIO_SEM_ALOCACAO, "Funcionário sem alocAção"),
+        (FUNCIONARIO_SEM_ALOCACAO, "Funcionário sem alocação"),
         (ATIVIDADE_FORA_CRONOGRAMA, "Atividade fora do cronograma"),
         (FUNCAO_DIVERGENTE, "Função divergente"),
         (EQUIPE_FORA_HISTOGRAMA, "Equipe fora do histograma"),

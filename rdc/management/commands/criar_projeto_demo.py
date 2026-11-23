@@ -15,13 +15,14 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from cadastros.models import AreaLocal, Disciplina, Empresa, Equipe, Funcao, Funcionario, Projeto
 from core.choices import StatusRDCChoices, TurnoChoices
 from planejamento.models import AtividadeCronograma
 from rdc.models import (
-    RDC, PerfilOperacionalUsuario, RDCApontamento, RDCAtividade, RDCEquipamento, RDCFuncionario,
+    RDC, CalendarioPlanejamento, PerfilOperacionalUsuario, RDCApontamento, RDCAtividade, RDCEquipamento, RDCFuncionario,
     RDCOcorrencia, RDCParalisacao,
 )
 
@@ -138,10 +139,14 @@ class Command(BaseCommand):
                 n += 1
             pessoas[codigo] = time_
 
-        if usuario is not None and not PerfilOperacionalUsuario.objects.filter(user=usuario).exists():
-            PerfilOperacionalUsuario.objects.create(
-                user=usuario, funcionario=pessoas["DEMO-EST"][0], projeto_padrao=projeto,
-                disciplina_padrao=disciplinas["DEMO-EST"], equipe_padrao=equipes["DEMO-EST"])
+        # Perfil operacional (Novo RDC guiado / modo campo) para quem administra e ainda não tem
+        admins = get_user_model().objects.filter(is_active=True).filter(
+            Q(is_superuser=True) | Q(is_staff=True) | Q(perfil_acesso__role__in=["admin", "supervisor"])).distinct()
+        for user in admins:
+            if not PerfilOperacionalUsuario.objects.filter(user=user).exists():
+                PerfilOperacionalUsuario.objects.create(
+                    user=user, funcionario=pessoas["DEMO-EST"][0], projeto_padrao=projeto,
+                    disciplina_padrao=disciplinas["DEMO-EST"], equipe_padrao=equipes["DEMO-EST"])
 
         areas = {}
         for codigo, casco, _t, _atras, _ritmo in BLOCOS:
@@ -182,6 +187,7 @@ class Command(BaseCommand):
                 rdcs += 1
 
         self._ocorrencias(projeto, hoje, usuario)
+        self._calendario(projeto, min(a.data_inicio for a, _, _ in crono) - timedelta(days=14), hoje + timedelta(days=150))
         self.stdout.write(self.style.SUCCESS(
             f"Projeto {CODIGO} criado: {len(areas)} áreas, {len(crono)} atividades planejadas, {rdcs} RDCs. "
             f"Abra /rdc/avanco/?projeto={projeto.pk}"))
@@ -271,3 +277,25 @@ class Command(BaseCommand):
                     rdc=rdc, tipo=tipo, gravidade=grav, hora=time(10, 30), local=f"Bloco {bloco}", descricao=desc,
                     acao_imediata=acao, responsavel="Técnico de segurança (fictício)", status=status,
                     encerrada_em=timezone.now() if status == "encerrada" else None, criado_por=usuario)
+
+    def _calendario(self, projeto, inicio, fim):
+        """Semanas de planejamento sábado a sexta, como no calendário importado (código AASS)."""
+        nomes = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+        registros, d = [], inicio
+        while d <= fim:
+            jan1 = d.replace(month=1, day=1)
+            primeiro_sabado = jan1 + timedelta(days=(5 - jan1.weekday()) % 7)
+            if d < primeiro_sabado:
+                ano_ref = d.year - 1
+                jan1 = jan1.replace(year=ano_ref)
+                primeiro_sabado = jan1 + timedelta(days=(5 - jan1.weekday()) % 7)
+            semana = (d - primeiro_sabado).days // 7 + 1
+            inicio_semana = primeiro_sabado + timedelta(weeks=semana - 1)
+            codigo = f"{primeiro_sabado.year % 100:02d}{semana:02d}"
+            registros.append(CalendarioPlanejamento(
+                projeto=projeto, data=d, ano=d.year, mes=d.month, semana_codigo=codigo, semana_numero=semana,
+                semana_label=f"SEM {codigo}", data_inicio_semana=inicio_semana,
+                data_fim_semana=inicio_semana + timedelta(days=6), dia_semana=d.weekday(),
+                dia_semana_nome=nomes[d.weekday()], eh_dia_util=d.weekday() < 5))
+            d += timedelta(days=1)
+        CalendarioPlanejamento.objects.bulk_create(registros)

@@ -99,7 +99,7 @@ class RDCMontagemForm(BootstrapFormMixin, forms.Form):
             and getattr(equipe, "disciplina_id", None)
             and equipe.disciplina_id != disciplina.id
         ):
-            self.add_error("equipe", "A equipe selecionada não pertence Ã  disciplina informada.")
+            self.add_error("equipe", "A equipe selecionada não pertence à disciplina informada.")
 
         return cleaned
 

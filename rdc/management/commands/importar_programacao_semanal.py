@@ -12,7 +12,7 @@ from rdc.models import CalendarioPlanejamento, ProgramacaoSemanal
 
 
 class Command(BaseCommand):
-    help = 'Importa programAção semanal a partir de planilha.'
+    help = 'Importa programação semanal a partir de planilha.'
 
     def add_arguments(self, parser):
         parser.add_argument('--arquivo', required=True)
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                 header_map = found
                 break
         if not header_row:
-            raise CommandError('Não foi possível localizar o cabeçalho da programAção semanal na planilha.')
+            raise CommandError('Não foi possível localizar o cabeçalho da programação semanal na planilha.')
 
         if options['limpar']:
             ProgramacaoSemanal.objects.filter(projeto=projeto).delete()
@@ -115,7 +115,7 @@ class Command(BaseCommand):
                     origem_arquivo=arquivo.name,
                 )
                 created += 1
-        self.stdout.write(self.style.SUCCESS(f'ProgramAção semanal importada com sucesso. Registros: {created}'))
+        self.stdout.write(self.style.SUCCESS(f'Programação semanal importada com sucesso. Registros: {created}'))
 
 
 
