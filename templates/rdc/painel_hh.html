@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Painel de HH{% endblock %}
+
+{% block extra_head %}
+<style>
+  .hh-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .82rem; color: var(--dg-muted); }
+  .hh-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: .35rem; vertical-align: -1px; }
+  .hh-legend .t, .hh-bar .t, .hh-col .t { background: var(--dg-navy-700); }
+  .hh-legend .p, .hh-bar .p, .hh-col .p { background: var(--dg-orange-500); }
+  .hh-bar { display: flex; height: 12px; border-radius: 999px; background: var(--dg-silver-100); overflow: hidden; min-width: 120px; }
+  .hh-bar span { display: block; height: 100%; }
+  .hh-bar-col { width: 28%; }
+  .hh-lost { color: #b85407; }
+  .hh-chart { display: flex; align-items: flex-end; gap: 4px; height: 190px; padding-top: .5rem; border-bottom: 1px solid var(--dg-border); overflow-x: auto; }
+  .hh-col { flex: 1 0 18px; max-width: 46px; display: flex; flex-direction: column-reverse; height: 100%; position: relative; }
+  .hh-col span { display: block; width: 100%; }
+  .hh-col .t { border-radius: 0 0 4px 4px; }
+  .hh-col .p { border-radius: 4px 4px 0 0; }
+  .hh-col:hover { filter: brightness(1.15); }
+  .hh-axis { display: flex; gap: 4px; overflow-x: hidden; }
+  .hh-axis div { flex: 1 0 18px; max-width: 46px; font-size: .66rem; color: var(--dg-muted); text-align: center; white-space: nowrap; }
+  .hh-filter .btn-chip { border-radius: 999px; font-weight: 600; font-size: .85rem; }
+  .hh-filter .btn-chip.active { background: var(--dg-orange-50); border-color: rgba(240, 122, 18, .5); color: #9a4705; }
+  .hh-table th { white-space: nowrap; }
+  .hh-bar-col { min-width: 90px; }
+  @media (max-width: 1399.98px) { .hh-half .hh-bar-col { display: none; } }
+  @media (max-width: 767.98px) { .hh-bar-col { display: none; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Planejamento</div>
+    <h1 class="h3 fw-bold mb-1">Painel de HH</h1>
+    <div class="mini-muted">Horas-homem trabalhadas e perdidas por bloco, disciplina, navio e etapa · {{ inicio|date:"d/m/Y" }} a {{ fim|date:"d/m/Y" }}</div>
+  </div>
+</div>
+
+<form method="get" class="table-card p-3 mb-4 hh-filter">
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    {% for a in atalhos %}
+      <a class="btn btn-sm btn-outline-secondary btn-chip {% if a.ativo %}active{% endif %}" href="?inicio={{ a.inicio|date:'Y-m-d' }}&fim={{ a.fim|date:'Y-m-d' }}{% if projeto_id %}&projeto={{ projeto_id }}{% endif %}">{{ a.rotulo }}</a>
+    {% endfor %}
+  </div>
+  <div class="row g-2 align-items-end">
+    <div class="col-6 col-md-3"><label class="form-label small fw-semibold mb-1" for="f-inicio">De</label><input id="f-inicio" type="date" name="inicio" value="{{ inicio|date:'Y-m-d' }}" class="form-control"></div>
+    <div class="col-6 col-md-3"><label class="form-label small fw-semibold mb-1" for="f-fim">Até</label><input id="f-fim" type="date" name="fim" value="{{ fim|date:'Y-m-d' }}" class="form-control"></div>
+    <div class="col-12 col-md-4">
+      <label class="form-label small fw-semibold mb-1" for="f-projeto">Projeto</label>
+      <select id="f-projeto" name="projeto" class="form-select">
+        <option value="">Todos os projetos</option>
+        {% for pr in projetos %}<option value="{{ pr.pk }}" {% if projeto_id == pr.pk|stringformat:'s' %}selected{% endif %}>{{ pr.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-2"><button class="btn btn-primary w-100" type="submit">Aplicar</button></div>
+  </div>
+</form>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-secondary h-100"><div class="card-body"><div class="kpi-label">HH trabalhado</div><div class="kpi-number">{{ totais.hh_trabalhado }}</div><div class="kpi-desc">{{ totais.rdcs }} RDC(s) em {{ totais.dias_com_rdc }} dia(s)</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-primary h-100"><div class="card-body"><div class="kpi-label">HH perdido</div><div class="kpi-number hh-lost">{{ totais.hh_perdido }}</div><div class="kpi-desc">{{ totais.paralisacoes }} paralisação(ões)</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="kpi-label">% do HH perdido</div><div class="kpi-number">{% if totais.percentual_perdido is not None %}{{ totais.percentual_perdido }}%{% else %}-{% endif %}</div><div class="kpi-desc">Perdido ÷ (trabalhado + perdido)</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="kpi-label">Blocos / áreas</div><div class="kpi-number">{{ por_area|length }}</div><div class="kpi-desc">com RDC no período</div></div></div></div>
+</div>
+
+<div class="table-card p-3 p-lg-4 mb-4">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+    <div>
+      <div class="section-title mb-1">Evolução {% if evolucao.por_semana %}semanal{% else %}diária{% endif %}</div>
+      <div class="mini-muted">{% if evolucao.por_semana %}Cada barra é uma semana (início na segunda-feira).{% else %}Cada barra é um dia.{% endif %} Passe o mouse para ver os valores.</div>
+    </div>
+    <div class="hh-legend"><span><i class="t"></i>Trabalhado</span><span><i class="p"></i>Perdido</span></div>
+  </div>
+  {% if totais.hh_trabalhado or totais.hh_perdido %}
+    <div class="hh-chart" role="img" aria-label="Gráfico de HH trabalhado e perdido no período">
+      {% for pt in evolucao.pontos %}
+        <div class="hh-col" title="{{ pt.data|date:'d/m/Y' }}: trabalhado {{ pt.hh_trabalhado }} · perdido {{ pt.hh_perdido }}">
+          <span class="t" style="height: {{ pt.altura_trabalhado|floatformat:'1u' }}%"></span><span class="p" style="height: {{ pt.altura_perdido|floatformat:'1u' }}%"></span>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="hh-axis mt-1">{% for pt in evolucao.pontos %}<div>{% if evolucao.pontos|length <= 31 or forloop.counter0|divisibleby:4 %}{{ pt.data|date:'d/m' }}{% endif %}</div>{% endfor %}</div>
+  {% else %}
+    <div class="alert alert-light border mb-0">Nenhum RDC com horas lançadas neste período. Tente "Últimos 12 meses" ou outro projeto.</div>
+  {% endif %}
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-12">{% include "rdc/_hh_tabela.html" with titulo="Por bloco / área" subtitulo="Onde o HH foi aplicado e onde mais se perdeu." coluna="Bloco / área" linhas=por_area mostrar_efetivo=True %}</div>
+  <div class="col-lg-6 hh-half">{% include "rdc/_hh_tabela.html" with titulo="Por disciplina" subtitulo="Estrutura, tubulação, elétrica, pintura..." coluna="Disciplina" linhas=por_disciplina %}</div>
+  <div class="col-lg-6 hh-half">{% include "rdc/_hh_tabela.html" with titulo="Por navio (casco)" subtitulo="Preencha o casco em Cadastros › Áreas e blocos." coluna="Casco / navio" linhas=por_casco %}</div>
+  <div class="col-lg-6 hh-half">{% include "rdc/_hh_tabela.html" with titulo="Por etapa de construção" subtitulo="Fabricação, montagem, edificação, outfitting..." coluna="Etapa" linhas=por_etapa %}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+<div class="table-card p-3 p-lg-4 h-100">
+  <div class="section-title mb-1">{{ titulo }}</div>
+  <div class="mini-muted mb-3">{{ subtitulo }}</div>
+  {% if linhas %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0 hh-table">
+      <thead><tr><th>{{ coluna }}</th><th class="hh-bar-col">Distribuição</th><th class="text-end">Trabalhado</th><th class="text-end">Perdido</th><th class="text-end">% perda</th>{% if mostrar_efetivo %}<th class="text-end">Pessoas-dia</th>{% endif %}</tr></thead>
+      <tbody>
+      {% for l in linhas %}
+        <tr>
+          <td><div class="fw-semibold">{{ l.rotulo }}</div>{% if l.detalhe %}<div class="mini-muted">{{ l.detalhe }}</div>{% endif %}</td>
+          <td class="hh-bar-col">
+            <div class="hh-bar" title="Trabalhado {{ l.hh_trabalhado }} · Perdido {{ l.hh_perdido }}">
+              <span class="t" style="width: {{ l.barra_trabalhado|floatformat:'1u' }}%"></span><span class="p" style="width: {{ l.barra_perdido|floatformat:'1u' }}%"></span>
+            </div>
+          </td>
+          <td class="text-end fw-semibold">{{ l.hh_trabalhado }}</td>
+          <td class="text-end {% if l.hh_perdido %}hh-lost fw-semibold{% else %}text-muted{% endif %}">{{ l.hh_perdido }}</td>
+          <td class="text-end">{% if l.percentual_perdido is not None %}{{ l.percentual_perdido }}%{% else %}<span class="text-muted">-</span>{% endif %}</td>
+          {% if mostrar_efetivo %}<td class="text-end">{{ l.efetivo }}</td>{% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="text-muted small">Sem RDCs neste período.</div>
+  {% endif %}
+</div>

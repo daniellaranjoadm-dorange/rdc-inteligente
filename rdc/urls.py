@@ -1,6 +1,7 @@
 from django.urls import path
 from rdc.views import *
 from rdc.views import RDCApontamentoCreateView
+from rdc.views_hh import PainelHHView
 from rdc.views_paralisacao import RDCParalisacaoCreateView, RDCParalisacaoDeleteView, RDCParalisacaoUpdateView
 
 # ===== BASE =====
@@ -80,6 +81,7 @@ validacao_patterns = [
 # ===== DASHBOARD / RDO =====
 extra_patterns = [
     path("dashboard/", RDCDashboardHomeView.as_view(), name="rdc-dashboard"),
+    path("hh/", PainelHHView.as_view(), name="rdc-painel-hh"),
     path("rdo/", RDOView.as_view(), name="rdc-rdo"),
     path("rdo/exportar/<str:tipo>/", RDOExportView.as_view(), name="rdc-rdo-exportar"),
 ]

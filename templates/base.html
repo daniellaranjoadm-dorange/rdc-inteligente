@@ -152,7 +152,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark navbar-dorange mb-4">
+<nav class="navbar navbar-expand-xl navbar-dark navbar-dorange mb-4">
     <div class="container-fluid">
         <a class="brand-wrap" href="/rdc/dashboard/">
             <img class="brand-logo" src="{% static 'img/dorange-mark.png' %}" alt="D'OR@NGE">
@@ -168,9 +168,10 @@
             {% with p=request.path %}
             <div class="navbar-nav me-auto ms-lg-4 gap-lg-1">
                 <a class="nav-link {% if p == '/rdc/dashboard/' %}active{% endif %}" href="/rdc/dashboard/">Dashboard</a>
-                <a class="nav-link {% if p|slice:':5' == '/rdc/' and p != '/rdc/dashboard/' and p != '/rdc/novo/' and p != '/rdc/consolidado/' and p != '/rdc/rdo/' %}active{% endif %}" href="/rdc/">RDCs</a>
+                <a class="nav-link {% if p|slice:':5' == '/rdc/' and p != '/rdc/dashboard/' and p != '/rdc/novo/' and p != '/rdc/consolidado/' and p != '/rdc/rdo/' and p != '/rdc/hh/' %}active{% endif %}" href="/rdc/">RDCs</a>
                 <a class="nav-link {% if p == '/rdc/novo/' %}active{% endif %}" href="/rdc/novo/">Novo RDC</a>
                 <a class="nav-link {% if p == '/rdc/consolidado/' %}active{% endif %}" href="/rdc/consolidado/">Painel</a>
+                <a class="nav-link {% if p == '/rdc/hh/' %}active{% endif %}" href="/rdc/hh/">HH</a>
                 <a class="nav-link {% if p == '/rdc/rdo/' %}active{% endif %}" href="/rdc/rdo/">RDO</a>
                 <a class="nav-link {% if p|slice:':13' == '/importacoes/' %}active{% endif %}" href="/importacoes/">Importações</a>
                 <a class="nav-link {% if p|slice:':11' == '/cadastros/' %}active{% endif %}" href="/cadastros/projetos/">Cadastros</a>
