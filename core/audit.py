@@ -27,6 +27,13 @@ def traduzir_acao_auditoria(action):
         "gerar_link_aceite": "Gerou link de aceite do fiscal",
         "revogar_link_aceite": "Revogou link de aceite",
         "aceite_fiscal": "Aceite do fiscal registrado",
+        "create_equipamento": "Registrou equipamento",
+        "update_equipamento": "Alterou equipamento",
+        "delete_equipamento": "Excluiu equipamento",
+        "create_ocorrencia": "Registrou ocorrência",
+        "update_ocorrencia": "Alterou ocorrência",
+        "delete_ocorrencia": "Excluiu ocorrência",
+        "enviar_email_rdc": "Enviou RDC por e-mail",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

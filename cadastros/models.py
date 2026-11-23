@@ -12,6 +12,15 @@ class Projeto(TimeStampedModel):
     nome = models.CharField(max_length=255)
     cliente = models.CharField(max_length=255)
     ativo = models.BooleanField(default=True)
+    emails_relatorio = models.TextField(
+        "E-mails que recebem o RDC", blank=True,
+        help_text="Separe por vírgula ou um por linha. Recebem o PDF do RDC quando ele é fechado.",
+    )
+
+    @property
+    def lista_emails_relatorio(self):
+        import re
+        return [e for e in re.split(r"[\s,;]+", self.emails_relatorio or "") if "@" in e]
 
     class Meta:
         ordering = ("nome",)

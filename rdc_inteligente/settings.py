@@ -225,3 +225,27 @@ PWA_APP_SCOPE = os.getenv("PWA_APP_SCOPE", "/")
 PWA_START_URL = os.getenv("PWA_START_URL", "/m/")
 PWA_THEME_COLOR = os.getenv("PWA_THEME_COLOR", "#0b2239")
 
+
+# ===== E-mail (envio do RDC) =====
+# Resend: defina RESEND_API_KEY no Render (o mesmo provedor do Business AI).
+# Alternativa: EMAIL_HOST / EMAIL_PORT / EMAIL_HOST_USER / EMAIL_HOST_PASSWORD de outro SMTP.
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_FROM", "RDC Inteligente D'OR@NGE <rdc@dorange.com.br>")
+_resend_key = os.getenv("RESEND_API_KEY", "").strip()
+if _resend_key:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS = "smtp.resend.com", 587, True
+    EMAIL_HOST_USER, EMAIL_HOST_PASSWORD = "resend", _resend_key
+elif os.getenv("EMAIL_HOST"):
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.getenv("EMAIL_HOST")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "1") == "1"
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+else:
+    # Sem provedor: nada sai; a tela avisa que o e-mail nao esta configurado.
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_TIMEOUT = 20
+EMAIL_CONFIGURADO = bool(_resend_key or os.getenv("EMAIL_HOST"))
+
+APP_URL = os.getenv("APP_URL", "https://rdc.dorange.com.br")

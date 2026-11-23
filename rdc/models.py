@@ -10,6 +10,11 @@ from django.utils import timezone
 from core.choices import (
     CategoriaFotoChoices,
     DecisaoAceiteChoices,
+    GravidadeOcorrenciaChoices,
+    MotivoParadaEquipamentoChoices,
+    StatusOcorrenciaChoices,
+    TipoEquipamentoChoices,
+    TipoOcorrenciaChoices,
     MotivoParalisacaoChoices,
     OrigemAtividadeChoices,
     ResponsabilidadeParalisacaoChoices,
@@ -152,7 +157,7 @@ class RDC(SyncableMobileMixin, TimeStampedModel):
     @property
     def status_workflow_label(self):
         mapa = {
-            "rascunho": "Em elaborAção",
+            "rascunho": "Em elaboração",
             "pre_preenchido": "Pré-preenchido",
             "em_revisao": "Em revisão",
             "aprovado": "Aprovado",
@@ -837,3 +842,83 @@ class RDCAceite(TimeStampedModel):
 
     def __str__(self):
         return f"{self.get_decisao_display()} por {self.nome}"
+
+
+class RDCEquipamento(TimeStampedModel):
+    """Equipamento usado na frente no dia: horas trabalhadas e paradas."""
+
+    rdc = models.ForeignKey("rdc.RDC", on_delete=models.CASCADE, related_name="equipamentos")
+    tipo = models.CharField(max_length=30, choices=TipoEquipamentoChoices.CHOICES)
+    identificacao = models.CharField("TAG / placa", max_length=60, blank=True)
+    operador = models.CharField(max_length=120, blank=True)
+    horas_trabalhadas = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))
+    horas_paradas = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))
+    motivo_parada = models.CharField(max_length=30, choices=MotivoParadaEquipamentoChoices.CHOICES, blank=True)
+    observacao = models.TextField(blank=True)
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="equipamentos_rdc"
+    )
+
+    class Meta:
+        ordering = ("tipo", "identificacao", "id")
+        verbose_name = "Equipamento do RDC"
+        verbose_name_plural = "Equipamentos do RDC"
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} {self.identificacao}".strip()
+
+    @property
+    def disponibilidade(self):
+        """% do tempo em que o equipamento trabalhou (trabalhadas / (trabalhadas + paradas))."""
+        total = (self.horas_trabalhadas or 0) + (self.horas_paradas or 0)
+        if not total:
+            return None
+        return (Decimal(self.horas_trabalhadas) / Decimal(total) * 100).quantize(Decimal("0.1"))
+
+    def clean(self):
+        super().clean()
+        trab, par = self.horas_trabalhadas or 0, self.horas_paradas or 0
+        if trab < 0 or par < 0:
+            raise ValidationError("Horas não podem ser negativas.")
+        if trab + par > 24:
+            raise ValidationError("Horas trabalhadas + paradas passam de 24 h no dia.")
+        if par > 0 and not self.motivo_parada:
+            raise ValidationError({"motivo_parada": "Informe o motivo das horas paradas."})
+
+
+class RDCOcorrencia(TimeStampedModel):
+    """Ocorrencia de seguranca, qualidade, meio ambiente ou fiscalizacao registrada no dia."""
+
+    rdc = models.ForeignKey("rdc.RDC", on_delete=models.CASCADE, related_name="ocorrencias")
+    tipo = models.CharField(max_length=30, choices=TipoOcorrenciaChoices.CHOICES)
+    gravidade = models.CharField(max_length=10, choices=GravidadeOcorrenciaChoices.CHOICES, default=GravidadeOcorrenciaChoices.BAIXA)
+    hora = models.TimeField(null=True, blank=True)
+    local = models.CharField(max_length=120, blank=True)
+    descricao = models.TextField()
+    envolvidos = models.CharField(max_length=255, blank=True)
+    acao_imediata = models.TextField(blank=True)
+    responsavel = models.CharField("Responsável pelo tratamento", max_length=120, blank=True)
+    status = models.CharField(max_length=20, choices=StatusOcorrenciaChoices.CHOICES, default=StatusOcorrenciaChoices.ABERTA)
+    encerrada_em = models.DateTimeField(null=True, blank=True)
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="ocorrencias_rdc"
+    )
+
+    class Meta:
+        ordering = ("hora", "id")
+        verbose_name = "Ocorrência do RDC"
+        verbose_name_plural = "Ocorrências do RDC"
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} ({self.get_gravidade_display()})"
+
+    @property
+    def is_seguranca(self):
+        return self.tipo in TipoOcorrenciaChoices.SEGURANCA
+
+    def save(self, *args, **kwargs):
+        if self.status == StatusOcorrenciaChoices.ENCERRADA and not self.encerrada_em:
+            self.encerrada_em = timezone.now()
+        elif self.status != StatusOcorrenciaChoices.ENCERRADA:
+            self.encerrada_em = None
+        super().save(*args, **kwargs)

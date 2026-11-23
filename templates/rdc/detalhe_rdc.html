@@ -316,6 +316,26 @@
 </div>
 
 
+<div class="table-card p-3 p-lg-4 mb-4" id="envio-email">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+        <div>
+            <h5 class="mb-1">Relatório e envio</h5>
+            <div class="mini-muted">PDF completo do dia. Ao fechar o RDC, ele vai automaticamente para os e-mails do projeto{% if rdc.projeto.emails_relatorio %} ({{ rdc.projeto.emails_relatorio|truncatechars:80 }}){% else %} (nenhum cadastrado: Cadastros › Projetos){% endif %}.</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-pdf' rdc.pk %}?ver=1" target="_blank" rel="noopener">Ver PDF do RDC</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-pdf' rdc.pk %}">Baixar PDF</a>
+        </div>
+    </div>
+    {% if can_edit_rdc %}
+    <form method="post" action="{% url 'rdc-enviar-email' rdc.pk %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-8"><label class="form-label small fw-semibold mb-1" for="email-dest">Enviar agora para</label><input id="email-dest" type="text" name="destinatarios" class="form-control form-control-sm" value="{{ rdc.projeto.emails_relatorio }}" placeholder="email1@empresa.com.br, email2@cliente.com.br"></div>
+        <div class="col-md-auto"><button class="btn btn-primary btn-sm">Enviar por e-mail</button></div>
+    </form>
+    {% endif %}
+</div>
+
 <div class="table-card p-3 p-lg-4 mb-4" id="aceite-fiscal">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
         <div>
@@ -369,6 +389,8 @@
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#apontamentos">Apontamentos</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#fotos">Fotos{% if fotos %} <span class="badge rounded-pill text-bg-secondary ms-1">{{ fotos|length }}</span>{% endif %}</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#paralisacoes">Paralisações{% if paralisacoes_resumo.qtd %} <span class="badge rounded-pill text-bg-warning ms-1">{{ paralisacoes_resumo.qtd }}</span>{% endif %}</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#equipamentos">Equipamentos{% if equipamentos %} <span class="badge rounded-pill text-bg-secondary ms-1">{{ equipamentos|length }}</span>{% endif %}</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#ocorrencias">Ocorrências{% if ocorrencias_abertas %} <span class="badge rounded-pill text-bg-danger ms-1">{{ ocorrencias_abertas }}</span>{% elif ocorrencias %} <span class="badge rounded-pill text-bg-secondary ms-1">{{ ocorrencias|length }}</span>{% endif %}</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#validacoes">Validações</button></li>
 </ul>
 
@@ -524,6 +546,38 @@
     <div class="table-card p-3"><div class="table-responsive"><table class="table table-sm align-middle mb-0" id="tabela-paralisacoes"><thead><tr><th>Motivo</th><th>Responsabilidade</th><th>Período</th><th class="text-end">Horas</th><th class="text-end">Pessoas</th><th class="text-end">HH perdido</th><th>Equipe / atividade</th><th>Descrição</th><th></th></tr></thead><tbody>
     {% for p in paralisacoes %}<tr><td class="fw-semibold">{{ p.get_motivo_display }}</td><td>{{ p.get_responsabilidade_display }}</td><td>{{ p.inicio|time:"H:i" }} - {{ p.fim|time:"H:i" }}</td><td class="text-end">{{ p.horas }}</td><td class="text-end">{{ p.pessoas_afetadas }}</td><td class="text-end fw-bold" style="color:#b85407">{{ p.hh_perdido }}</td><td>{{ p.equipe|default:'-' }}{% if p.rdc_atividade %}<div class="mini-muted">{{ p.rdc_atividade.codigo_atividade }} {{ p.rdc_atividade.descr_atividade|truncatechars:30 }}</div>{% endif %}</td><td>{{ p.descricao|default:'-'|truncatechars:60 }}</td><td class="text-nowrap">{% if can_edit_rdc %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-paralisacao-update' pk=rdc.pk pk2=p.pk %}">Editar</a> <form method="post" action="{% url 'rdc-paralisacao-delete' pk=rdc.pk pk2=p.pk %}" class="d-inline" onsubmit="return confirm('Excluir esta paralisação?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Excluir</button></form> <a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-foto-upload' rdc.pk %}?paralisacao={{ p.pk }}" title="Anexar foto a esta paralisação">+ Foto</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="9" class="text-muted">Nenhuma paralisação registrada neste RDC. Se a frente parou por chuva, falta de material, liberação ou outro motivo, registre aqui para não perder o HH.</td></tr>{% endfor %}
     </tbody></table></div></div>
+</div>
+
+<div class="tab-pane fade" id="equipamentos">
+    <div class="row g-2 mb-3">
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Equipamentos</div><div class="metric-value">{{ equipamentos|length }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Horas trabalhadas</div><div class="metric-value">{{ equipamentos_resumo.trab|default:0 }}</div></div></div>
+        <div class="col-md-4 col-6"><div class="metric-box"><div class="mini-muted">Horas paradas</div><div class="metric-value" style="color:#b85407">{{ equipamentos_resumo.par|default:0 }}</div></div></div>
+    </div>
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-equipamento-create' rdc.pk %}">Registrar equipamento</a>{% endif %}</div>
+    <div class="table-card p-3"><div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Equipamento</th><th>Operador</th><th class="text-end">Trabalhadas</th><th class="text-end">Paradas</th><th>Motivo da parada</th><th class="text-end">Disponib.</th><th></th></tr></thead><tbody>
+    {% for e in equipamentos %}<tr><td class="fw-semibold">{{ e.get_tipo_display }}{% if e.identificacao %} <span class="mini-muted">{{ e.identificacao }}</span>{% endif %}{% if e.observacao %}<div class="mini-muted">{{ e.observacao|truncatechars:60 }}</div>{% endif %}</td><td>{{ e.operador|default:"-" }}</td><td class="text-end">{{ e.horas_trabalhadas }}</td><td class="text-end{% if e.horas_paradas %} fw-semibold hh-lost{% endif %}">{{ e.horas_paradas }}</td><td>{{ e.get_motivo_parada_display|default:"-" }}</td><td class="text-end">{% if e.disponibilidade is not None %}{{ e.disponibilidade }}%{% else %}-{% endif %}</td><td class="text-nowrap text-end">{% if can_edit_rdc %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-equipamento-update' pk=rdc.pk pk2=e.pk %}">Editar</a> <form method="post" action="{% url 'rdc-equipamento-delete' pk=rdc.pk pk2=e.pk %}" class="d-inline" onsubmit="return confirm('Excluir este equipamento do RDC?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Excluir</button></form>{% endif %}</td></tr>{% empty %}<tr><td colspan="7" class="text-muted">Nenhum equipamento registrado. Guindaste, pórtico, máquinas de solda: registre as horas trabalhadas e paradas do dia.</td></tr>{% endfor %}
+    </tbody></table></div></div>
+</div>
+
+<div class="tab-pane fade" id="ocorrencias">
+    <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-ocorrencia-create' rdc.pk %}">Registrar ocorrência</a>{% endif %}</div>
+    {% for o in ocorrencias %}
+    <div class="table-card p-3 mb-2 oc-{{ o.gravidade }}">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <div class="fw-bold">{{ o.get_tipo_display }} <span class="summary-badge {% if o.gravidade == 'critica' or o.gravidade == 'alta' %}danger{% elif o.gravidade == 'media' %}warning{% else %}secondary{% endif %} ms-1">{{ o.get_gravidade_display }}</span> <span class="summary-badge {% if o.status == 'encerrada' %}success{% elif o.status == 'em_tratamento' %}warning{% else %}danger{% endif %}">{{ o.get_status_display }}</span></div>
+                <div class="mini-muted">{% if o.hora %}{{ o.hora|time:"H:i" }} · {% endif %}{{ o.local|default:"Local não informado" }}{% if o.responsavel %} · Resp.: {{ o.responsavel }}{% endif %}</div>
+            </div>
+            {% if can_edit_rdc %}<div class="text-nowrap"><a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-ocorrencia-update' pk=rdc.pk pk2=o.pk %}">Editar</a> <form method="post" action="{% url 'rdc-ocorrencia-delete' pk=rdc.pk pk2=o.pk %}" class="d-inline" onsubmit="return confirm('Excluir esta ocorrência?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Excluir</button></form></div>{% endif %}
+        </div>
+        <div class="mt-2 small">{{ o.descricao|linebreaksbr }}</div>
+        {% if o.acao_imediata %}<div class="mt-1 small"><strong>Ação imediata:</strong> {{ o.acao_imediata }}</div>{% endif %}
+        {% if o.envolvidos %}<div class="mini-muted mt-1">Envolvidos: {{ o.envolvidos }}</div>{% endif %}
+    </div>
+    {% empty %}
+    <div class="alert alert-light border mb-0">Nenhuma ocorrência registrada. Quase-acidentes, condições inseguras, não conformidades e visitas da fiscalização ficam registradas aqui.</div>
+    {% endfor %}
 </div>
 
 <div class="tab-pane fade" id="validacoes">

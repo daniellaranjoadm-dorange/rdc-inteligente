@@ -252,3 +252,92 @@ class DecisaoAceiteChoices:
         (RESSALVAS, "Aprovado com ressalvas"),
         (REPROVADO, "Reprovado"),
     )
+
+
+class TipoEquipamentoChoices:
+    GUINDASTE = "guindaste"
+    PORTICO = "portico"
+    PONTE_ROLANTE = "ponte_rolante"
+    MUNCK = "munck"
+    PLATAFORMA = "plataforma"
+    EMPILHADEIRA = "empilhadeira"
+    MAQUINA_SOLDA = "maquina_solda"
+    COMPRESSOR = "compressor"
+    GERADOR = "gerador"
+    JATO = "jato"
+    OUTRO = "outro"
+
+    CHOICES = (
+        (GUINDASTE, "Guindaste"),
+        (PORTICO, "Pórtico"),
+        (PONTE_ROLANTE, "Ponte rolante"),
+        (MUNCK, "Caminhão munck"),
+        (PLATAFORMA, "Plataforma elevatória"),
+        (EMPILHADEIRA, "Empilhadeira"),
+        (MAQUINA_SOLDA, "Máquina de solda"),
+        (COMPRESSOR, "Compressor"),
+        (GERADOR, "Gerador"),
+        (JATO, "Equipamento de jato / pintura"),
+        (OUTRO, "Outro"),
+    )
+
+
+class MotivoParadaEquipamentoChoices:
+    MANUTENCAO = "manutencao"
+    QUEBRA = "quebra"
+    SEM_OPERADOR = "sem_operador"
+    AGUARDANDO_FRENTE = "aguardando_frente"
+    CLIMA = "clima"
+    ABASTECIMENTO = "abastecimento"
+    OUTRO = "outro"
+
+    CHOICES = (
+        (MANUTENCAO, "Manutenção programada"),
+        (QUEBRA, "Quebra / defeito"),
+        (SEM_OPERADOR, "Sem operador / sinaleiro"),
+        (AGUARDANDO_FRENTE, "Aguardando frente liberar"),
+        (CLIMA, "Clima (vento, chuva)"),
+        (ABASTECIMENTO, "Abastecimento / energia"),
+        (OUTRO, "Outro"),
+    )
+
+
+class TipoOcorrenciaChoices:
+    QUASE_ACIDENTE = "quase_acidente"
+    INCIDENTE = "incidente"
+    ACIDENTE_SEM_AFASTAMENTO = "acidente_sem_afastamento"
+    ACIDENTE_COM_AFASTAMENTO = "acidente_com_afastamento"
+    CONDICAO_INSEGURA = "condicao_insegura"
+    NAO_CONFORMIDADE = "nao_conformidade"
+    MEIO_AMBIENTE = "meio_ambiente"
+    FISCALIZACAO = "fiscalizacao"
+
+    CHOICES = (
+        (QUASE_ACIDENTE, "Quase-acidente"),
+        (INCIDENTE, "Incidente (dano material)"),
+        (ACIDENTE_SEM_AFASTAMENTO, "Acidente sem afastamento"),
+        (ACIDENTE_COM_AFASTAMENTO, "Acidente com afastamento"),
+        (CONDICAO_INSEGURA, "Condição / ato inseguro"),
+        (NAO_CONFORMIDADE, "Não conformidade de qualidade"),
+        (MEIO_AMBIENTE, "Meio ambiente (vazamento, resíduo)"),
+        (FISCALIZACAO, "Visita / fiscalização"),
+    )
+
+    SEGURANCA = {QUASE_ACIDENTE, INCIDENTE, ACIDENTE_SEM_AFASTAMENTO, ACIDENTE_COM_AFASTAMENTO, CONDICAO_INSEGURA}
+
+
+class GravidadeOcorrenciaChoices:
+    BAIXA = "baixa"
+    MEDIA = "media"
+    ALTA = "alta"
+    CRITICA = "critica"
+
+    CHOICES = ((BAIXA, "Baixa"), (MEDIA, "Média"), (ALTA, "Alta"), (CRITICA, "Crítica"))
+
+
+class StatusOcorrenciaChoices:
+    ABERTA = "aberta"
+    EM_TRATAMENTO = "em_tratamento"
+    ENCERRADA = "encerrada"
+
+    CHOICES = ((ABERTA, "Aberta"), (EM_TRATAMENTO, "Em tratamento"), (ENCERRADA, "Encerrada"))

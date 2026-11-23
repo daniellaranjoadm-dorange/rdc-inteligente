@@ -243,3 +243,10 @@ body {
   .navbar-dorange .navbar-collapse { padding: .5rem 0 .75rem; }
   .navbar-dorange .navbar-nav { gap: .15rem; }
 }
+
+/* Ocorrencias: faixa lateral pela gravidade */
+.oc-critica { border-left: 4px solid #dc2626 !important; }
+.oc-alta { border-left: 4px solid var(--dg-orange-500) !important; }
+.oc-media { border-left: 4px solid #f59e0b !important; }
+.oc-baixa { border-left: 4px solid #94a3b8 !important; }
+.hh-lost { color: #b85407; }

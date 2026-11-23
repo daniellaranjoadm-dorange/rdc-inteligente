@@ -5,7 +5,10 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q, Sum
 
 from core.choices import StatusValidacaoChoices, TurnoChoices
-from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFoto, RDCFuncionario, RDCParalisacao, RDCValidacao
+from rdc.models import (
+    RDC, RDCAtividade, RDCApontamento, RDCEquipamento, RDCFoto, RDCFuncionario, RDCOcorrencia, RDCParalisacao,
+    RDCValidacao,
+)
 
 
 DEFAULT_HORA_NORMAL = Decimal("8.00")
@@ -750,3 +753,52 @@ class AceiteFiscalForm(forms.Form):
         if cleaned.get("decisao") in ("ressalvas", "reprovado") and not (cleaned.get("observacao") or "").strip():
             self.add_error("observacao", "Descreva as ressalvas ou o motivo da reprovação.")
         return cleaned
+
+
+def _selects_para_form_select(form, nomes):
+    for nome in nomes:
+        if nome in form.fields:
+            css = form.fields[nome].widget.attrs.get("class", "").replace("form-control", "form-select")
+            form.fields[nome].widget.attrs["class"] = css
+
+
+class RDCEquipamentoForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = RDCEquipamento
+        fields = ["tipo", "identificacao", "operador", "horas_trabalhadas", "horas_paradas", "motivo_parada", "observacao"]
+        labels = {
+            "tipo": "Equipamento", "identificacao": "TAG / placa", "operador": "Operador",
+            "horas_trabalhadas": "Horas trabalhadas", "horas_paradas": "Horas paradas",
+            "motivo_parada": "Motivo das horas paradas", "observacao": "Observação",
+        }
+        widgets = {
+            "identificacao": forms.TextInput(attrs={"placeholder": "Ex.: GD-03, pórtico 2"}),
+            "horas_trabalhadas": forms.NumberInput(attrs={"step": "0.5", "min": "0", "max": "24", "inputmode": "decimal"}),
+            "horas_paradas": forms.NumberInput(attrs={"step": "0.5", "min": "0", "max": "24", "inputmode": "decimal"}),
+            "observacao": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, *args, rdc=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        _selects_para_form_select(self, ("tipo", "motivo_parada"))
+
+
+class RDCOcorrenciaForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = RDCOcorrencia
+        fields = ["tipo", "gravidade", "hora", "local", "descricao", "envolvidos", "acao_imediata", "responsavel", "status"]
+        labels = {
+            "tipo": "Tipo de ocorrência", "gravidade": "Gravidade", "hora": "Hora", "local": "Local",
+            "descricao": "O que aconteceu", "envolvidos": "Pessoas / equipes envolvidas",
+            "acao_imediata": "Ação imediata tomada", "responsavel": "Responsável pelo tratamento", "status": "Situação",
+        }
+        widgets = {
+            "hora": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "local": forms.TextInput(attrs={"placeholder": "Ex.: Bloco D02P, anel 3, lado BB"}),
+            "descricao": forms.Textarea(attrs={"rows": 3}),
+            "acao_imediata": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, *args, rdc=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        _selects_para_form_select(self, ("tipo", "gravidade", "status"))

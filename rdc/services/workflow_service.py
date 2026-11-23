@@ -77,11 +77,11 @@ def process_rdc_workflow_action(rdc: RDC, *, action: str, user=None, observacao:
 
         elif action == "fechar":
             if not rdc.usuario_pode_fechar(user):
-                return {"ok": False, "level": "warning", "message": "Usu?rio sem permiss?o para fechar este RDC."}
+                return {"ok": False, "level": "warning", "message": "Usuário sem permissão para fechar este RDC."}
 
             bloqueios = rdc.validacoes.filter(status="bloqueio").count()
             if bloqueios and not rdc.usuario_pode_forcar_fechamento(user):
-                return {"ok": False, "level": "warning", "message": "Existem bloqueios ativos. Somente usu?rio autorizado pode for?ar o fechamento."}
+                return {"ok": False, "level": "warning", "message": "Existem bloqueios ativos. Somente usuário autorizado pode forçar o fechamento."}
 
             rdc.status = "fechado"
             if hasattr(rdc, "fechado_em"):
@@ -91,6 +91,8 @@ def process_rdc_workflow_action(rdc: RDC, *, action: str, user=None, observacao:
             rdc.save()
             _registrar_auditoria(rdc, user, "fechar", "RDC fechado.", observacao)
 
+            from rdc.services.email_service import agendar_envio_no_fechamento
+            agendar_envio_no_fechamento(rdc, user)
         else:
             return {"ok": False, "level": "warning", "message": "Ação de workflow inválida."}
 

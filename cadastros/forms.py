@@ -22,7 +22,23 @@ class BaseBootstrapModelForm(forms.ModelForm):
 class ProjetoForm(BaseBootstrapModelForm):
     class Meta:
         model = Projeto
-        fields = ["codigo", "nome", "cliente", "ativo"]
+        fields = ["codigo", "nome", "cliente", "emails_relatorio", "ativo"]
+        widgets = {"emails_relatorio": forms.Textarea(attrs={"rows": 3, "placeholder": "planejamento@empresa.com.br, fiscal@cliente.com.br"})}
+
+    def clean_emails_relatorio(self):
+        import re
+        from django.core.validators import validate_email
+        bruto = self.cleaned_data.get("emails_relatorio", "")
+        emails = [e for e in re.split(r"[\s,;]+", bruto or "") if e]
+        invalidos = []
+        for e in emails:
+            try:
+                validate_email(e)
+            except forms.ValidationError:
+                invalidos.append(e)
+        if invalidos:
+            raise forms.ValidationError("E-mail inválido: " + ", ".join(invalidos))
+        return ", ".join(emails)
 
 
 class DisciplinaForm(BaseBootstrapModelForm):

@@ -7,7 +7,12 @@ from rdc.views_foto import (
 from rdc.views_aceite import (
     RDCAceiteAssinaturaView, RDCComprovanteAceiteView, RDCGerarLinkAceiteView, RDCRevogarLinkAceiteView,
 )
+from rdc.views_email import RDCEnviarEmailView, RDCPdfView
 from rdc.views_hh import PainelHHView
+from rdc.views_registros import (
+    RDCEquipamentoCreateView, RDCEquipamentoDeleteView, RDCEquipamentoUpdateView,
+    RDCOcorrenciaCreateView, RDCOcorrenciaDeleteView, RDCOcorrenciaUpdateView,
+)
 from rdc.views_paralisacao import RDCParalisacaoCreateView, RDCParalisacaoDeleteView, RDCParalisacaoUpdateView
 
 # ===== BASE =====
@@ -94,6 +99,18 @@ aceite_patterns = [
     path("<int:pk>/aceite/<int:aceite_id>/comprovante.pdf", RDCComprovanteAceiteView.as_view(), name="rdc-aceite-comprovante"),
 ]
 
+# ===== EQUIPAMENTOS E OCORRENCIAS =====
+registro_patterns = [
+    path("<int:pk>/equipamentos/novo/", RDCEquipamentoCreateView.as_view(), name="rdc-equipamento-create"),
+    path("<int:pk>/equipamentos/<int:pk2>/editar/", RDCEquipamentoUpdateView.as_view(), name="rdc-equipamento-update"),
+    path("<int:pk>/equipamentos/<int:pk2>/excluir/", RDCEquipamentoDeleteView.as_view(), name="rdc-equipamento-delete"),
+    path("<int:pk>/ocorrencias/nova/", RDCOcorrenciaCreateView.as_view(), name="rdc-ocorrencia-create"),
+    path("<int:pk>/ocorrencias/<int:pk2>/editar/", RDCOcorrenciaUpdateView.as_view(), name="rdc-ocorrencia-update"),
+    path("<int:pk>/ocorrencias/<int:pk2>/excluir/", RDCOcorrenciaDeleteView.as_view(), name="rdc-ocorrencia-delete"),
+    path("<int:pk>/pdf/", RDCPdfView.as_view(), name="rdc-pdf"),
+    path("<int:pk>/enviar-email/", RDCEnviarEmailView.as_view(), name="rdc-enviar-email"),
+]
+
 # ===== VALIDAÇÕES =====
 validacao_patterns = [
     path("<int:pk>/validacoes/", RDCValidacoesView.as_view(), name="rdc-validacoes"),
@@ -123,6 +140,7 @@ urlpatterns = (
     + paralisacao_patterns
     + foto_patterns
     + aceite_patterns
+    + registro_patterns
     + validacao_patterns
     + extra_patterns
 )
