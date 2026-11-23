@@ -1,11 +1,11 @@
-﻿from decimal import Decimal
+from decimal import Decimal
 
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Q, Sum
 
 from core.choices import StatusValidacaoChoices, TurnoChoices
-from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFuncionario, RDCParalisacao, RDCValidacao
+from rdc.models import RDC, RDCAtividade, RDCApontamento, RDCFoto, RDCFuncionario, RDCParalisacao, RDCValidacao
 
 
 DEFAULT_HORA_NORMAL = Decimal("8.00")
@@ -693,3 +693,29 @@ class RDCParalisacaoForm(BootstrapFormMixin, forms.ModelForm):
         if inicio and fim and inicio == fim:
             self.add_error("fim", "O fim precisa ser diferente do início.")
         return cleaned
+
+
+class RDCFotoDadosForm(BootstrapFormMixin, forms.ModelForm):
+    """Dados comuns das fotos enviadas juntas (os arquivos chegam por request.FILES)."""
+
+    class Meta:
+        model = RDCFoto
+        fields = ["categoria", "legenda", "rdc_atividade", "paralisacao"]
+        labels = {
+            "categoria": "Categoria",
+            "legenda": "Legenda",
+            "rdc_atividade": "Atividade (opcional)",
+            "paralisacao": "Paralisação (opcional)",
+        }
+        widgets = {
+            "legenda": forms.TextInput(attrs={"placeholder": "Ex.: Solda do anel 3 concluída, lado BB"}),
+        }
+
+    def __init__(self, *args, rdc=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if rdc is not None:
+            self.fields["rdc_atividade"].queryset = rdc.atividades.all().order_by("codigo_atividade")
+            self.fields["paralisacao"].queryset = rdc.paralisacoes.all()
+        for name in ("categoria", "rdc_atividade", "paralisacao"):
+            css = self.fields[name].widget.attrs.get("class", "").replace("form-control", "form-select")
+            self.fields[name].widget.attrs["class"] = css

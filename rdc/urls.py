@@ -1,6 +1,9 @@
 from django.urls import path
 from rdc.views import *
 from rdc.views import RDCApontamentoCreateView
+from rdc.views_foto import (
+    RDCFotoArquivoView, RDCFotoDeleteView, RDCFotoUpdateView, RDCFotoUploadView, RDCRelatorioFotograficoView,
+)
 from rdc.views_hh import PainelHHView
 from rdc.views_paralisacao import RDCParalisacaoCreateView, RDCParalisacaoDeleteView, RDCParalisacaoUpdateView
 
@@ -70,6 +73,16 @@ paralisacao_patterns = [
     path("<int:pk>/paralisacoes/<int:pk2>/excluir/", RDCParalisacaoDeleteView.as_view(), name="rdc-paralisacao-delete"),
 ]
 
+# ===== FOTOS =====
+foto_patterns = [
+    path("<int:pk>/fotos/enviar/", RDCFotoUploadView.as_view(), name="rdc-foto-upload"),
+    path("<int:pk>/fotos/<int:pk2>/editar/", RDCFotoUpdateView.as_view(), name="rdc-foto-update"),
+    path("<int:pk>/fotos/<int:pk2>/excluir/", RDCFotoDeleteView.as_view(), name="rdc-foto-delete"),
+    path("<int:pk>/fotos/<int:pk2>/arquivo/", RDCFotoArquivoView.as_view(), name="rdc-foto-arquivo"),
+    path("<int:pk>/fotos/<int:pk2>/miniatura/", RDCFotoArquivoView.as_view(), {"tamanho": "mini"}, name="rdc-foto-miniatura"),
+    path("<int:pk>/fotos/relatorio.pdf", RDCRelatorioFotograficoView.as_view(), name="rdc-relatorio-fotografico"),
+]
+
 # ===== VALIDAÇÕES =====
 validacao_patterns = [
     path("<int:pk>/validacoes/", RDCValidacoesView.as_view(), name="rdc-validacoes"),
@@ -97,6 +110,7 @@ urlpatterns = (
     + funcionario_patterns
     + apontamento_patterns
     + paralisacao_patterns
+    + foto_patterns
     + validacao_patterns
     + extra_patterns
 )

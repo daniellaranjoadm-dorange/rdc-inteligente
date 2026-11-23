@@ -8,6 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 from core.choices import (
+    CategoriaFotoChoices,
     MotivoParalisacaoChoices,
     OrigemAtividadeChoices,
     ResponsabilidadeParalisacaoChoices,
@@ -707,3 +708,59 @@ class RDCParalisacao(TimeStampedModel):
         self.horas = self.calcular_horas(self.inicio, self.fim)
         self.hh_perdido = (self.horas * Decimal(self.pessoas_afetadas or 0)).quantize(Decimal("0.01"))
         super().save(*args, **kwargs)
+
+
+def _caminho_foto(instance, filename):
+    data = timezone.localdate()
+    return f"rdc_fotos/{data:%Y/%m}/rdc{instance.rdc_id}_{uuid.uuid4().hex[:12]}.jpg"
+
+
+def _caminho_miniatura(instance, filename):
+    data = timezone.localdate()
+    return f"rdc_fotos/{data:%Y/%m}/min/rdc{instance.rdc_id}_{uuid.uuid4().hex[:12]}.jpg"
+
+
+class RDCFoto(TimeStampedModel):
+    """Foto do dia de obra, ja reduzida (max. 1600 px) e com miniatura."""
+
+    rdc = models.ForeignKey("rdc.RDC", on_delete=models.CASCADE, related_name="fotos")
+    imagem = models.ImageField(upload_to=_caminho_foto)
+    miniatura = models.ImageField(upload_to=_caminho_miniatura)
+    legenda = models.CharField(max_length=255, blank=True)
+    categoria = models.CharField(
+        max_length=20, choices=CategoriaFotoChoices.CHOICES, default=CategoriaFotoChoices.GERAL
+    )
+    rdc_atividade = models.ForeignKey(
+        "rdc.RDCAtividade", on_delete=models.SET_NULL, null=True, blank=True, related_name="fotos"
+    )
+    paralisacao = models.ForeignKey(
+        "rdc.RDCParalisacao", on_delete=models.SET_NULL, null=True, blank=True, related_name="fotos"
+    )
+    tirada_em = models.DateTimeField(null=True, blank=True, help_text="Data da foto gravada pelo celular (EXIF).")
+    largura = models.PositiveIntegerField(default=0)
+    altura = models.PositiveIntegerField(default=0)
+    tamanho_bytes = models.PositiveIntegerField(default=0)
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="fotos_rdc"
+    )
+
+    class Meta:
+        ordering = ("tirada_em", "created_at", "id")
+        verbose_name = "Foto do RDC"
+        verbose_name_plural = "Fotos do RDC"
+
+    def __str__(self):
+        return self.legenda or f"Foto {self.pk} do RDC {self.rdc_id}"
+
+    @property
+    def momento(self):
+        return self.tirada_em or self.created_at
+
+    def apagar_arquivos(self):
+        for campo in (self.imagem, self.miniatura):
+            if campo and campo.name:
+                campo.storage.delete(campo.name)
+
+    def delete(self, *args, **kwargs):
+        self.apagar_arquivos()
+        return super().delete(*args, **kwargs)

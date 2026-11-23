@@ -184,6 +184,7 @@ def build_rdc_detail_context(rdc, *, user=None) -> dict[str, Any]:
             "hh_total": hh_total,
         },
         "paralisacoes": list(rdc.paralisacoes.select_related("equipe", "rdc_atividade").all()),
+        "fotos": list(rdc.fotos.select_related("rdc_atividade", "paralisacao").all()),
         "paralisacoes_resumo": resumir_paralisacoes(rdc.paralisacoes.all(), hh_trabalhado=hh_total),
         "status_badge": getattr(rdc, "workflow_badge", "secondary"),
         "can_edit_rdc": rdc.usuario_pode_editar(user),

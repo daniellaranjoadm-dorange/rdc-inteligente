@@ -222,3 +222,21 @@ class EtapaConstrucaoNavalChoices:
         (COMISSIONAMENTO, "Comissionamento"),
         (PROVAS, "Provas de cais e de mar"),
     )
+
+
+class CategoriaFotoChoices:
+    GERAL = "geral"
+    AVANCO = "avanco"
+    PARALISACAO = "paralisacao"
+    SEGURANCA = "seguranca"
+    QUALIDADE = "qualidade"
+    MATERIAL = "material"
+
+    CHOICES = (
+        (GERAL, "Geral da frente"),
+        (AVANCO, "Avanço do serviço"),
+        (PARALISACAO, "Paralisação / impedimento"),
+        (SEGURANCA, "Segurança"),
+        (QUALIDADE, "Qualidade / inspeção"),
+        (MATERIAL, "Material / recebimento"),
+    )

@@ -21,6 +21,9 @@ def traduzir_acao_auditoria(action):
         "create_paralisacao": "Registrou paralisação",
         "update_paralisacao": "Alterou paralisação",
         "delete_paralisacao": "Excluiu paralisação",
+        "create_foto": "Adicionou fotos",
+        "delete_foto": "Excluiu foto",
+        "exportar_relatorio_fotografico": "Gerou relatório fotográfico",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

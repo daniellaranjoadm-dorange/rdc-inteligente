@@ -320,6 +320,7 @@
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#atividades">Atividades</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#funcionarios">Funcionários</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#apontamentos">Apontamentos</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#fotos">Fotos{% if fotos %} <span class="badge rounded-pill text-bg-secondary ms-1">{{ fotos|length }}</span>{% endif %}</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#paralisacoes">Paralisações{% if paralisacoes_resumo.qtd %} <span class="badge rounded-pill text-bg-warning ms-1">{{ paralisacoes_resumo.qtd }}</span>{% endif %}</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#validacoes">Validações</button></li>
 </ul>
@@ -420,6 +421,46 @@
     </tbody></table></div></form>
 </div>
 
+<div class="tab-pane fade" id="fotos">
+    <style>
+      .rdc-fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .9rem; }
+      .rdc-foto { background: #fff; border: 1px solid var(--dg-border); border-radius: 14px; overflow: hidden; box-shadow: var(--dg-shadow); display: flex; flex-direction: column; }
+      .rdc-foto a.img { display: block; background: var(--dg-silver-100); overflow: hidden; }
+      .rdc-foto a.img img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+      .rdc-foto .meta { padding: .55rem .7rem .7rem; font-size: .82rem; display: flex; flex-direction: column; gap: .2rem; flex: 1; }
+      .rdc-foto .meta .leg { font-weight: 600; color: var(--dg-ink); }
+      .rdc-foto .acoes { display: flex; gap: .35rem; margin-top: auto; padding-top: .4rem; }
+    </style>
+    <div class="d-flex gap-2 mb-3 flex-wrap">
+        {% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-foto-upload' rdc.pk %}">Adicionar fotos</a>{% endif %}
+        {% if fotos %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-relatorio-fotografico' rdc.pk %}?ver=1" target="_blank" rel="noopener">Relatório fotográfico (PDF)</a><a class="btn btn-outline-secondary btn-sm" href="{% url 'rdc-relatorio-fotografico' rdc.pk %}">Baixar PDF</a>{% endif %}
+    </div>
+    {% if fotos %}
+    <div class="rdc-fotos">
+        {% for f in fotos %}
+        <div class="rdc-foto">
+            <a class="img" href="{% url 'rdc-foto-arquivo' pk=rdc.pk pk2=f.pk %}" target="_blank" rel="noopener" title="Abrir foto em tamanho maior">
+                <img loading="lazy" src="{% url 'rdc-foto-miniatura' pk=rdc.pk pk2=f.pk %}" alt="{{ f.legenda|default:'Foto do RDC' }}">
+            </a>
+            <div class="meta">
+                <span class="summary-badge {% if f.categoria == 'paralisacao' %}warning{% elif f.categoria == 'seguranca' %}danger{% elif f.categoria == 'avanco' %}success{% else %}secondary{% endif %}" style="align-self:flex-start">{{ f.get_categoria_display }}</span>
+                <span class="leg">{{ f.legenda|default:"Sem legenda" }}</span>
+                <span class="mini-muted">{{ f.momento|date:"d/m/Y H:i" }}{% if f.rdc_atividade %} · {{ f.rdc_atividade.codigo_atividade }}{% endif %}{% if f.paralisacao %} · {{ f.paralisacao.get_motivo_display }}{% endif %}</span>
+                {% if can_edit_rdc %}
+                <div class="acoes">
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-foto-update' pk=rdc.pk pk2=f.pk %}">Editar</a>
+                    <form method="post" action="{% url 'rdc-foto-delete' pk=rdc.pk pk2=f.pk %}" onsubmit="return confirm('Excluir esta foto?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Excluir</button></form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-light border mb-0">Nenhuma foto neste RDC. Fotos do avanço, de paralisações e de segurança ajudam a comprovar o dia de obra e o HH perdido.</div>
+    {% endif %}
+</div>
+
 <div class="tab-pane fade" id="paralisacoes">
     <div class="row g-2 mb-3">
         <div class="col-md-3 col-6"><div class="metric-box"><div class="mini-muted">Paralisações</div><div class="metric-value">{{ paralisacoes_resumo.qtd }}</div></div></div>
@@ -434,7 +475,7 @@
     {% endif %}
     <div class="d-flex gap-2 mb-3 flex-wrap">{% if can_edit_rdc %}<a class="btn btn-primary btn-sm" href="{% url 'rdc-paralisacao-create' rdc.pk %}">Registrar paralisação</a>{% endif %}</div>
     <div class="table-card p-3"><div class="table-responsive"><table class="table table-sm align-middle mb-0" id="tabela-paralisacoes"><thead><tr><th>Motivo</th><th>Responsabilidade</th><th>Período</th><th class="text-end">Horas</th><th class="text-end">Pessoas</th><th class="text-end">HH perdido</th><th>Equipe / atividade</th><th>Descrição</th><th></th></tr></thead><tbody>
-    {% for p in paralisacoes %}<tr><td class="fw-semibold">{{ p.get_motivo_display }}</td><td>{{ p.get_responsabilidade_display }}</td><td>{{ p.inicio|time:"H:i" }} - {{ p.fim|time:"H:i" }}</td><td class="text-end">{{ p.horas }}</td><td class="text-end">{{ p.pessoas_afetadas }}</td><td class="text-end fw-bold" style="color:#b85407">{{ p.hh_perdido }}</td><td>{{ p.equipe|default:'-' }}{% if p.rdc_atividade %}<div class="mini-muted">{{ p.rdc_atividade.codigo_atividade }} {{ p.rdc_atividade.descr_atividade|truncatechars:30 }}</div>{% endif %}</td><td>{{ p.descricao|default:'-'|truncatechars:60 }}</td><td class="text-nowrap">{% if can_edit_rdc %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-paralisacao-update' pk=rdc.pk pk2=p.pk %}">Editar</a> <form method="post" action="{% url 'rdc-paralisacao-delete' pk=rdc.pk pk2=p.pk %}" class="d-inline" onsubmit="return confirm('Excluir esta paralisação?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Excluir</button></form>{% endif %}</td></tr>{% empty %}<tr><td colspan="9" class="text-muted">Nenhuma paralisação registrada neste RDC. Se a frente parou por chuva, falta de material, liberação ou outro motivo, registre aqui para não perder o HH.</td></tr>{% endfor %}
+    {% for p in paralisacoes %}<tr><td class="fw-semibold">{{ p.get_motivo_display }}</td><td>{{ p.get_responsabilidade_display }}</td><td>{{ p.inicio|time:"H:i" }} - {{ p.fim|time:"H:i" }}</td><td class="text-end">{{ p.horas }}</td><td class="text-end">{{ p.pessoas_afetadas }}</td><td class="text-end fw-bold" style="color:#b85407">{{ p.hh_perdido }}</td><td>{{ p.equipe|default:'-' }}{% if p.rdc_atividade %}<div class="mini-muted">{{ p.rdc_atividade.codigo_atividade }} {{ p.rdc_atividade.descr_atividade|truncatechars:30 }}</div>{% endif %}</td><td>{{ p.descricao|default:'-'|truncatechars:60 }}</td><td class="text-nowrap">{% if can_edit_rdc %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-paralisacao-update' pk=rdc.pk pk2=p.pk %}">Editar</a> <form method="post" action="{% url 'rdc-paralisacao-delete' pk=rdc.pk pk2=p.pk %}" class="d-inline" onsubmit="return confirm('Excluir esta paralisação?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Excluir</button></form> <a class="btn btn-sm btn-outline-secondary" href="{% url 'rdc-foto-upload' rdc.pk %}?paralisacao={{ p.pk }}" title="Anexar foto a esta paralisação">+ Foto</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="9" class="text-muted">Nenhuma paralisação registrada neste RDC. Se a frente parou por chuva, falta de material, liberação ou outro motivo, registre aqui para não perder o HH.</td></tr>{% endfor %}
     </tbody></table></div></div>
 </div>
 
