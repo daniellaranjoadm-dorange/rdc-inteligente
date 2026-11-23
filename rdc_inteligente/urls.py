@@ -25,7 +25,12 @@ urlpatterns = [
     path('manifest.json', manifest_view),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=False)),
     path("offline/", TemplateView.as_view(template_name="offline.html")),
-    path("accounts/login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
+    path(
+        "accounts/login/",
+        auth_views.LoginView.as_view(template_name="registration/login.html", redirect_authenticated_user=True),
+        name="login",
+    ),
+    path("accounts/logout/", auth_views.LogoutView.as_view(next_page="/accounts/login/"), name="logout"),
     path("admin/", admin.site.urls),
 
     # mobile app entry

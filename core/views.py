@@ -1,22 +1,8 @@
-﻿from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+﻿from django.shortcuts import redirect
+
 
 def home_login(request):
+    """Raiz do site: logado vai para o app; visitante vai para a tela de login unica."""
     if request.user.is_authenticated:
         return redirect("/m/")
-
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            return redirect("/m/")
-        else:
-            return render(request, "login.html", {
-                "error": "Usuario ou senha invalidos"
-            })
-
-    return render(request, "login.html")
+    return redirect("/accounts/login/?next=/m/")

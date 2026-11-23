@@ -1,29 +1,60 @@
 ﻿{% extends "base_mobile.html" %}
+{% block extra_head %}
+<style>
+    .dg-hello { margin: .25rem 0 1rem; }
+    .dg-hello h1 { font-size: 1.35rem; font-weight: 800; margin: 0; }
+    .dg-hello .sub { color: var(--dg-muted); font-size: .9rem; }
+    .dg-sync-card {
+        background: var(--dg-navy-900); color: #fff; border-radius: 18px; padding: 1rem;
+        border-bottom: 4px solid var(--dg-orange-500); box-shadow: 0 14px 30px rgba(14, 24, 35, .18);
+    }
+    .dg-sync-card .lbl { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--dg-silver-300); font-weight: 700; }
+    .dg-sync-card #btn-sync { height: 54px; font-size: 1.05rem; font-weight: 700; border-radius: 14px; }
+    .dg-sync-card .badge { font-size: .78rem; padding: .45rem .7rem; border-radius: 999px; font-weight: 700; }
+    .dg-sync-card .badge.text-bg-light { background: rgba(255, 255, 255, .10) !important; color: #fff !important; border-color: rgba(255, 255, 255, .15) !important; }
+    .dg-sync-card #sync-status { color: var(--dg-silver-300) !important; min-height: 1.1em; }
+    .dg-section-title { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--dg-muted); margin: 1.5rem 0 .6rem; }
+    .dg-tile {
+        display: flex; align-items: center; gap: .9rem; padding: .95rem 1rem; background: #fff; border-radius: 16px;
+        border: 1px solid var(--dg-border); box-shadow: var(--dg-shadow); color: var(--dg-ink); text-decoration: none;
+        min-height: 76px; transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .dg-tile:active { transform: scale(.985); }
+    .dg-tile:hover { color: var(--dg-ink); box-shadow: 0 14px 30px rgba(14, 24, 35, .12); }
+    .dg-tile .ico {
+        flex: 0 0 auto; width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        background: var(--dg-orange-50); color: var(--dg-orange-600);
+    }
+    .dg-tile.primary .ico { background: var(--dg-orange-500); color: var(--dg-navy-950); }
+    .dg-tile .ico svg { width: 24px; height: 24px; }
+    .dg-tile .tt { font-weight: 700; font-size: 1.02rem; line-height: 1.2; }
+    .dg-tile .ds { color: var(--dg-muted); font-size: .84rem; line-height: 1.3; }
+    .dg-tile .chev { margin-left: auto; color: var(--dg-silver-300); }
+</style>
+{% endblock %}
 {% block content %}
-<div class="container py-3">
-    <div class="mb-3">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h1 class="h4 mb-1">Operação em Campo</h1>
-                <div class="text-muted small">Acesso rápido para tablet e smartphone</div>
-            </div>
-            <a href="/" class="btn btn-outline-secondary btn-sm">Versão completa</a>
+<div>
+    <div class="dg-hello d-flex justify-content-between align-items-end flex-wrap gap-2">
+        <div>
+            <div class="dg-eyebrow">Operação em campo</div>
+            <h1>Olá, {{ request.user.first_name|default:request.user.username }}</h1>
+            <div class="sub">Registre o dia de obra e sincronize quando tiver sinal.</div>
         </div>
+        <a href="/rdc/dashboard/" class="btn btn-outline-secondary btn-sm">Versão completa</a>
     </div>
 
-    <div class="mb-3">
-    <button id="btn-sync" class="btn btn-primary w-100 py-3">
-        🔄 Sincronizar dados
-    </button>
-
-    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
-        <span id="conn-badge" class="badge text-bg-secondary">...</span>
-        <span id="queue-badge" class="badge text-bg-light border">Fila: 0</span>
-        <span id="pending-badge" class="badge text-bg-light border">Pendências: 0</span>
+    <div class="dg-sync-card mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="lbl">Sincronização</span>
+            <span id="conn-badge" class="badge text-bg-secondary">...</span>
+        </div>
+        <button id="btn-sync" class="btn btn-primary w-100">Sincronizar dados</button>
+        <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
+            <span id="queue-badge" class="badge text-bg-light border">Fila: 0</span>
+            <span id="pending-badge" class="badge text-bg-light border">Pendências: 0</span>
+        </div>
+        <div id="sync-status" class="small text-muted mt-2 text-center"></div>
     </div>
-
-    <div id="sync-status" class="small text-muted mt-2 text-center"></div>
-</div>
 
 <script>
 const MOBILE_SYNC_URL = "/api/mobile/sync/";
@@ -377,24 +408,24 @@ function setSyncButtonState(state) {
 
     if (state === "loading") {
         btn.disabled = true;
-        btn.innerText = "⏳ Sincronizando...";
+        btn.innerText = "Sincronizando...";
         return;
     }
 
     if (state === "error") {
         btn.disabled = false;
-        btn.innerText = "❌ Tentar novamente";
+        btn.innerText = "Tentar novamente";
         return;
     }
 
     if (state === "offline") {
         btn.disabled = false;
-        btn.innerText = "📴 Sem conexão";
+        btn.innerText = "Sem conexão: tentar de novo";
         return;
     }
 
     btn.disabled = false;
-    btn.innerText = "🔄 Sincronizar dados";
+    btn.innerText = "Sincronizar dados";
 }
 
 function setStatusMessage(message, tone) {
@@ -453,64 +484,39 @@ window.mobileSyncDebug = {
     clearPendingChanges
 };
 </script>
-<div class="row g-3">
-        <div class="col-12">
-            <a href="/rdc/" class="text-decoration-none">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-semibold fs-5 text-dark">RDC</div>
-                                <div class="text-muted small">Lançamentos, acompanhamento e operação diária</div>
-                            </div>
-                            <div class="fs-4">📋</div>
-                        </div>
-                    </div>
-                </div>
+<div class="dg-section-title">Dia de obra</div>
+    <div class="row g-2 g-md-3">
+        <div class="col-12 col-md-6">
+            <a href="/rdc/novo/" class="dg-tile primary">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+                <span><span class="tt d-block">Novo RDC</span><span class="ds d-block">Montar o relatório do dia, turno e área</span></span>
+                <span class="chev">›</span>
             </a>
         </div>
-
-        <div class="col-12">
-            <a href="/importacoes/mobile/" class="text-decoration-none">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-semibold fs-5 text-dark">Importações</div>
-                                <div class="text-muted small">Status, erros e resumo incremental</div>
-                            </div>
-                            <div class="fs-4">📥</div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-12">
-            <a href="/cadastros/" class="text-decoration-none">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-semibold fs-5 text-dark">Cadastros</div>
-                                <div class="text-muted small">Projetos, áreas, equipes e apoio operacional</div>
-                            </div>
-                            <div class="fs-4">🗂️</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="col-12 col-md-6">
+            <a href="/rdc/" class="dg-tile">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
+                <span><span class="tt d-block">Meus RDCs</span><span class="ds d-block">Acompanhar, editar e enviar para aprovação</span></span>
+                <span class="chev">›</span>
             </a>
         </div>
     </div>
 
-    <div class="mt-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-body py-3">
-                <div class="fw-semibold mb-2">Orientação rápida</div>
-                <div class="small text-muted">
-                    Use esta tela como ponto de entrada no tablet ou smartphone. Para administração completa, acesse a versão desktop.
-                </div>
-            </div>
+    <div class="dg-section-title">Apoio</div>
+    <div class="row g-2 g-md-3">
+        <div class="col-12 col-md-6">
+            <a href="/cadastros/funcionarios/" class="dg-tile">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.7 2.6 3 5.2"/></svg></span>
+                <span><span class="tt d-block">Equipe e cadastros</span><span class="ds d-block">Funcionários, funções, áreas e projetos</span></span>
+                <span class="chev">›</span>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a href="/importacoes/mobile/" class="dg-tile">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
+                <span><span class="tt d-block">Importações</span><span class="ds d-block">Cronograma, histograma e catraca</span></span>
+                <span class="chev">›</span>
+            </a>
         </div>
     </div>
 </div>

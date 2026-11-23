@@ -1,4 +1,4 @@
-const RDC_CACHE = "rdc-mobile-cache-v6";
+const RDC_CACHE = "rdc-mobile-cache-v7";
 const OFFLINE_URL = "/offline/";
 
 const APP_SHELL = [

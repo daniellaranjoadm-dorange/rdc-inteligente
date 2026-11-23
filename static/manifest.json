@@ -1,13 +1,13 @@
 {
   "id": "/m/",
-  "name": "RDC Mobile",
+  "name": "RDC Inteligente · D'OR@NGE",
   "short_name": "RDC",
   "description": "Operação em campo com sincronização mobile offline-first.",
   "start_url": "/m/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f1f3f5",
-  "theme_color": "#0b2239",
+  "background_color": "#172432",
+  "theme_color": "#172432",
   "orientation": "portrait-primary",
   "icons": [
     {
