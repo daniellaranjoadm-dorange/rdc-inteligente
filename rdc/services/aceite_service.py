@@ -91,7 +91,7 @@ def registrar_aceite(link_id, *, decisao, nome, cargo, empresa, observacao, assi
     """Grava o aceite e marca o link como usado. O bloqueio da linha impede dois aceites no mesmo link."""
     from rdc.models import RDCAceite, RDCAuditoria, RDCLinkAceite
 
-    link = RDCLinkAceite.objects.select_for_update().select_related("rdc").get(pk=link_id)
+    link = RDCLinkAceite.objects.select_for_update(of=("self",)).select_related("rdc").get(pk=link_id)
     if not link.ativo:
         raise ValidationError("Este link não está mais disponível (já usado, revogado ou expirado).")
 

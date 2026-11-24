@@ -25,7 +25,7 @@ def _rdc_do_dia(junta, data):
 
 @transaction.atomic
 def registrar_execucao(junta, *, soldador, data, metros, passe="completo", reparo=False, usuario=None, observacao=""):
-    junta = JuntaSolda.objects.select_for_update().select_related("eps").get(pk=junta.pk)
+    junta = JuntaSolda.objects.select_for_update(of=("self",)).select_related("eps").get(pk=junta.pk)
     metros = Decimal(str(metros))
     if metros <= 0:
         raise ValidationError("Informe os metros soldados.")
@@ -84,7 +84,7 @@ def registrar_execucao(junta, *, soldador, data, metros, passe="completo", repar
 @transaction.atomic
 def registrar_resultado_end(inspecao, *, resultado, data, metros_reprovados=ZERO, defeito="", inspetor="",
                             relatorio="", observacao="", usuario=None):
-    inspecao = InspecaoEND.objects.select_for_update().select_related("junta").get(pk=inspecao.pk)
+    inspecao = InspecaoEND.objects.select_for_update(of=("self",)).select_related("junta").get(pk=inspecao.pk)
     if inspecao.resultado != ResultadoEND.PENDENTE:
         raise ValidationError("Este ensaio já tem resultado.")
     if resultado not in (ResultadoEND.APROVADO, ResultadoEND.REPROVADO):
