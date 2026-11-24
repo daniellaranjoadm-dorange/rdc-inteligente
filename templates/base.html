@@ -166,10 +166,11 @@
             {% with p=request.path %}
             <div class="navbar-nav me-auto ms-lg-4 gap-lg-1">
                 <a class="nav-link {% if p == '/rdc/dashboard/' %}active{% endif %}" href="/rdc/dashboard/">Dashboard</a>
-                <a class="nav-link {% if p|slice:':5' == '/rdc/' and p != '/rdc/dashboard/' and p != '/rdc/novo/' and p != '/rdc/consolidado/' and p != '/rdc/rdo/' and p != '/rdc/hh/' and p|slice:':12' != '/rdc/avanco/' %}active{% endif %}" href="/rdc/">RDCs</a>
+                <a class="nav-link {% if p|slice:':5' == '/rdc/' and p != '/rdc/dashboard/' and p != '/rdc/novo/' and p != '/rdc/consolidado/' and p != '/rdc/rdo/' and p != '/rdc/hh/' and p|slice:':12' != '/rdc/avanco/' and p|slice:':12' != '/rdc/blocos/' %}active{% endif %}" href="/rdc/">RDCs</a>
                 <a class="nav-link {% if p == '/rdc/novo/' %}active{% endif %}" href="/rdc/novo/">Novo RDC</a>
                 <a class="nav-link {% if p == '/rdc/consolidado/' %}active{% endif %}" href="/rdc/consolidado/">Painel</a>
                 <a class="nav-link {% if p == '/rdc/hh/' %}active{% endif %}" href="/rdc/hh/">HH</a>
+                <a class="nav-link {% if p|slice:':12' == '/rdc/blocos/' %}active{% endif %}" href="/rdc/blocos/">Blocos</a>
                 <a class="nav-link {% if p|slice:':12' == '/rdc/avanco/' %}active{% endif %}" href="/rdc/avanco/">Avanço</a>
                 <a class="nav-link {% if p|slice:':10' == '/soldagem/' %}active{% endif %}" href="/soldagem/">Solda</a>
                 <a class="nav-link {% if p|slice:':7' == '/punch/' %}active{% endif %}" href="/punch/">Punch</a>

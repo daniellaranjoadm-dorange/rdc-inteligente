@@ -118,7 +118,7 @@
         <tbody>
         {% for l in por_area %}
           <tr class="{% if area_id == l.area.pk|stringformat:'s' %}sel{% endif %}">
-            <td><a class="fw-semibold" href="?{{ filtros_qs }}&area={{ l.area.pk }}#detalhe">{{ l.codigo }}</a><div class="mini-muted">{{ l.nome }}{% if l.area.casco %} · {{ l.area.casco }}{% endif %}</div></td>
+            <td><a class="fw-semibold" href="?{{ filtros_qs }}&area={{ l.area.pk }}#detalhe">{{ l.codigo }}</a><div class="mini-muted">{{ l.nome }}{% if l.area.casco %} · {{ l.area.casco }}{% endif %} · <a href="{% url 'rdc-bloco' l.area.pk %}">página do bloco</a></div></td>
             <td class="av-bar-col"><div class="av-bar" title="Previsto {{ l.previsto }}% · realizado {{ l.realizado }}%"><span class="real" style="width:{{ l.realizado|stringformat:'.1f' }}%"></span><span class="prev" style="left:calc({{ l.previsto|stringformat:'.1f' }}% - 1px)"></span></div></td>
             <td class="text-end">{{ l.previsto }}%</td>
             <td class="text-end">{{ l.realizado }}%</td>

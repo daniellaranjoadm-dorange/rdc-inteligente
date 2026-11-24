@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Bloco {{ area.codigo }}{% endblock %}
+{% block extra_head %}{% include "rdc/_bloco_estilo.html" %}{% include "punchlist/_estilo.html" %}{% include "soldagem/_estilo.html" %}{% endblock %}
+{% block content %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Bloco · {{ area.projeto.nome }}</div>
+    <h1 class="h3 fw-bold mb-1">{{ area.codigo }} · {{ area.descricao }}</h1>
+    <div class="mini-muted">{{ area.resumo_naval|default:"" }}</div>
+  </div>
+  <div class="d-flex gap-2 no-print">
+    <a class="btn btn-outline-secondary" href="{% url 'rdc-blocos' %}?projeto={{ area.projeto_id }}">Todos os blocos</a>
+    <button class="btn btn-outline-secondary" type="button" onclick="window.print()">Imprimir checklist</button>
+  </div>
+</div>
+
+{% if resumo %}
+<div class="row g-4 mb-4">
+  <div class="col-lg-5">
+    <div class="bl-hero h-100">
+      <div class="dg-eyebrow" style="color:var(--dg-orange-300)">Liberação para edificação</div>
+      <div class="veredito {% if resumo.liberado %}ok{% else %}no{% endif %} mt-2">{% if resumo.liberado %}Bloco liberado para subir.{% else %}Ainda não pode subir.{% endif %}</div>
+      <p class="mt-2 mb-3" style="color:var(--dg-silver-300)">{{ resumo.atendidos }} de {{ resumo.aplicaveis }} critérios atendidos{% if not resumo.liberado %}; {{ resumo.pendencias|length }} pendência(s) abaixo{% endif %}. Verificado em {% now "d/m/Y H:i" %}.</p>
+      <div class="row g-2 text-center">
+        <div class="col-3"><div class="fw-bold fs-5">{% if resumo.avanco %}{{ resumo.avanco.realizado|floatformat:"0" }}%{% else %}-{% endif %}</div><div class="small" style="color:var(--dg-silver-300)">avanço</div></div>
+        <div class="col-3"><div class="fw-bold fs-5">{% if resumo.juntas %}{{ resumo.juntas_ok }}/{{ resumo.juntas }}{% else %}-{% endif %}</div><div class="small" style="color:var(--dg-silver-300)">juntas</div></div>
+        <div class="col-3"><div class="fw-bold fs-5">{{ resumo.punch_aberto }}</div><div class="small" style="color:var(--dg-silver-300)">punch</div></div>
+        <div class="col-3"><div class="fw-bold fs-5">{{ resumo.hh_perdido|floatformat:"0" }}</div><div class="small" style="color:var(--dg-silver-300)">HH perdido</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <ul class="bl-lista">
+      {% for c in resumo.criterios %}
+      <li>
+        <span class="bl-check {% if c.ok is None %}x{% elif c.ok %}s{% else %}n{% endif %}">{% if c.ok is None %}–{% elif c.ok %}✓{% else %}✕{% endif %}</span>
+        <div><div class="t">{{ c.titulo }}</div><div class="d">{% if c.ok is None %}Não se aplica: {% endif %}{{ c.detalhe }}</div></div>
+        {% if c.url and c.ok is not None %}<a class="btn btn-sm btn-outline-secondary no-print" href="{{ c.url }}">Ver</a>{% else %}<span></span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% else %}
+<div class="table-card p-4 mb-4 text-center"><div class="section-title mb-1">Sem dados neste bloco ainda</div><p class="mini-muted mb-0">Cadastre o cronograma, as juntas ou lance RDCs para ver a liberação.</p></div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+  <div class="col-xl-7">
+    <div class="table-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-baseline mb-2"><div class="section-title mb-0">Avanço por atividade</div><a class="small no-print" href="/rdc/avanco/?projeto={{ area.projeto_id }}&area={{ area.pk }}#detalhe">Curva S</a></div>
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Atividade</th><th class="text-end">Executado</th><th class="text-end">Prev.</th><th class="text-end">Real.</th><th>Situação</th></tr></thead>
+        <tbody>{% for i in atividades %}<tr><td>{{ i.obj.descr_atividade }}<div class="mini-muted">{{ i.obj.data_inicio|date:"d/m" }}–{{ i.obj.data_fim|date:"d/m" }}</div></td><td class="text-end text-nowrap">{{ i.executado|floatformat:"-1" }}/{{ i.obj.qtd_escopo|floatformat:"-1" }} {{ i.obj.unidade }}</td><td class="text-end">{{ i.previsto|floatformat:"0" }}%</td><td class="text-end">{{ i.realizado|floatformat:"0" }}%</td><td><span class="av-sit {{ i.situacao }} sd-pill {% if i.situacao == 'atrasado' %}sd-reprovada{% elif i.situacao == 'concluido' %}sd-aprovada{% else %}sd-planejada{% endif %}">{{ i.situacao_label }}</span></td></tr>
+        {% empty %}<tr><td colspan="5" class="text-muted">Sem cronograma neste bloco.</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="table-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-baseline mb-2"><div class="section-title mb-0">Solda e END</div><a class="small no-print" href="/soldagem/?projeto={{ area.projeto_id }}&area={{ area.pk }}">Painel de solda</a></div>
+      {% if solda.tem_dados %}
+      <div class="row g-2 mb-2 small text-center">
+        <div class="col-4"><b class="d-block fs-6">{{ solda.totais.soldado|floatformat:"0" }}/{{ solda.totais.previsto|floatformat:"0" }} m</b>soldado</div>
+        <div class="col-4"><b class="d-block fs-6">{{ solda.totais.end_pendentes }}</b>END pendente(s)</div>
+        <div class="col-4"><b class="d-block fs-6 {% if solda.totais.taxa_reparo and solda.totais.taxa_reparo > solda.limite_taxa %}sd-taxa-alta{% endif %}">{% if solda.totais.taxa_reparo is not None %}{{ solda.totais.taxa_reparo }}%{% else %}-{% endif %}</b>reparo</div>
+      </div>
+      <table class="table table-sm align-middle mb-0"><tbody>
+        {% for i in solda.pendentes %}<tr><td><a href="{% url 'solda-junta-detail' i.junta.pk %}">{{ i.junta.codigo }}</a></td><td>{{ i.metodo }} aguardando</td><td class="text-end {% if i.dias_aguardando > solda.dias_end_atrasado %}text-danger fw-semibold{% endif %}">{{ i.dias_aguardando }} d</td></tr>{% endfor %}
+        {% for j in solda.reprovadas %}<tr><td><a href="{% url 'solda-junta-detail' j.pk %}">{{ j.codigo }}</a></td><td colspan="2"><span class="sd-pill sd-reprovada">Reprovada · reparo</span></td></tr>{% endfor %}
+        {% if not solda.pendentes and not solda.reprovadas %}<tr><td class="text-muted">Nenhum ensaio pendente nem junta reprovada.</td></tr>{% endif %}
+      </tbody></table>
+      {% else %}<p class="text-muted mb-0">Sem juntas cadastradas neste bloco.</p>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-xl-7">
+    <div class="table-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-baseline mb-2"><div class="section-title mb-0">Punch list em aberto</div><a class="small no-print" href="{% url 'punch-create' %}?area={{ area.pk }}">+ Nova pendência</a></div>
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0"><tbody>
+        {% for i in punch %}<tr><td><span class="pl-cat pl-cat-{{ i.categoria }}">{{ i.categoria }}</span></td><td class="text-nowrap"><a href="{% url 'punch-detail' i.pk %}">{{ i.codigo }}</a></td><td>{{ i.descricao|truncatechars:70 }}</td><td class="text-nowrap {% if i.vencida %}pl-vencida{% endif %}">{{ i.prazo|date:"d/m"|default:"-" }}</td></tr>
+        {% empty %}<tr><td class="text-muted">Nenhuma pendência em aberto.</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="table-card p-3 mb-4" id="ocorrencias">
+      <div class="section-title mb-2">Ocorrências abertas</div>
+      {% for o in ocorrencias %}<div class="mb-2 small"><span class="sd-pill {% if o.gravidade == 'alta' or o.gravidade == 'critica' %}sd-reprovada{% else %}sd-pendente{% endif %}">{{ o.get_gravidade_display }}</span> {{ o.get_tipo_display }} · {{ o.rdc.data|date:"d/m" }}<div class="mini-muted">{{ o.descricao|truncatechars:110 }}</div></div>
+      {% empty %}<p class="text-muted small mb-0">Nenhuma ocorrência aberta.</p>{% endfor %}
+    </div>
+    <div class="table-card p-3">
+      <div class="section-title mb-2">HH perdido por motivo</div>
+      {% for p in paralisacoes %}<div class="d-flex justify-content-between small mb-1"><span>{{ p.motivo }} <span class="mini-muted">({{ p.n }}x)</span></span><b>{{ p.hh|floatformat:"0" }} HH</b></div>
+      {% empty %}<p class="text-muted small mb-0">Nenhuma paralisação registrada.</p>{% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="table-card p-3" id="rdcs">
+  <div class="section-title mb-2">Últimos RDCs do bloco</div>
+  <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>RDC</th><th>Data</th><th>Disciplina</th><th>Situação</th></tr></thead>
+    <tbody>{% for r in rdcs %}<tr><td><a href="{% url 'rdc-detail' r.pk %}">#{{ r.pk }}</a></td><td>{{ r.data|date:"d/m/Y" }}</td><td>{{ r.disciplina.nome }}</td><td>{{ r.get_status_display }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">Nenhum RDC neste bloco.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

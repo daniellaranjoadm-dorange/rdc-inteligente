@@ -58,7 +58,7 @@
     <tbody>
     {% for b in por_bloco %}
       <tr>
-        <td><a class="fw-semibold" href="?area={{ b.area.pk }}{% if f.projeto %}&projeto={{ f.projeto }}{% endif %}">{{ b.area.codigo }}</a><div class="mini-muted">{{ b.area.casco|default:b.area.descricao }}</div></td>
+        <td><a class="fw-semibold" href="?area={{ b.area.pk }}{% if f.projeto %}&projeto={{ f.projeto }}{% endif %}">{{ b.area.codigo }}</a><div class="mini-muted">{{ b.area.casco|default:b.area.descricao }} · <a href="{% url 'rdc-bloco' b.area.pk %}">bloco</a></div></td>
         <td class="text-end {% if b.A %}pl-vencida{% endif %}">{{ b.A }}</td><td class="text-end">{{ b.B }}</td><td class="text-end">{{ b.C }}</td>
         <td class="text-end {% if b.vencidas %}pl-vencida{% endif %}">{{ b.vencidas }}</td><td class="text-end">{{ b.verificar }}</td>
         <td style="min-width:120px"><div class="sd-bar" style="height:10px;border-radius:999px;background:var(--dg-silver-100);overflow:hidden"><span style="display:block;height:100%;background:#16a34a;width:{{ b.percentual }}%"></span></div><div class="mini-muted">{{ b.fechadas }}/{{ b.total }}</div></td>

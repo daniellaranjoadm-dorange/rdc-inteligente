@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Blocos{% endblock %}
+{% block extra_head %}{% include "rdc/_bloco_estilo.html" %}{% endblock %}
+{% block content %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Planejamento</div>
+    <h1 class="h3 fw-bold mb-1">Blocos e liberação para edificação</h1>
+    <div class="mini-muted">{{ liberados }} de {{ blocos|length }} bloco(s) liberado(s). Bloqueados primeiro. Clique para ver o checklist e tudo do bloco.</div>
+  </div>
+</div>
+
+<form method="get" class="table-card p-3 mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-5"><label class="form-label small fw-semibold mb-1" for="f-projeto">Projeto</label>
+      <select id="f-projeto" name="projeto" class="form-select"><option value="">Todos os projetos</option>{% for p in projetos %}<option value="{{ p.pk }}" {% if projeto_id == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select></div>
+    <div class="col-8 col-md-4"><label class="form-label small fw-semibold mb-1" for="f-casco">Casco / navio</label>
+      <select id="f-casco" name="casco" class="form-select"><option value="">Todos</option>{% for c in cascos %}<option value="{{ c }}" {% if c == casco %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="col-4 col-md-3"><button class="btn btn-primary w-100" type="submit">Aplicar</button></div>
+  </div>
+</form>
+
+{% if not blocos %}
+  <div class="table-card p-4 text-center"><div class="section-title mb-2">Nenhum bloco com dados ainda</div><p class="mini-muted mb-0">O bloco aparece aqui quando tiver cronograma, juntas, punch list ou RDCs lançados.</p></div>
+{% else %}
+<div class="bl-grid">
+  {% for b in blocos %}
+  <a class="bl-card {% if b.liberado %}ok{% endif %}" href="{% url 'rdc-bloco' b.area.pk %}">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div><div class="bl-codigo">{{ b.area.codigo }}</div><div class="mini-muted">{{ b.area.casco|default:b.area.descricao }}{% if b.area.etapa %} · {{ b.area.get_etapa_display }}{% endif %}</div></div>
+      {% if b.liberado %}<span class="bl-status ok">Liberado</span>{% else %}<span class="bl-status no">{{ b.pendencias|length }} pendência(s)</span>{% endif %}
+    </div>
+    <div class="bl-checks" aria-label="{{ b.atendidos }} de {{ b.aplicaveis }} critérios atendidos">
+      {% for c in b.criterios %}<span class="bl-check {% if c.ok is None %}x{% elif c.ok %}s{% else %}n{% endif %}" title="{{ c.titulo }}: {{ c.detalhe }}">{% if c.ok is None %}–{% elif c.ok %}✓{% else %}✕{% endif %}</span>{% endfor %}
+      <span class="mini-muted ms-1 align-self-center">{{ b.atendidos }}/{{ b.aplicaveis }}</span>
+    </div>
+    <div class="bl-mini">
+      <div><b>{% if b.avanco %}{{ b.avanco.realizado|floatformat:"0" }}%{% else %}-{% endif %}</b>avanço</div>
+      <div><b>{% if b.juntas %}{{ b.juntas_ok }}/{{ b.juntas }}{% else %}-{% endif %}</b>juntas</div>
+      <div><b {% if b.punch_a %}class="text-danger"{% endif %}>{{ b.punch_a }}</b>punch A</div>
+      <div><b>{{ b.hh|floatformat:"0" }}</b>HH</div>
+    </div>
+    {% if b.pendencias %}<div class="mini-muted mt-2">Falta: {% for c in b.pendencias|slice:":2" %}{{ c.titulo|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}{% if b.pendencias|length > 2 %}…{% endif %}</div>{% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

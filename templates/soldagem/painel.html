@@ -97,7 +97,7 @@
         <tbody>
         {% for b in por_bloco %}
           <tr>
-            <td><a class="fw-semibold" href="?{% if projeto_id %}projeto={{ projeto_id }}&{% endif %}area={{ b.area.pk }}">{{ b.area.codigo }}</a><div class="mini-muted">{{ b.area.casco|default:b.area.descricao }}</div></td>
+            <td><a class="fw-semibold" href="?{% if projeto_id %}projeto={{ projeto_id }}&{% endif %}area={{ b.area.pk }}">{{ b.area.codigo }}</a><div class="mini-muted">{{ b.area.casco|default:b.area.descricao }} · <a href="{% url 'rdc-bloco' b.area.pk %}">bloco</a></div></td>
             <td><div class="sd-bar" title="{{ b.soldado|floatformat:'0' }} de {{ b.previsto|floatformat:'0' }} m"><span style="width:{{ b.percentual|stringformat:'.1f' }}%"></span></div><div class="mini-muted">{{ b.soldado|floatformat:"0" }}/{{ b.previsto|floatformat:"0" }} m</div></td>
             <td class="text-end">{{ b.juntas }}</td><td class="text-end">{{ b.aprovadas }}</td><td class="text-end">{{ b.aguardando }}</td>
             <td class="text-end {% if b.acima_limite %}sd-taxa-alta{% endif %}">{% if b.taxa is not None %}{{ b.taxa }}%{% else %}-{% endif %}</td>

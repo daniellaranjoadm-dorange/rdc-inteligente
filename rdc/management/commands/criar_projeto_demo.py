@@ -356,6 +356,13 @@ class Command(BaseCommand):
                 junta.refresh_from_db()
                 if junta.status == StatusJunta.AGUARDANDO_END:
                     fila.pop(0)
+            if bloco == "B101" and dias:
+                # bloco concluído no demo: termina o que sobrou no último dia de solda
+                for junta in fila:
+                    junta.refresh_from_db()
+                    resto = junta.comprimento_m - junta.metros_soldados
+                    if resto > 0:
+                        registrar_execucao(junta, soldador=soldadores[0], data=dias[-1], metros=resto, usuario=usuario)
 
             # Ensaios: resultado 1 a 2 dias depois; os das últimas 48 h ficam pendentes
             for junta in juntas:

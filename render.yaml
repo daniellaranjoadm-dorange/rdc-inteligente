@@ -6,7 +6,8 @@
     # A regiao do servico existente nao pode ser alterada pelo Blueprint.
     region: oregon
     branch: main
-    autoDeploy: false
+    # Publica sozinho a cada push na main, mas so depois que o GitHub Actions (testes em PostgreSQL) passar.
+    autoDeployTrigger: checksPass
     buildCommand: bash build.sh
     preDeployCommand: python manage.py migrate --noinput
     startCommand: gunicorn rdc_inteligente.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
