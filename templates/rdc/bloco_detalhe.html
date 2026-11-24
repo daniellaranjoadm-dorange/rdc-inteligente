@@ -41,6 +41,11 @@
     </ul>
   </div>
 </div>
+<div class="bl-assinaturas" aria-hidden="true">
+  <div>Produção<br><span class="mini-muted">nome, data e assinatura</span></div>
+  <div>Qualidade (CQ)<br><span class="mini-muted">nome, data e assinatura</span></div>
+  <div>Fiscal / armador<br><span class="mini-muted">nome, data e assinatura</span></div>
+</div>
 {% else %}
 <div class="table-card p-4 mb-4 text-center"><div class="section-title mb-1">Sem dados neste bloco ainda</div><p class="mini-muted mb-0">Cadastre o cronograma, as juntas ou lance RDCs para ver a liberação.</p></div>
 {% endif %}
@@ -68,7 +73,7 @@
       <table class="table table-sm align-middle mb-0"><tbody>
         {% for i in solda.pendentes %}<tr><td><a href="{% url 'solda-junta-detail' i.junta.pk %}">{{ i.junta.codigo }}</a></td><td>{{ i.metodo }} aguardando</td><td class="text-end {% if i.dias_aguardando > solda.dias_end_atrasado %}text-danger fw-semibold{% endif %}">{{ i.dias_aguardando }} d</td></tr>{% endfor %}
         {% for j in solda.reprovadas %}<tr><td><a href="{% url 'solda-junta-detail' j.pk %}">{{ j.codigo }}</a></td><td colspan="2"><span class="sd-pill sd-reprovada">Reprovada · reparo</span></td></tr>{% endfor %}
-        {% if not solda.pendentes and not solda.reprovadas %}<tr><td class="text-muted">Nenhum ensaio pendente nem junta reprovada.</td></tr>{% endif %}
+        {% if not solda.pendentes and not solda.reprovadas %}<tr><td class="text-muted small">Nenhum ensaio pendente nem junta reprovada.</td></tr>{% endif %}
       </tbody></table>
       {% else %}<p class="text-muted mb-0">Sem juntas cadastradas neste bloco.</p>{% endif %}
     </div>
@@ -81,7 +86,7 @@
       <div class="d-flex justify-content-between align-items-baseline mb-2"><div class="section-title mb-0">Punch list em aberto</div><a class="small no-print" href="{% url 'punch-create' %}?area={{ area.pk }}">+ Nova pendência</a></div>
       <div class="table-responsive"><table class="table table-sm align-middle mb-0"><tbody>
         {% for i in punch %}<tr><td><span class="pl-cat pl-cat-{{ i.categoria }}">{{ i.categoria }}</span></td><td class="text-nowrap"><a href="{% url 'punch-detail' i.pk %}">{{ i.codigo }}</a></td><td>{{ i.descricao|truncatechars:70 }}</td><td class="text-nowrap {% if i.vencida %}pl-vencida{% endif %}">{{ i.prazo|date:"d/m"|default:"-" }}</td></tr>
-        {% empty %}<tr><td class="text-muted">Nenhuma pendência em aberto.</td></tr>{% endfor %}
+        {% empty %}<tr><td class="text-muted small">Nenhuma pendência em aberto.</td></tr>{% endfor %}
       </tbody></table></div>
     </div>
   </div>

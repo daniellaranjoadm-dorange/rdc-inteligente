@@ -8,6 +8,12 @@
     <h1 class="h3 fw-bold mb-1">Blocos e liberação para edificação</h1>
     <div class="mini-muted">{{ liberados }} de {{ blocos|length }} bloco(s) liberado(s). Bloqueados primeiro. Clique para ver o checklist e tudo do bloco.</div>
   </div>
+  {% if projeto_id or projetos|length == 1 %}{% with pid=projeto_id|default:projetos.0.pk %}
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-secondary" href="{% url 'rdc-relatorio-semanal' %}?projeto={{ pid }}" target="_blank" rel="noopener">Relatório semanal (PDF)</a>
+    {% if pode_enviar %}<form method="post" action="{% url 'rdc-relatorio-semanal-enviar' %}" class="m-0">{% csrf_token %}<input type="hidden" name="projeto" value="{{ pid }}"><input type="hidden" name="voltar" value="{{ request.get_full_path }}"><button class="btn btn-primary" type="submit">Enviar ao cliente</button></form>{% endif %}
+  </div>
+  {% endwith %}{% else %}<div class="mini-muted">Escolha um projeto para gerar o relatório semanal.</div>{% endif %}
 </div>
 
 <form method="get" class="table-card p-3 mb-4">

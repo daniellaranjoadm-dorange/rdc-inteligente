@@ -1,0 +1,18 @@
+name: Relatorio semanal do RDC
+
+# Sexta-feira, 18h de Brasilia (21h UTC). Usa o mesmo segredo ALERTAS_TOKEN dos alertas diarios.
+on:
+  schedule:
+    - cron: "0 21 * * 5"
+  workflow_dispatch: {}
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar relatorio semanal
+        env:
+          TOKEN: ${{ secrets.ALERTAS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "Segredo ALERTAS_TOKEN nao configurado"; exit 1; fi
+          curl -fsS --max-time 300 -X POST -H "X-Tarefa-Token: $TOKEN" https://rdc.dorange.com.br/tarefas/relatorio-semanal/

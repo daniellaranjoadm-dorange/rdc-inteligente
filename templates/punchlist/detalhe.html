@@ -44,7 +44,7 @@
     <div class="table-card p-3 p-lg-4 mb-4">
       <div class="section-title mb-1">Marcar como resolvida</div>
       <div class="mini-muted mb-3">Diga o que foi feito e/ou tire a foto da correção. O CQ confere depois no local.</div>
-      <form method="post" action="{% url 'punch-acao' item.pk 'resolver' %}" enctype="multipart/form-data" class="d-grid gap-2">
+      <form method="post" action="{% url 'punch-acao' item.pk 'resolver' %}" enctype="multipart/form-data" class="d-grid gap-2" data-offline="Resolução {{ item.codigo }}">
         {% csrf_token %}
         <textarea name="nota" rows="2" class="form-control" placeholder="Ex.: guarda-corpo soldado e pintado"></textarea>
         <input type="file" name="fotos" accept="image/*" capture="environment" multiple class="form-control" aria-label="Fotos da correção">

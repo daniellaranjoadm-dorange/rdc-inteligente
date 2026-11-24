@@ -37,7 +37,7 @@
     </div>
   </div>
 
-  <form method="post" class="pz-card" novalidate>
+  <form method="post" class="pz-card" novalidate data-offline="Paralisação · RDC #{{ rdc.pk }}">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
 

@@ -43,6 +43,7 @@ def traduzir_acao_auditoria(action):
         "resolver_punch": "Resolveu pendência (punch)",
         "verificar_punch": "Verificou pendência (punch)",
         "cancelar_punch": "Cancelou pendência (punch)",
+        "enviar_relatorio_semanal": "Enviou relatório semanal",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

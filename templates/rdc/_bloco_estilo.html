@@ -27,6 +27,12 @@
     body { background: #fff !important; }
     .bl-hero { color: #000; background: #fff !important; border: 2px solid #000; }
     .bl-hero .veredito.ok, .bl-hero .veredito.no { color: #000; }
-    .table-card, .card { box-shadow: none !important; }
+    .table-card, .card { box-shadow: none !important; overflow: visible !important; break-inside: avoid-page; }
+    .table-responsive { overflow: visible !important; }
+    .bl-lista li { break-inside: avoid; }
+    .bl-assinaturas { display: grid !important; }
+    @page { margin: 14mm 12mm; }
   }
+  .bl-assinaturas { display: none; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; break-inside: avoid; }
+  .bl-assinaturas div { border-top: 1px solid #000; padding-top: .35rem; font-size: .8rem; }
 </style>

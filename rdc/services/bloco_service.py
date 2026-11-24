@@ -99,7 +99,8 @@ def liberacao_blocos(projeto_id=None, area_id=None, hoje=None):
                       None if not punch_total.get(aid) else not p.get("A"),
                       "sem punch list no bloco" if not punch_total.get(aid) else
                       (f"{p['A']} pendência(s) A em aberto" if p.get("A") else
-                       f"{p.get('B', 0) + p.get('C', 0)} pendência(s) B/C podem seguir após a edificação"),
+                       (f"{p.get('B', 0) + p.get('C', 0)} pendência(s) B/C podem seguir após a edificação"
+                        if p.get("B", 0) + p.get("C", 0) else "nenhuma pendência em aberto")),
                       f"/punch/?area={aid}&categoria=A"),
             _criterio("seguranca", "Nenhuma ocorrência grave aberta",
                       not ocorr.get(aid),

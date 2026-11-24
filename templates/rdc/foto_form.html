@@ -31,7 +31,7 @@
     <div class="mini-muted">{{ rdc.projeto.nome }} · {{ rdc.area_local.descricao }} · {{ rdc.disciplina.nome }} · {{ rdc.data|date:"d/m/Y" }}</div>
   </div>
 
-  <form method="post" enctype="multipart/form-data" class="ft-card" id="ft-form" novalidate>
+  <form method="post" enctype="multipart/form-data" class="ft-card" id="ft-form" novalidate data-offline="Fotos · RDC #{{ rdc.pk }}">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
 

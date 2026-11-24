@@ -45,7 +45,7 @@
     <div class="table-card p-3 p-lg-4 mb-4">
       <div class="section-title mb-1">Resultado do END</div>
       <div class="mini-muted mb-3">{{ pendente.get_metodo_display }} de {{ pendente.metros_inspecionados|floatformat:"-2" }} m · chamada em {{ pendente.solicitado_em|date:"d/m/Y" }}</div>
-      <form method="post" action="{% url 'solda-end-resultado' pendente.pk %}" class="row g-2">
+      <form method="post" action="{% url 'solda-end-resultado' pendente.pk %}" class="row g-2" data-offline="Resultado END · junta {{ junta.codigo }}">
         {% csrf_token %}
         {% for field in resultado_form %}
           <div class="col-6"><label class="form-label small fw-semibold mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
@@ -60,7 +60,7 @@
     <div class="table-card p-3 p-lg-4">
       <div class="section-title mb-1">{% if e_reparo %}Lançar reparo{% else %}Lançar solda{% endif %}</div>
       <div class="mini-muted mb-3">{% if e_reparo %}Depois do reparo o sistema abre nova chamada de END.{% else %}Ao completar o comprimento, a chamada de END abre sozinha.{% endif %} Soldador com qualificação vencida ou fora do processo da EPS é bloqueado.</div>
-      <form method="post" action="{% url 'solda-registrar' junta.pk %}" class="row g-2">
+      <form method="post" action="{% url 'solda-registrar' junta.pk %}" class="row g-2" data-offline="Solda · junta {{ junta.codigo }}">
         {% csrf_token %}
         {% for field in execucao_form %}
           <div class="{% if field.name == 'soldador' or field.name == 'observacao' %}col-12{% else %}col-6{% endif %}"><label class="form-label small fw-semibold mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>

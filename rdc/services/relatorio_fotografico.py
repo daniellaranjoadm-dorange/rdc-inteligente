@@ -10,9 +10,9 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader, simpleSplit
 from reportlab.pdfgen import canvas
 
-NAVY = colors.HexColor("#172432")
-ORANGE = colors.HexColor("#f07a12")
-MUTED = colors.HexColor("#5b6b7d")
+NAVY = colors.HexColor("#12171c")  # tinta do site D'OR@NGE
+ORANGE = colors.HexColor("#e8611f")
+MUTED = colors.HexColor("#5b6670")
 LINE = colors.HexColor("#d5dce4")
 
 MARGEM = 14 * mm

@@ -12,6 +12,7 @@ from rdc.views_email import RDCEnviarEmailView, RDCPdfView
 from rdc.views_hh import PainelHHView
 from rdc.views_avanco import AtividadePlanejadaCreateView, AtividadePlanejadaUpdateView, AvancoFisicoView
 from rdc.views_bloco import BlocoDetalheView, BlocosView
+from rdc.views_semanal import RelatorioSemanalEnviarView, RelatorioSemanalPDFView
 from rdc.views_registros import (
     RDCEquipamentoCreateView, RDCEquipamentoDeleteView, RDCEquipamentoUpdateView,
     RDCOcorrenciaCreateView, RDCOcorrenciaDeleteView, RDCOcorrenciaUpdateView,
@@ -130,6 +131,8 @@ extra_patterns = [
     path("avanco/", AvancoFisicoView.as_view(), name="rdc-avanco"),
     path("blocos/", BlocosView.as_view(), name="rdc-blocos"),
     path("blocos/<int:pk>/", BlocoDetalheView.as_view(), name="rdc-bloco"),
+    path("relatorio-semanal/", RelatorioSemanalPDFView.as_view(), name="rdc-relatorio-semanal"),
+    path("relatorio-semanal/enviar/", RelatorioSemanalEnviarView.as_view(), name="rdc-relatorio-semanal-enviar"),
     path("avanco/atividades/nova/", AtividadePlanejadaCreateView.as_view(), name="rdc-atividade-planejada-create"),
     path("avanco/atividades/<int:pk>/editar/", AtividadePlanejadaUpdateView.as_view(), name="rdc-atividade-planejada-update"),
     path("rdo/", RDOView.as_view(), name="rdc-rdo"),

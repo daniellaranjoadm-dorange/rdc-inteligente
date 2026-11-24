@@ -5,7 +5,7 @@
   <div class="dg-eyebrow">Punch list</div>
   <h1 class="h3 fw-bold mb-3">{{ titulo }}</h1>
   {% if erro %}<div class="alert alert-danger">{{ erro }}</div>{% endif %}
-  <form method="post" enctype="multipart/form-data" class="card table-card card-body p-4" novalidate>
+  <form method="post" enctype="multipart/form-data" class="card table-card card-body p-4" novalidate {% if com_fotos %}data-offline="Nova pendência (punch)"{% endif %}>
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
     <div class="row g-3">

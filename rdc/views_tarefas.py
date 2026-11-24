@@ -22,3 +22,21 @@ class TarefaAlertasView(View):
         except ValueError as exc:
             return JsonResponse({"ok": False, "erro": str(exc)}, status=503)
         return JsonResponse({"ok": True, "emails": n})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class TarefaRelatorioSemanalView(View):
+    """Agendador semanal (sexta 18h): envia o relatório semanal de cada projeto. Mesmo token dos alertas."""
+
+    def post(self, request):
+        from rdc.services.relatorio_semanal import enviar_relatorios_semanais
+
+        esperado = getattr(settings, "ALERTAS_TOKEN", "")
+        recebido = request.headers.get("X-Tarefa-Token", "")
+        if not esperado or not hmac.compare_digest(esperado, recebido):
+            return JsonResponse({"ok": False, "erro": "não autorizado"}, status=403)
+        try:
+            n = enviar_relatorios_semanais()
+        except ValueError as exc:
+            return JsonResponse({"ok": False, "erro": str(exc)}, status=503)
+        return JsonResponse({"ok": True, "emails": n})

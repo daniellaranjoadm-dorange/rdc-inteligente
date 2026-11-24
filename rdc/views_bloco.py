@@ -7,6 +7,13 @@ from core.mixins import AuthenticatedTemplateMixin
 from rdc.services.bloco_service import detalhe_bloco, liberacao_blocos
 
 
+def _pode_enviar(user):
+    if user.is_superuser:
+        return True
+    perfil = getattr(user, "perfil_acesso", None)
+    return bool(perfil and perfil.role in ("admin", "supervisor"))
+
+
 class BlocosView(AuthenticatedTemplateMixin, TemplateView):
     template_name = "rdc/blocos.html"
 
@@ -24,6 +31,7 @@ class BlocosView(AuthenticatedTemplateMixin, TemplateView):
         context.update({
             "blocos": blocos, "projetos": projetos, "projeto_id": str(projeto_id), "cascos": cascos, "casco": casco,
             "liberados": sum(b["liberado"] for b in blocos),
+            "pode_enviar": _pode_enviar(self.request.user),
         })
         return context
 

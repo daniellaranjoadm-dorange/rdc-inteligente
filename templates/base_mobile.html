@@ -37,18 +37,13 @@
     {% block content %}{% endblock %}
 </main>
 
-    <script>
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", function () {
-                navigator.serviceWorker.register("/static/sw.js")
-                    .then(function (registration) {
-                        console.log("[pwa] service worker registrado", registration.scope);
-                    })
-                    .catch(function (error) {
-                        console.error("[pwa] falha ao registrar service worker", error);
-                    });
-            });
-        }
-    </script>
+<script src="{% static 'js/offline.js' %}"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function () {});
+    });
+  }
+</script>
 </body>
 </html>
