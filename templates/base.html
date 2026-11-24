@@ -153,6 +153,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+{% if DEMO_MODE %}<div class="dg-demo-faixa">Demonstração com dados fictícios (navio PSV 4500) · somente leitura · <a href="https://wa.me/5553991783886?text=Ol%C3%A1%21%20Vi%20a%20demonstra%C3%A7%C3%A3o%20do%20RDC%20Inteligente%20e%20quero%20conversar." target="_blank" rel="noopener">quero no meu estaleiro</a></div>{% endif %}
 <nav class="navbar navbar-expand-xl navbar-dark navbar-dorange mb-4">
     <div class="container-fluid">
         <a class="brand-wrap" href="/rdc/dashboard/" aria-label="D'OR@NGE RDC Inteligente">

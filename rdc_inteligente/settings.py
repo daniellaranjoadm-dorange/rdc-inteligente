@@ -59,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.demo.DemoSomenteLeituraMiddleware",
 ]
 
 ROOT_URLCONF = "rdc_inteligente.urls"
@@ -73,6 +74,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.demo.contexto_demo",
             ],
         },
     },
@@ -98,8 +100,16 @@ def _database_from_url(url):
     }
 
 
+# Instância de DEMONSTRAÇÃO: banco SQLite descartável, recriado com o projeto fictício a cada início,
+# acesso sem senha e somente leitura. Nunca aponta para o banco real.
+DEMO_MODE = os.getenv("DJANGO_DEMO", "") == "1"
+# Endereço público da instância de demonstração (usado por /demo/ na instância principal).
+DEMO_URL = os.getenv("DEMO_URL", "").strip()
+
 _database_url = os.getenv("DATABASE_URL", "").strip()
-if _database_url:
+if DEMO_MODE:
+    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": os.getenv("DEMO_DB_PATH", str(BASE_DIR / "demo.sqlite3"))}}
+elif _database_url:
     DATABASES = {"default": _database_from_url(_database_url)}
 elif ON_RENDER:
     # No Render o disco do servico e apagado a cada deploy: SQLite perderia os dados.

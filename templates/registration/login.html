@@ -64,6 +64,7 @@
         <button class="btn btn-dark w-100 dg-auth-submit" type="submit">Entrar no RDC <span aria-hidden="true">→</span></button>
       </form>
 
+      {% if DEMO_MODE %}<a class="btn btn-primary w-100 mt-3" href="{% url 'demo-entrar' %}">Entrar na demonstração sem senha</a>{% endif %}
       <p class="dg-auth-help">Sem acesso? Peça ao administrador do projeto para criar o seu usuário.</p>
     </div>
   </section>

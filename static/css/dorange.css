@@ -371,3 +371,7 @@ h1, .h1, .h2, .h3 { font-weight: 700 !important; }
 
 /* Celular */
 .dg-mobile-header { background: var(--dg-navy-950) !important; border-bottom: 2px solid var(--dg-orange-500) !important; }
+
+/* Faixa da instância de demonstração */
+.dg-demo-faixa { background: #e8611f; color: #fff; text-align: center; font-weight: 700; font-size: .85rem; padding: .45rem 1rem; }
+.dg-demo-faixa a { color: #fff; text-decoration: underline; }

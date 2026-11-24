@@ -117,6 +117,10 @@ class Command(BaseCommand):
         usuario = get_user_model().objects.filter(is_superuser=True).order_by("pk").first()
         if usuario is None:
             usuario = get_user_model().objects.order_by("pk").first()
+        if usuario is None:  # banco vazio (instância de demonstração): cria o visitante, sem senha
+            usuario = get_user_model().objects.create(username="visitante", first_name="Visitante", is_superuser=True)
+            usuario.set_unusable_password()
+            usuario.save()
 
         projeto = Projeto.objects.create(codigo=CODIGO, nome="PSV 4500 · DEMONSTRAÇÃO", cliente="Armador Demonstração S.A.")
         estaleiro = Empresa.objects.create(nome="DEMO Estaleiro Atlântico (fictício)")

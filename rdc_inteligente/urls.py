@@ -18,6 +18,7 @@ from django.urls import include, path
 
 from core.mobile_views import MobileHomeView, TelasOfflineView, service_worker_view
 from core.views_auth import LoginComBloqueioView
+from core.demo import entrar_demo, ir_para_demo
 from rdc.views_aceite import AceitePublicoFotoView, AceitePublicoView
 from rdc.views_tarefas import TarefaAlertasView, TarefaRelatorioSemanalView
 
@@ -27,6 +28,8 @@ urlpatterns = [
     path('', include('core.urls')),
     path('manifest.json', manifest_view),
     path('sw.js', service_worker_view, name='service-worker'),
+    path('demo/', ir_para_demo, name='demo'),
+    path('demo/entrar/', entrar_demo, name='demo-entrar'),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=False)),
     path("offline/", TemplateView.as_view(template_name="offline.html")),
     path("accounts/login/", LoginComBloqueioView.as_view(), name="login"),
