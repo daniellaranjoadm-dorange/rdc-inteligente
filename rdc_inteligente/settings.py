@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "alocacao",
     "acesso",
     "rdc",
+    "soldagem",
     "importacoes",
     "relatorios",
 ]

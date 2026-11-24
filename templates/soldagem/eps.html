@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}EPS (WPS){% endblock %}
+{% block content %}
+{% include "soldagem/_menu.html" %}
+<div class="dg-page-head">
+  <div><div class="dg-eyebrow">Soldagem e END</div><h1 class="h3 fw-bold mb-1">EPS (WPS)</h1>
+  <div class="mini-muted">Especificações de procedimento de soldagem usadas nas juntas.</div></div>
+  {% if pode_editar %}<a class="btn btn-primary" href="{% url 'solda-eps-create' %}">+ Nova EPS</a>{% endif %}
+</div>
+<div class="table-card p-3">
+  <table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Código</th><th>Processo</th><th>Material</th><th>Espessura</th><th>Posições</th><th>Consumível</th><th>Situação</th>{% if pode_editar %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for e in lista %}
+      <tr><td class="fw-semibold">{{ e.codigo }}</td><td>{{ e.get_processo_display }}</td><td>{{ e.material }}</td><td>{{ e.espessura|default:"-" }}</td><td>{{ e.posicoes|default:"-" }}</td><td>{{ e.consumivel|default:"-" }}</td><td>{% if e.ativo %}Ativa{% else %}Inativa{% endif %}</td>{% if pode_editar %}<td><a class="btn btn-sm btn-outline-secondary" href="{% url 'solda-eps-update' e.pk %}">Editar</a></td>{% endif %}</tr>
+    {% empty %}<tr><td colspan="8" class="text-muted">Nenhuma EPS cadastrada.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

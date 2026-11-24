@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+{% include "soldagem/_menu.html" %}
+<div style="max-width:780px">
+  <div class="dg-eyebrow">Soldagem e END</div>
+  <h1 class="h3 fw-bold mb-3">{{ titulo }}</h1>
+  <form method="post" class="card table-card card-body p-4" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <div class="row g-3">
+      {% for field in form %}
+        {% if field.widget_type == "checkbox" %}
+          <div class="col-12"><div class="form-check">{{ field }} <label class="form-check-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label></div></div>
+        {% else %}
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small mb-1" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="d-flex gap-2 mt-4">
+      <button class="btn btn-primary px-4" type="submit">Salvar</button>
+      <a class="btn btn-outline-secondary" href="{{ voltar_url }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+<style>
+  .sd-pill { font-size: .74rem; font-weight: 700; border-radius: 999px; padding: .2rem .6rem; white-space: nowrap; display: inline-block; }
+  .sd-planejada { background: var(--dg-silver-100); color: var(--dg-muted); }
+  .sd-em_execucao { background: #e8eef7; color: #1f3a5f; }
+  .sd-aguardando_end, .sd-pendente { background: #fff4e5; color: #9a4a05; }
+  .sd-reprovada, .sd-reprovado, .sd-vencida { background: #fde8e8; color: #b42318; }
+  .sd-aprovada, .sd-aprovado, .sd-concluida, .sd-valida { background: #e3f4ea; color: #146c43; }
+  .sd-vencendo { background: #fff4e5; color: #9a4a05; }
+  .sd-taxa-alta { color: #b42318; font-weight: 800; }
+  .sd-bar { height: 10px; border-radius: 999px; background: var(--dg-silver-100); overflow: hidden; min-width: 90px; }
+  .sd-bar span { display: block; height: 100%; background: var(--dg-orange-500); border-radius: 999px; }
+  .sd-timeline { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; }
+  .sd-timeline li { display: grid; grid-template-columns: 92px 1fr; gap: .75rem; padding: .65rem .8rem; border: 1px solid var(--dg-border); border-radius: 12px; background: #fff; }
+  .sd-timeline .quando { font-size: .8rem; color: var(--dg-muted); font-weight: 600; }
+  .sd-timeline .end { border-left: 4px solid var(--dg-orange-500); }
+  .sd-timeline .end.reprovado { border-left-color: #dc2626; }
+  .sd-timeline .end.aprovado { border-left-color: #16a34a; }
+</style>

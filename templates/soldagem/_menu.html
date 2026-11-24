@@ -1,0 +1,8 @@
+{% with p=request.path %}
+<nav class="dg-subnav mb-3" aria-label="Soldagem">
+  <a class="{% if p == '/soldagem/' %}active{% endif %}" href="{% url 'solda-painel' %}">Painel de solda</a>
+  <a class="{% if p|slice:':17' == '/soldagem/juntas/' %}active{% endif %}" href="{% url 'solda-juntas' %}">Juntas</a>
+  <a class="{% if p|slice:':21' == '/soldagem/soldadores/' %}active{% endif %}" href="{% url 'solda-soldadores' %}">Soldadores</a>
+  <a class="{% if p|slice:':14' == '/soldagem/eps/' %}active{% endif %}" href="{% url 'solda-eps' %}">EPS (WPS)</a>
+</nav>
+{% endwith %}

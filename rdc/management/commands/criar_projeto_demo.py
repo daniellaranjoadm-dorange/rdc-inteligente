@@ -94,6 +94,10 @@ class Command(BaseCommand):
 
     # ------------------------------------------------------------------ remover
     def _remover(self):
+        from soldagem.models import EPS, JuntaSolda, Soldador
+        JuntaSolda.objects.filter(projeto__codigo=CODIGO).delete()
+        Soldador.objects.filter(funcionario__matricula__startswith=PREFIXO).delete()
+        EPS.objects.filter(codigo__startswith=PREFIXO).delete()
         RDC.objects.filter(projeto__codigo=CODIGO).delete()
         PerfilOperacionalUsuario.objects.filter(funcionario__matricula__startswith=PREFIXO).delete()
         AtividadeCronograma.objects.filter(projeto__codigo=CODIGO).delete()
@@ -188,8 +192,10 @@ class Command(BaseCommand):
 
         self._ocorrencias(projeto, hoje, usuario)
         self._calendario(projeto, min(a.data_inicio for a, _, _ in crono) - timedelta(days=14), hoje + timedelta(days=150))
+        juntas = self._soldagem(projeto, areas, pessoas["DEMO-SOL"], hoje, usuario)
         self.stdout.write(self.style.SUCCESS(
-            f"Projeto {CODIGO} criado: {len(areas)} áreas, {len(crono)} atividades planejadas, {rdcs} RDCs. "
+            f"Projeto {CODIGO} criado: {len(areas)} áreas, {len(crono)} atividades planejadas, {rdcs} RDCs, "
+            f"{juntas} juntas de solda. "
             f"Abra /rdc/avanco/?projeto={projeto.pk}"))
 
     def _rdc_do_dia(self, projeto, area, disciplina, equipe, time_, dia, hoje, lista, feito, usuario):
@@ -265,7 +271,7 @@ class Command(BaseCommand):
         casos = [
             ("B202", 2, "quase_acidente", "alta", "aberta", "Peça de 300 kg balançou durante içamento sem cabo-guia.",
              "Içamento suspenso e APR revisada."),
-            ("B102", 5, "nao_conformidade", "media", "aberta", "Ultrassom reprovou 2 m de solda na costura C-14.",
+            ("B102", 5, "nao_conformidade", "media", "aberta", "Ultrassom reprovou 2,5 m de solda na junta B102-C05 (falta de fusão).",
              "Reparo programado; nova inspeção após reparo."),
             ("B101", 12, "condicao_insegura", "media", "encerrada", "Guarda-corpo provisório solto no nível 2.",
              "Guarda-corpo refixado e área inspecionada."),
@@ -299,3 +305,82 @@ class Command(BaseCommand):
                 dia_semana_nome=nomes[d.weekday()], eh_dia_util=d.weekday() < 5))
             d += timedelta(days=1)
         CalendarioPlanejamento.objects.bulk_create(registros)
+
+    def _soldagem(self, projeto, areas, time_solda, hoje, usuario):
+        """Juntas por bloco soldadas nos dias de RDC de solda, com END, reprovações e reparos."""
+        from soldagem.models import EPS, JuntaSolda, ResultadoEND, Soldador, StatusJunta
+        from soldagem.services import registrar_execucao, registrar_resultado_end
+
+        fcaw = EPS.objects.create(codigo="DEMO-EPS-FCAW-01", processo="FCAW", material="Aço naval AH36",
+                                  espessura="6 a 25 mm", posicoes="1G a 4G", consumivel="E71T-1C")
+        EPS.objects.create(codigo="DEMO-EPS-SMAW-02", processo="SMAW", material="Aço naval AH36",
+                           espessura="6 a 20 mm", posicoes="1G a 4G", consumivel="E7018")
+        soldadores = []
+        for i, pessoa in enumerate(time_solda[1:]):
+            validade = hoje + timedelta(days=10) if i == 3 else hoje + timedelta(days=180 + 30 * i)
+            soldadores.append(Soldador.objects.create(
+                funcionario=pessoa, sinete=f"S-{101 + i}", processos="FCAW, SMAW", posicoes="1G a 4G",
+                certificado=f"CQ-{2026}-{311 + i}", validade_qualificacao=validade))
+        # S-102 erra mais (aparece acima da meta de reparo)
+        chance = {"B101": 0.05, "B102": 0.45, "B201": 0.06, "B202": 0.08, "B301": 0.05}
+        locais = ["costura do fundo", "costura do costado", "antepara transversal", "longitudinal do convés",
+                  "reforço do duplo-fundo", "caverna"]
+        total = 0
+        for bloco in ("B101", "B102", "B201", "B202", "B301"):
+            area = areas[bloco]
+            dias = list(RDC.objects.filter(projeto=projeto, area_local=area, disciplina__codigo="DEMO-SOL")
+                        .order_by("data").values_list("data", flat=True))
+            juntas = []
+            for n in range(1, 11):
+                filete = n in (4, 8)
+                juntas.append(JuntaSolda.objects.create(
+                    projeto=projeto, area_local=area, codigo=f"{bloco}-C{n:02d}",
+                    descricao=f"{locais[n % len(locais)]}, caverna {20 + n * 2}",
+                    tipo="filete" if filete else "topo", comprimento_m=Decimal(str(random.choice([6, 8, 9.5, 12, 14]))),
+                    espessura_mm=Decimal(random.choice(["10", "12.5", "14", "16"])), eps=fcaw,
+                    metodo_end="VS" if filete else random.choice(["UT", "UT", "RX"])))
+            total += len(juntas)
+            fila = list(juntas)
+            for dia in dias:
+                if not fila:
+                    break
+                junta = fila[0]
+                junta.refresh_from_db()
+                restante = junta.comprimento_m - junta.metros_soldados
+                metros = min(restante, Decimal(str(round(random.uniform(4, 7), 1))))
+                s = random.choice(soldadores[:3]) if bloco != "B102" else random.choice([soldadores[1], soldadores[1], soldadores[2]])
+                registrar_execucao(junta, soldador=s, data=dia, metros=metros, usuario=usuario)
+                junta.refresh_from_db()
+                if junta.status == StatusJunta.AGUARDANDO_END:
+                    fila.pop(0)
+
+            # Ensaios: resultado 1 a 2 dias depois; os das últimas 48 h ficam pendentes
+            for junta in juntas:
+                for _ in range(3):
+                    junta.refresh_from_db()
+                    pend = junta.inspecoes.filter(resultado=ResultadoEND.PENDENTE).first()
+                    if not pend:
+                        break
+                    data_ensaio = pend.solicitado_em + timedelta(days=random.choice([1, 2]))
+                    if data_ensaio >= hoje - timedelta(days=1) and junta.codigo != "B202-C03":
+                        break  # ainda na fila (B202-C03 fica pendente há dias: alerta)
+                    if junta.codigo == "B202-C03":
+                        break
+                    reprova = pend.ciclo == 1 and (junta.codigo == "B102-C05" or (
+                        pend.metodo != "VS" and random.random() < chance[bloco]))
+                    if junta.codigo == "B102-C05":
+                        reprova = pend.ciclo == 1
+                    registrar_resultado_end(
+                        pend, resultado=ResultadoEND.REPROVADO if reprova else ResultadoEND.APROVADO, data=data_ensaio,
+                        metros_reprovados=Decimal(str(random.choice([1.5, 2.5, 3.5]))) if reprova else 0,
+                        defeito=random.choice(["falta_fusao", "porosidade", "inclusao_escoria"]) if reprova else "",
+                        inspetor="Inspetor N2 (fictício)", relatorio=f"{pend.metodo}-{junta.codigo}-{pend.ciclo}",
+                        usuario=usuario)
+                    if not reprova:
+                        break
+                    data_reparo = data_ensaio + timedelta(days=1)
+                    if data_reparo >= hoje - timedelta(days=1) or junta.codigo == "B102-C05":
+                        break  # reprovada aguardando reparo
+                    registrar_execucao(junta, soldador=random.choice(soldadores[:3]), data=data_reparo,
+                                       metros=Decimal("2.0"), reparo=True, usuario=usuario)
+        return total

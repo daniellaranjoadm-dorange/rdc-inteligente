@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Junta {{ junta.codigo }}{% endblock %}
+{% block extra_head %}{% include "soldagem/_estilo.html" %}{% endblock %}
+{% block content %}
+{% include "soldagem/_menu.html" %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Junta de solda · {{ junta.projeto.nome }}</div>
+    <h1 class="h3 fw-bold mb-1">{{ junta.codigo }} <span class="sd-pill sd-{{ junta.status }} align-middle">{{ junta.get_status_display }}</span></h1>
+    <div class="mini-muted">Bloco {{ junta.area_local.codigo }}{% if junta.descricao %} · {{ junta.descricao }}{% endif %} · {{ junta.get_tipo_display }}</div>
+  </div>
+  {% if pode_editar %}<a class="btn btn-outline-secondary" href="{% url 'solda-junta-update' junta.pk %}">Editar junta</a>{% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card kpi-card-strong kpi-primary h-100"><div class="card-body"><div class="kpi-label">Soldado</div><div class="kpi-number">{{ junta.metros_soldados|floatformat:"-2" }} m</div><div class="kpi-desc">de {{ junta.comprimento_m|floatformat:"-2" }} m</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card kpi-card-strong kpi-secondary h-100"><div class="card-body"><div class="kpi-label">EPS (WPS)</div><div class="kpi-number" style="font-size:1.3rem">{{ junta.eps.codigo|default:"-" }}</div><div class="kpi-desc">{% if junta.eps %}{{ junta.eps.get_processo_display }}{% else %}sem EPS vinculada{% endif %}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="kpi-label">END exigido</div><div class="kpi-number" style="font-size:1.3rem">{{ junta.get_metodo_end_display|default:"Nenhum" }}</div><div class="kpi-desc">{% if junta.espessura_mm %}espessura {{ junta.espessura_mm|floatformat:"-1" }} mm{% endif %}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="kpi-label">Ensaios</div><div class="kpi-number">{{ inspecoes|length }}</div><div class="kpi-desc">{% if pendente %}1 aguardando resultado{% else %}nenhum pendente{% endif %}</div></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="table-card p-3 p-lg-4">
+      <div class="section-title mb-3">Histórico da junta</div>
+      <ol class="sd-timeline">
+        {% for ev in eventos %}{% if ev.tipo == 'solda' %}{% with e=ev.obj %}
+          <li><div class="quando">{{ e.data|date:"d/m/Y" }}</div><div><strong>{% if e.reparo %}Reparo{% else %}Solda{% endif %} · {{ e.metros|floatformat:"-2" }} m</strong> · {{ e.get_passe_display }}<div class="mini-muted">Soldador {{ e.soldador.sinete }} · {{ e.soldador.funcionario.nome }}{% if e.rdc %} · <a href="{% url 'rdc-detail' e.rdc.pk %}">RDC #{{ e.rdc.pk }}</a>{% endif %}{% if e.observacao %} · {{ e.observacao }}{% endif %}</div></div></li>
+        {% endwith %}{% else %}{% with i=ev.obj %}
+          <li class="end {{ i.resultado }}"><div class="quando">{{ i.inspecionado_em|default:i.solicitado_em|date:"d/m/Y" }}</div><div>
+            <strong>{{ i.get_metodo_display }}{% if i.ciclo > 1 %} · após reparo {{ i.ciclo|add:"-1" }}{% endif %}</strong> <span class="sd-pill sd-{{ i.resultado }}">{{ i.get_resultado_display }}</span>
+            <div class="mini-muted">
+              {% if i.resultado == 'pendente' %}Chamada aberta em {{ i.solicitado_em|date:"d/m/Y" }} · aguardando há {{ i.dias_aguardando }} dia(s){% else %}{{ i.metros_inspecionados|floatformat:"-2" }} m inspecionados{% if i.metros_reprovados %} · <span class="text-danger fw-semibold">{{ i.metros_reprovados|floatformat:"-2" }} m reprovados ({{ i.get_defeito_display }})</span>{% endif %}{% if i.inspetor %} · {{ i.inspetor }}{% endif %}{% if i.relatorio %} · rel. {{ i.relatorio }}{% endif %}{% endif %}
+              {% with q=i.soldadores.all %}{% if q %} · soldado por {% for s in q %}{{ s.sinete }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% endwith %}
+            </div>
+          </div></li>
+        {% endwith %}{% endif %}{% endfor %}
+        {% if not eventos %}<li><div class="quando">—</div><div class="text-muted">Nenhuma solda lançada ainda.</div></li>{% endif %}
+      </ol>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    {% if pode_editar and pendente %}
+    <div class="table-card p-3 p-lg-4 mb-4">
+      <div class="section-title mb-1">Resultado do END</div>
+      <div class="mini-muted mb-3">{{ pendente.get_metodo_display }} de {{ pendente.metros_inspecionados|floatformat:"-2" }} m · chamada em {{ pendente.solicitado_em|date:"d/m/Y" }}</div>
+      <form method="post" action="{% url 'solda-end-resultado' pendente.pk %}" class="row g-2">
+        {% csrf_token %}
+        {% for field in resultado_form %}
+          <div class="col-6"><label class="form-label small fw-semibold mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
+        {% endfor %}
+        <div class="col-12 mini-muted">Reprovado: informe os metros e o defeito. A junta volta para reparo.</div>
+        <div class="col-12"><button class="btn btn-dark w-100" type="submit">Registrar resultado</button></div>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if pode_editar and aceita_solda %}
+    <div class="table-card p-3 p-lg-4">
+      <div class="section-title mb-1">{% if e_reparo %}Lançar reparo{% else %}Lançar solda{% endif %}</div>
+      <div class="mini-muted mb-3">{% if e_reparo %}Depois do reparo o sistema abre nova chamada de END.{% else %}Ao completar o comprimento, a chamada de END abre sozinha.{% endif %} Soldador com qualificação vencida ou fora do processo da EPS é bloqueado.</div>
+      <form method="post" action="{% url 'solda-registrar' junta.pk %}" class="row g-2">
+        {% csrf_token %}
+        {% for field in execucao_form %}
+          <div class="{% if field.name == 'soldador' or field.name == 'observacao' %}col-12{% else %}col-6{% endif %}"><label class="form-label small fw-semibold mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
+        {% endfor %}
+        <div class="col-12"><button class="btn btn-primary w-100" type="submit">{% if e_reparo %}Registrar reparo{% else %}Registrar solda{% endif %}</button></div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

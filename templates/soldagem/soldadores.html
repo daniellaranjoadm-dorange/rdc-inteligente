@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Soldadores{% endblock %}
+{% block extra_head %}{% include "soldagem/_estilo.html" %}{% endblock %}
+{% block content %}
+{% include "soldagem/_menu.html" %}
+<div class="dg-page-head">
+  <div><div class="dg-eyebrow">Soldagem e END</div><h1 class="h3 fw-bold mb-1">Soldadores qualificados</h1>
+  <div class="mini-muted">Com a qualificação vencida o sistema não aceita lançar solda para o soldador.</div></div>
+  {% if pode_editar %}<a class="btn btn-primary" href="{% url 'solda-soldador-create' %}">+ Novo soldador</a>{% endif %}
+</div>
+<div class="table-card p-3">
+  <table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Sinete</th><th>Nome</th><th>Empresa</th><th>Processos</th><th>Posições</th><th>Certificado</th><th>Validade</th><th>Qualificação</th>{% if pode_editar %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for s in soldadores %}
+      <tr>
+        <td class="fw-semibold">{{ s.sinete }}</td><td>{{ s.funcionario.nome }}</td><td>{{ s.funcionario.empresa.nome }}</td>
+        <td>{{ s.processos }}</td><td>{{ s.posicoes|default:"-" }}</td><td>{{ s.certificado|default:"-" }}</td>
+        <td>{{ s.validade_qualificacao|date:"d/m/Y" }}</td>
+        <td>{% if not s.ativo %}<span class="sd-pill sd-planejada">Inativo</span>{% else %}<span class="sd-pill sd-{{ s.situacao_qualificacao }}">{% if s.situacao_qualificacao == 'vencida' %}Vencida{% elif s.situacao_qualificacao == 'vencendo' %}Vence em breve{% else %}Válida{% endif %}</span>{% endif %}</td>
+        {% if pode_editar %}<td><a class="btn btn-sm btn-outline-secondary" href="{% url 'solda-soldador-update' s.pk %}">Editar</a></td>{% endif %}
+      </tr>
+    {% empty %}<tr><td colspan="9" class="text-muted">Nenhum soldador cadastrado. O soldador é um funcionário com sinete e qualificação.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Painel de solda{% endblock %}
+{% block extra_head %}{% include "soldagem/_estilo.html" %}{% endblock %}
+{% block content %}
+{% include "soldagem/_menu.html" %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Soldagem e END</div>
+    <h1 class="h3 fw-bold mb-1">Painel de solda</h1>
+    <div class="mini-muted">Metros soldados, fila de ensaios, reparos e taxa de reparo por bloco e por soldador.</div>
+  </div>
+  {% if pode_editar %}<a class="btn btn-primary" href="{% url 'solda-junta-create' %}{% if area_id %}?area={{ area_id }}{% endif %}">+ Nova junta</a>{% endif %}
+</div>
+
+<form method="get" class="table-card p-3 mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-5"><label class="form-label small fw-semibold mb-1" for="f-projeto">Projeto</label>
+      <select id="f-projeto" name="projeto" class="form-select"><option value="">Todos os projetos</option>{% for p in projetos %}<option value="{{ p.pk }}" {% if projeto_id == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select></div>
+    <div class="col-8 col-md-4"><label class="form-label small fw-semibold mb-1" for="f-area">Bloco</label>
+      <select id="f-area" name="area" class="form-select"><option value="">Todos os blocos</option>{% for a in areas %}<option value="{{ a.pk }}" {% if area_id == a.pk|stringformat:'s' %}selected{% endif %}>{{ a.codigo }} · {{ a.descricao }}</option>{% endfor %}</select></div>
+    <div class="col-4 col-md-3"><button class="btn btn-primary w-100" type="submit">Aplicar</button></div>
+  </div>
+</form>
+
+{% if not tem_dados %}
+  <div class="table-card p-4 text-center">
+    <div class="section-title mb-2">Nenhuma junta cadastrada</div>
+    <p class="mini-muted mb-3">Comece cadastrando as EPS (WPS), os soldadores qualificados e as juntas de cada bloco. Depois é só lançar a solda do dia; a chamada de END abre sozinha quando a junta fica completa.</p>
+    {% if pode_editar %}<div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a class="btn btn-outline-secondary" href="{% url 'solda-eps-create' %}">Cadastrar EPS</a>
+      <a class="btn btn-outline-secondary" href="{% url 'solda-soldador-create' %}">Cadastrar soldador</a>
+      <a class="btn btn-primary" href="{% url 'solda-junta-create' %}">Cadastrar junta</a>
+    </div>{% endif %}
+  </div>
+{% else %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-primary h-100"><div class="card-body"><div class="kpi-label">Metros soldados</div><div class="kpi-number">{{ totais.soldado|floatformat:"0" }} m</div><div class="kpi-desc">{{ totais.percentual }}% de {{ totais.previsto|floatformat:"0" }} m · {{ totais.juntas }} junta(s)</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="kpi-label">Juntas aprovadas</div><div class="kpi-number">{{ totais.aprovadas }}</div><div class="kpi-desc">{{ totais.reprovadas }} reprovada(s) aguardando reparo</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="kpi-label">END pendentes</div><div class="kpi-number">{{ totais.end_pendentes }}</div><div class="kpi-desc">{% if totais.end_atrasados %}<span class="text-danger fw-semibold">{{ totais.end_atrasados }} há mais de {{ dias_end_atrasado }} dias</span>{% else %}nenhum atrasado{% endif %}</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong {% if totais.taxa_reparo and totais.taxa_reparo > limite_taxa %}kpi-danger{% else %}kpi-secondary{% endif %} h-100"><div class="card-body"><div class="kpi-label">Taxa de reparo</div><div class="kpi-number {% if totais.taxa_reparo and totais.taxa_reparo > limite_taxa %}sd-taxa-alta{% endif %}">{% if totais.taxa_reparo is not None %}{{ totais.taxa_reparo }}%{% else %}-{% endif %}</div><div class="kpi-desc">{{ totais.reprovado|floatformat:"-2" }} m reprovados de {{ totais.inspecionado|floatformat:"-2" }} m ensaiados · meta ≤ {{ limite_taxa|floatformat:"0" }}%</div></div></div></div>
+</div>
+
+{% if qualificacoes %}
+<div class="alert alert-warning d-flex flex-wrap gap-2 align-items-center">
+  <strong>Qualificações:</strong>
+  {% for s in qualificacoes %}<a class="sd-pill sd-{{ s.situacao_qualificacao }} text-decoration-none" href="{% url 'solda-soldador-update' s.pk %}">{{ s.sinete }} · {% if s.situacao_qualificacao == 'vencida' %}vencida em{% else %}vence{% endif %} {{ s.validade_qualificacao|date:"d/m" }}</a>{% endfor %}
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+  <div class="col-xl-7">
+    <div class="table-card p-3 h-100" id="fila-end">
+      <div class="section-title mb-1">Fila de END</div>
+      <div class="mini-muted mb-2">Chamadas de ensaio sem resultado, mais antigas primeiro.</div>
+      <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Junta</th><th>Bloco</th><th>Ensaio</th><th class="text-end">Metros</th><th>Chamada</th><th class="text-end">Aguardando</th>{% if pode_editar %}<th></th>{% endif %}</tr></thead>
+        <tbody>
+        {% for i in pendentes %}
+          <tr>
+            <td><a class="fw-semibold" href="{% url 'solda-junta-detail' i.junta.pk %}">{{ i.junta.codigo }}</a>{% if i.ciclo > 1 %} <span class="sd-pill sd-reprovada">reparo</span>{% endif %}</td>
+            <td>{{ i.junta.area_local.codigo }}</td><td>{{ i.metodo }}</td>
+            <td class="text-end">{{ i.metros_inspecionados|floatformat:"-2" }}</td>
+            <td>{{ i.solicitado_em|date:"d/m" }}</td>
+            <td class="text-end {% if i.dias_aguardando > dias_end_atrasado %}text-danger fw-semibold{% endif %}">{{ i.dias_aguardando }} d</td>
+            {% if pode_editar %}<td><a class="btn btn-sm btn-outline-primary" href="{% url 'solda-junta-detail' i.junta.pk %}">Lançar resultado</a></td>{% endif %}
+          </tr>
+        {% empty %}<tr><td colspan="7" class="text-muted">Nenhum ensaio pendente.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="table-card p-3 h-100">
+      <div class="section-title mb-1">Reprovadas aguardando reparo</div>
+      <div class="mini-muted mb-2">Reparar e reensaiar antes de fechar o bloco.</div>
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Junta</th><th>Bloco</th><th>END</th></tr></thead>
+        <tbody>
+        {% for j in reprovadas %}<tr><td><a class="fw-semibold" href="{% url 'solda-junta-detail' j.pk %}">{{ j.codigo }}</a><div class="mini-muted">{{ j.descricao }}</div></td><td>{{ j.area_local.codigo }}</td><td>{{ j.metodo_end }}</td></tr>
+        {% empty %}<tr><td colspan="3" class="text-muted">Nenhuma junta reprovada em aberto.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-xl-6">
+    <div class="table-card p-3 h-100">
+      <div class="section-title mb-2">Por bloco</div>
+      <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Bloco</th><th>Soldado</th><th class="text-end">Juntas</th><th class="text-end">Aprov.</th><th class="text-end">END pend.</th><th class="text-end">Reparo</th></tr></thead>
+        <tbody>
+        {% for b in por_bloco %}
+          <tr>
+            <td><a class="fw-semibold" href="?{% if projeto_id %}projeto={{ projeto_id }}&{% endif %}area={{ b.area.pk }}">{{ b.area.codigo }}</a><div class="mini-muted">{{ b.area.casco|default:b.area.descricao }}</div></td>
+            <td><div class="sd-bar" title="{{ b.soldado|floatformat:'0' }} de {{ b.previsto|floatformat:'0' }} m"><span style="width:{{ b.percentual|stringformat:'.1f' }}%"></span></div><div class="mini-muted">{{ b.soldado|floatformat:"0" }}/{{ b.previsto|floatformat:"0" }} m</div></td>
+            <td class="text-end">{{ b.juntas }}</td><td class="text-end">{{ b.aprovadas }}</td><td class="text-end">{{ b.aguardando }}</td>
+            <td class="text-end {% if b.acima_limite %}sd-taxa-alta{% endif %}">{% if b.taxa is not None %}{{ b.taxa }}%{% else %}-{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-6">
+    <div class="table-card p-3 h-100">
+      <div class="section-title mb-1">Por soldador</div>
+      <div class="mini-muted mb-2">Taxa de reparo = metros reprovados ÷ metros ensaiados do soldador. Acima de {{ limite_taxa|floatformat:"0" }}% em vermelho.</div>
+      <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Sinete</th><th class="text-end">Soldou</th><th class="text-end">Ensaiado</th><th class="text-end">Reprov.</th><th class="text-end">Reparo</th><th>Qualif.</th></tr></thead>
+        <tbody>
+        {% for l in por_soldador %}
+          <tr>
+            <td class="fw-semibold">{{ l.soldador.sinete }}<div class="mini-muted fw-normal">{{ l.soldador.funcionario.nome }}</div></td>
+            <td class="text-end">{{ l.metros|floatformat:"0" }} m</td>
+            <td class="text-end">{{ l.inspecionado|floatformat:"0" }} m</td>
+            <td class="text-end">{{ l.reprovado|floatformat:"-1" }} m</td>
+            <td class="text-end {% if l.acima_limite %}sd-taxa-alta{% endif %}">{% if l.taxa is not None %}{{ l.taxa }}%{% else %}-{% endif %}</td>
+            <td><span class="sd-pill sd-{{ l.soldador.situacao_qualificacao }}">{% if l.soldador.situacao_qualificacao == 'vencida' %}Vencida{% elif l.soldador.situacao_qualificacao == 'vencendo' %}Vence {{ l.soldador.validade_qualificacao|date:"d/m" }}{% else %}Válida{% endif %}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

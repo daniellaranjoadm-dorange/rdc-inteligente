@@ -37,6 +37,8 @@ def traduzir_acao_auditoria(action):
         "copiar_rdc": "Criou RDC copiando outro",
         "criar_atividade_planejada": "Cadastrou atividade planejada",
         "editar_atividade_planejada": "Editou atividade planejada",
+        "registrar_solda": "Lançou solda",
+        "resultado_end": "Lançou resultado de END",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Juntas de solda{% endblock %}
+{% block extra_head %}{% include "soldagem/_estilo.html" %}{% endblock %}
+{% block content %}
+{% include "soldagem/_menu.html" %}
+<div class="dg-page-head">
+  <div><div class="dg-eyebrow">Soldagem e END</div><h1 class="h3 fw-bold mb-1">Juntas de solda</h1>
+  <div class="mini-muted">Mapa de juntas por bloco, com EPS, END exigido e situação.</div></div>
+  {% if pode_editar %}<a class="btn btn-primary" href="{% url 'solda-junta-create' %}">+ Nova junta</a>{% endif %}
+</div>
+
+<form method="get" class="table-card p-3 mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-3"><label class="form-label small fw-semibold mb-1" for="f-q">Buscar</label><input id="f-q" name="q" value="{{ f.q }}" class="form-control" placeholder="Junta ou localização"></div>
+    <div class="col-6 col-md-3"><label class="form-label small fw-semibold mb-1" for="f-projeto">Projeto</label>
+      <select id="f-projeto" name="projeto" class="form-select"><option value="">Todos</option>{% for p in projetos %}<option value="{{ p.pk }}" {% if f.projeto == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label small fw-semibold mb-1" for="f-area">Bloco</label>
+      <select id="f-area" name="area" class="form-select"><option value="">Todos</option>{% for a in areas %}<option value="{{ a.pk }}" {% if f.area == a.pk|stringformat:'s' %}selected{% endif %}>{{ a.codigo }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label small fw-semibold mb-1" for="f-status">Situação</label>
+      <select id="f-status" name="status" class="form-select"><option value="">Todas</option>{% for v, r in status_choices %}<option value="{{ v }}" {% if f.status == v %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><button class="btn btn-primary w-100" type="submit">Filtrar</button></div>
+  </div>
+</form>
+
+<div class="table-card p-3">
+  <div class="table-responsive">
+  <table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Junta</th><th>Bloco</th><th>Tipo</th><th class="text-end">Comprimento</th><th>EPS</th><th>END</th><th>Situação</th></tr></thead>
+    <tbody>
+    {% for j in juntas %}
+      <tr>
+        <td><a class="fw-semibold" href="{% url 'solda-junta-detail' j.pk %}">{{ j.codigo }}</a><div class="mini-muted">{{ j.descricao }}</div></td>
+        <td>{{ j.area_local.codigo }}</td><td>{{ j.get_tipo_display }}</td>
+        <td class="text-end">{{ j.comprimento_m|floatformat:"-2" }} m</td>
+        <td>{{ j.eps.codigo|default:"-" }}</td><td>{{ j.metodo_end|default:"-" }}</td>
+        <td><span class="sd-pill sd-{{ j.status }}">{{ j.get_status_display }}</span></td>
+      </tr>
+    {% empty %}<tr><td colspan="7" class="text-muted">Nenhuma junta encontrada.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if is_paginated %}
+  <div class="d-flex justify-content-between align-items-center mt-3 small">
+    <span class="mini-muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} junta(s)</span>
+    <div class="d-flex gap-2">
+      {% if page_obj.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page_obj.previous_page_number }}&q={{ f.q|urlencode }}&projeto={{ f.projeto }}&area={{ f.area }}&status={{ f.status }}">Anterior</a>{% endif %}
+      {% if page_obj.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page_obj.next_page_number }}&q={{ f.q|urlencode }}&projeto={{ f.projeto }}&area={{ f.area }}&status={{ f.status }}">Próxima</a>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -19,6 +19,11 @@ from django.utils import timezone
 
 # Ordem importa: filhos antes dos pais (vários vínculos são PROTECT).
 MODELOS = [
+    "soldagem.InspecaoEND",
+    "soldagem.ExecucaoSolda",
+    "soldagem.JuntaSolda",
+    "soldagem.Soldador",
+    "soldagem.EPS",
     "rdc.RDC",                       # leva atividades, equipe, apontamentos, fotos, aceites, paralisações...
     "rdc.ProgramacaoSemanal",
     "rdc.PerfilOperacionalUsuario",  # vínculo do usuário com um funcionário (modo campo)
@@ -37,7 +42,7 @@ MODELOS = [
     "cadastros.Disciplina",
     "cadastros.Projeto",
 ]
-APPS_BACKUP = ["cadastros", "planejamento", "alocacao", "acesso", "importacoes", "core", "rdc"]
+APPS_BACKUP = ["cadastros", "planejamento", "alocacao", "acesso", "importacoes", "core", "rdc", "soldagem"]
 
 
 def _modelos():

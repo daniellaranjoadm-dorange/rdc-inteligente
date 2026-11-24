@@ -54,6 +54,7 @@ urlpatterns = [
     # web apps
     path("", include("core.urls")),
     path("rdc/", include("rdc.urls")),
+    path("soldagem/", include("soldagem.urls")),
     path("importacoes/", include("importacoes.urls")),
     path("cadastros/", include("cadastros.urls")),
 
