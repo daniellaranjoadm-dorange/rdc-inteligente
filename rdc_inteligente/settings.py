@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "acesso",
     "rdc",
     "soldagem",
+    "punchlist",
     "importacoes",
     "relatorios",
 ]

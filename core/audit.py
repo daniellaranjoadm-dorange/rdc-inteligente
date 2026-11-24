@@ -39,6 +39,10 @@ def traduzir_acao_auditoria(action):
         "editar_atividade_planejada": "Editou atividade planejada",
         "registrar_solda": "Lançou solda",
         "resultado_end": "Lançou resultado de END",
+        "abrir_punch": "Abriu pendência (punch)",
+        "resolver_punch": "Resolveu pendência (punch)",
+        "verificar_punch": "Verificou pendência (punch)",
+        "cancelar_punch": "Cancelou pendência (punch)",
     }
     return mapa.get(action, str(action or "").replace("_", " ").title())
 

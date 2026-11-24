@@ -73,8 +73,10 @@ def gerar_alertas(hoje=None, projeto_id=None):
             "url": f"/rdc/{l.rdc_id}/#aceite-fiscal", "acao": "Gerar novo link",
         })
 
+    from punchlist.services import alertas_punch
     from soldagem.services import alertas_solda
     alertas.extend(alertas_solda(hoje, projeto_id=projeto_id))
+    alertas.extend(alertas_punch(hoje, projeto_id=projeto_id))
 
     ordem = {"danger": 0, "warning": 1, "info": 2}
     alertas.sort(key=lambda a: ordem.get(a["nivel"], 3))

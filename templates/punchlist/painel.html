@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Punch list{% endblock %}
+{% block extra_head %}{% include "punchlist/_estilo.html" %}{% endblock %}
+{% block content %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Qualidade e entrega</div>
+    <h1 class="h3 fw-bold mb-1">Punch list</h1>
+    <div class="mini-muted">Pendências por bloco e compartimento. Bloco só é liberado sem pendência categoria A.</div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-secondary" href="?{{ query_csv }}{% if query_csv %}&{% endif %}formato=csv">Exportar CSV</a>
+    <a class="btn btn-primary" href="{% url 'punch-create' %}{% if f.area %}?area={{ f.area }}{% elif f.projeto %}?projeto={{ f.projeto }}{% endif %}">+ Nova pendência</a>
+  </div>
+</div>
+
+<form method="get" class="table-card p-3 mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-2"><label class="form-label small fw-semibold mb-1" for="f-q">Buscar</label><input id="f-q" name="q" value="{{ f.q }}" class="form-control" placeholder="PL-0012, texto, compartimento"></div>
+    <div class="col-6 col-md-2"><label class="form-label small fw-semibold mb-1" for="f-projeto">Projeto</label>
+      <select id="f-projeto" name="projeto" class="form-select"><option value="">Todos</option>{% for p in projetos %}<option value="{{ p.pk }}" {% if f.projeto == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label small fw-semibold mb-1" for="f-area">Bloco</label>
+      <select id="f-area" name="area" class="form-select"><option value="">Todos</option>{% for a in areas %}<option value="{{ a.pk }}" {% if f.area == a.pk|stringformat:'s' %}selected{% endif %}>{{ a.codigo }}</option>{% endfor %}</select></div>
+    <div class="col-4 col-md-2"><label class="form-label small fw-semibold mb-1" for="f-cat">Categoria</label>
+      <select id="f-cat" name="categoria" class="form-select"><option value="">Todas</option>{% for v, r in categorias %}<option value="{{ v }}" {% if f.categoria == v %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div class="col-8 col-md-2"><label class="form-label small fw-semibold mb-1" for="f-sit">Situação</label>
+      <select id="f-sit" name="situacao" class="form-select">
+        <option value="" {% if not f.situacao %}selected{% endif %}>Em aberto</option>
+        <option value="vencidas" {% if f.situacao == 'vencidas' %}selected{% endif %}>Vencidas</option>
+        <option value="todas" {% if f.situacao == 'todas' %}selected{% endif %}>Todas</option>
+      </select></div>
+    <div class="col-12 col-md-2"><button class="btn btn-primary w-100" type="submit">Filtrar</button></div>
+    {% if f.status %}<input type="hidden" name="status" value="{{ f.status }}">{% endif %}
+  </div>
+</form>
+
+{% if not tem_dados %}
+  <div class="table-card p-4 text-center">
+    <div class="section-title mb-2">Nenhuma pendência registrada</div>
+    <p class="mini-muted mb-3">Registre no próprio bloco, pelo celular: o que está pendente, categoria (A impede concluir/testar), foto, responsável e prazo. O executante marca como resolvido e o CQ verifica no local.</p>
+    <a class="btn btn-primary" href="{% url 'punch-create' %}">Abrir a primeira pendência</a>
+  </div>
+{% else %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-primary h-100"><div class="card-body"><div class="kpi-label">Em aberto</div><div class="kpi-number">{{ totais.abertas }}</div><div class="kpi-desc">{{ totais.fechadas }} fechada(s) no total · {{ totais.fechadas_semana }} nos últimos 7 dias</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-danger h-100"><div class="card-body"><div class="kpi-label">Categoria A</div><div class="kpi-number {% if totais.categoria_a %}pl-vencida{% endif %}">{{ totais.categoria_a }}</div><div class="kpi-desc">impedem concluir ou testar</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-warning h-100"><div class="card-body"><div class="kpi-label">Vencidas</div><div class="kpi-number">{{ totais.vencidas }}</div><div class="kpi-desc">{{ totais.verificar }} aguardando verificação do CQ</div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card kpi-card-strong kpi-success h-100"><div class="card-body"><div class="kpi-label">Tempo médio p/ fechar</div><div class="kpi-number">{% if totais.tempo_medio is not None %}{{ totais.tempo_medio }} d{% else %}-{% endif %}</div><div class="kpi-desc">{{ totais.reabertas }} pendência(s) com correção recusada</div></div></div></div>
+</div>
+
+<div class="table-card p-3 mb-4">
+  <div class="section-title mb-1">Por bloco</div>
+  <div class="mini-muted mb-2">Pior situação primeiro. Liberado = nenhuma pendência A em aberto.</div>
+  <div class="table-responsive">
+  <table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Bloco</th><th class="text-end">A</th><th class="text-end">B</th><th class="text-end">C</th><th class="text-end">Vencidas</th><th class="text-end">Verificar</th><th>Fechadas</th><th>Liberação</th></tr></thead>
+    <tbody>
+    {% for b in por_bloco %}
+      <tr>
+        <td><a class="fw-semibold" href="?area={{ b.area.pk }}{% if f.projeto %}&projeto={{ f.projeto }}{% endif %}">{{ b.area.codigo }}</a><div class="mini-muted">{{ b.area.casco|default:b.area.descricao }}</div></td>
+        <td class="text-end {% if b.A %}pl-vencida{% endif %}">{{ b.A }}</td><td class="text-end">{{ b.B }}</td><td class="text-end">{{ b.C }}</td>
+        <td class="text-end {% if b.vencidas %}pl-vencida{% endif %}">{{ b.vencidas }}</td><td class="text-end">{{ b.verificar }}</td>
+        <td style="min-width:120px"><div class="sd-bar" style="height:10px;border-radius:999px;background:var(--dg-silver-100);overflow:hidden"><span style="display:block;height:100%;background:#16a34a;width:{{ b.percentual }}%"></span></div><div class="mini-muted">{{ b.fechadas }}/{{ b.total }}</div></td>
+        <td>{% if b.liberado %}<span class="pl-lib ok">Liberado</span>{% else %}<span class="pl-lib no">Bloqueado por A</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="table-card p-3">
+  <div class="d-flex justify-content-between align-items-baseline flex-wrap gap-2 mb-2">
+    <div class="section-title mb-0">Pendências</div>
+    <div class="mini-muted">{{ total_filtrado }} encontrada(s){% if total_filtrado > 300 %} · mostrando 300{% endif %}</div>
+  </div>
+  <div class="table-responsive">
+  <table class="table table-sm align-middle mb-0">
+    <thead><tr><th></th><th>Código</th><th>Pendência</th><th>Bloco</th><th>Responsável</th><th>Prazo</th><th>Situação</th></tr></thead>
+    <tbody>
+    {% for i in itens %}
+      <tr class="pl-item-row">
+        <td><span class="pl-cat pl-cat-{{ i.categoria }}" title="{{ i.get_categoria_display }}">{{ i.categoria }}</span></td>
+        <td class="fw-semibold text-nowrap"><a href="{% url 'punch-detail' i.pk %}">{{ i.codigo }}</a></td>
+        <td>{{ i.descricao|truncatechars:90 }}<div class="mini-muted">{% if i.compartimento %}{{ i.compartimento }} · {% endif %}{{ i.get_origem_display }}{% if i.disciplina %} · {{ i.disciplina.nome }}{% endif %}</div></td>
+        <td>{{ i.area_local.codigo }}</td>
+        <td>{{ i.responsavel_empresa.nome|default:"" }}<div class="mini-muted">{{ i.responsavel }}</div></td>
+        <td class="text-nowrap {% if i.vencida %}pl-vencida{% endif %}">{{ i.prazo|date:"d/m/y"|default:"-" }}</td>
+        <td><span class="pl-pill pl-{{ i.status }}">{{ i.get_status_display }}</span></td>
+      </tr>
+    {% empty %}<tr><td colspan="7" class="text-muted">Nenhuma pendência com esses filtros.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

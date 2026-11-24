@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ item.codigo }}{% endblock %}
+{% block extra_head %}{% include "punchlist/_estilo.html" %}{% endblock %}
+{% block content %}
+<div class="dg-page-head">
+  <div>
+    <div class="dg-eyebrow">Punch list · {{ item.projeto.nome }}</div>
+    <h1 class="h3 fw-bold mb-1 d-flex align-items-center gap-2 flex-wrap"><span class="pl-cat pl-cat-{{ item.categoria }}">{{ item.categoria }}</span> {{ item.codigo }} <span class="pl-pill pl-{{ item.status }}">{{ item.get_status_display }}</span></h1>
+    <div class="mini-muted">Bloco {{ item.area_local.codigo }}{% if item.compartimento %} · {{ item.compartimento }}{% endif %} · {{ item.get_categoria_display }} · {{ item.get_origem_display }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'punch-painel' %}?area={{ item.area_local_id }}">Voltar ao bloco</a>
+    {% if pode_verificar and item.em_aberto %}<a class="btn btn-outline-secondary" href="{% url 'punch-update' item.pk %}">Editar</a>{% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="table-card p-3 p-lg-4 mb-4">
+      <div class="section-title mb-2">O que está pendente</div>
+      <p class="mb-3" style="white-space:pre-line">{{ item.descricao }}</p>
+      <div class="row g-2 small">
+        <div class="col-6"><span class="mini-muted d-block">Responsável</span>{{ item.responsavel_empresa.nome|default:"-" }}{% if item.responsavel %} · {{ item.responsavel }}{% endif %}</div>
+        <div class="col-6"><span class="mini-muted d-block">Prazo</span><span class="{% if item.vencida %}pl-vencida{% endif %}">{{ item.prazo|date:"d/m/Y"|default:"sem prazo" }}{% if item.vencida %} · vencida{% endif %}</span></div>
+        <div class="col-6"><span class="mini-muted d-block">Disciplina</span>{{ item.disciplina.nome|default:"-" }}</div>
+        <div class="col-6"><span class="mini-muted d-block">Aberta</span>{{ item.created_at|date:"d/m/Y H:i" }}{% if item.aberta_por %} · {{ item.aberta_por.username }}{% endif %} · {{ item.dias_aberta }} dia(s)</div>
+      </div>
+      {% if fotos_abertura %}<div class="mini-muted mt-3 mb-1">Fotos da abertura</div><div class="pl-fotos">{% for f in fotos_abertura %}<a href="{% url 'punch-foto' f.pk %}" target="_blank" rel="noopener"><img src="{% url 'punch-foto-mini' f.pk %}" alt="Foto da pendência" loading="lazy"></a>{% endfor %}</div>{% endif %}
+    </div>
+
+    {% if item.resolvida_em or item.fechada_em %}
+    <div class="table-card p-3 p-lg-4">
+      <div class="section-title mb-2">Histórico</div>
+      {% if item.resolvida_em %}<p class="mb-2"><strong>Resolvida</strong> em {{ item.resolvida_em|date:"d/m/Y H:i" }}{% if item.resolvida_por %} por {{ item.resolvida_por.username }}{% endif %}{% if item.nota_resolucao %}: {{ item.nota_resolucao }}{% endif %}</p>{% endif %}
+      {% if fotos_resolucao %}<div class="pl-fotos mb-2">{% for f in fotos_resolucao %}<a href="{% url 'punch-foto' f.pk %}" target="_blank" rel="noopener"><img src="{% url 'punch-foto-mini' f.pk %}" alt="Foto da correção" loading="lazy"></a>{% endfor %}</div>{% endif %}
+      {% if item.reaberturas %}<p class="mb-2 text-danger">Correção recusada {{ item.reaberturas }} vez(es).{% if item.nota_verificacao and item.em_aberto %} Último motivo: {{ item.nota_verificacao }}{% endif %}</p>{% endif %}
+      {% if item.fechada_em %}<p class="mb-0"><strong>{% if item.status == 'cancelada' %}Cancelada{% else %}Fechada (verificada){% endif %}</strong> em {{ item.fechada_em|date:"d/m/Y H:i" }}{% if item.fechada_por %} por {{ item.fechada_por.username }}{% endif %}{% if item.nota_verificacao %}: {{ item.nota_verificacao }}{% endif %}</p>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-5">
+    {% if item.status == 'aberta' or item.status == 'em_andamento' %}
+    <div class="table-card p-3 p-lg-4 mb-4">
+      <div class="section-title mb-1">Marcar como resolvida</div>
+      <div class="mini-muted mb-3">Diga o que foi feito e/ou tire a foto da correção. O CQ confere depois no local.</div>
+      <form method="post" action="{% url 'punch-acao' item.pk 'resolver' %}" enctype="multipart/form-data" class="d-grid gap-2">
+        {% csrf_token %}
+        <textarea name="nota" rows="2" class="form-control" placeholder="Ex.: guarda-corpo soldado e pintado"></textarea>
+        <input type="file" name="fotos" accept="image/*" capture="environment" multiple class="form-control" aria-label="Fotos da correção">
+        <button class="btn btn-primary" type="submit">Resolvida, enviar para verificação</button>
+      </form>
+      {% if item.status == 'aberta' %}
+      <form method="post" action="{% url 'punch-acao' item.pk 'iniciar' %}" class="mt-2">{% csrf_token %}<button class="btn btn-outline-secondary w-100" type="submit">Marcar em andamento</button></form>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if pode_verificar and item.status == 'aguardando_verificacao' %}
+    <div class="table-card p-3 p-lg-4 mb-4">
+      <div class="section-title mb-1">Verificação do CQ</div>
+      <div class="mini-muted mb-3">Confira no local. Recusar volta a pendência para o executante.</div>
+      <form method="post" action="{% url 'punch-acao' item.pk 'verificar' %}" class="d-grid gap-2">
+        {% csrf_token %}
+        <textarea name="nota" rows="2" class="form-control" placeholder="Observação (obrigatória para recusar)"></textarea>
+        <div class="d-flex gap-2">
+          <button class="btn btn-dark flex-fill" name="decisao" value="aceitar" type="submit">Aceitar e fechar</button>
+          <button class="btn btn-outline-danger flex-fill" name="decisao" value="recusar" type="submit">Recusar</button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if pode_verificar and item.em_aberto %}
+    <details class="table-card p-3">
+      <summary class="fw-semibold">Cancelar pendência</summary>
+      <form method="post" action="{% url 'punch-acao' item.pk 'cancelar' %}" class="d-grid gap-2 mt-2">
+        {% csrf_token %}
+        <input name="nota" class="form-control" placeholder="Motivo (ex.: duplicada, fora de escopo)">
+        <button class="btn btn-outline-secondary" type="submit">Cancelar pendência</button>
+      </form>
+    </details>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

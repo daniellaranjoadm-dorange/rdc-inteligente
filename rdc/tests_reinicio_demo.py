@@ -55,6 +55,7 @@ class ProjetoDemoTests(TestCase):
         self.assertGreater(RDC.objects.filter(projeto=projeto).count(), 100)
         self.assertTrue(RDCParalisacao.objects.filter(rdc__projeto=projeto, motivo="falta_material").exists())
         self.assertEqual(RDCOcorrencia.objects.filter(rdc__projeto=projeto).count(), 3)
+        self.assertEqual(projeto.punch_itens.count(), 16)
         from rdc.models import CalendarioPlanejamento, PerfilOperacionalUsuario
         self.assertTrue(CalendarioPlanejamento.objects.filter(projeto=projeto, data=timezone.localdate()).exists())
         self.assertTrue(PerfilOperacionalUsuario.objects.filter(user__username="admin_demo").exists())

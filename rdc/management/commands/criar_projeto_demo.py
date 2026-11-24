@@ -94,7 +94,9 @@ class Command(BaseCommand):
 
     # ------------------------------------------------------------------ remover
     def _remover(self):
+        from punchlist.models import PunchItem
         from soldagem.models import EPS, JuntaSolda, Soldador
+        PunchItem.objects.filter(projeto__codigo=CODIGO).delete()
         JuntaSolda.objects.filter(projeto__codigo=CODIGO).delete()
         Soldador.objects.filter(funcionario__matricula__startswith=PREFIXO).delete()
         EPS.objects.filter(codigo__startswith=PREFIXO).delete()
@@ -193,9 +195,10 @@ class Command(BaseCommand):
         self._ocorrencias(projeto, hoje, usuario)
         self._calendario(projeto, min(a.data_inicio for a, _, _ in crono) - timedelta(days=14), hoje + timedelta(days=150))
         juntas = self._soldagem(projeto, areas, pessoas["DEMO-SOL"], hoje, usuario)
+        punch = self._punch(projeto, areas, disciplinas, hoje, usuario)
         self.stdout.write(self.style.SUCCESS(
             f"Projeto {CODIGO} criado: {len(areas)} áreas, {len(crono)} atividades planejadas, {rdcs} RDCs, "
-            f"{juntas} juntas de solda. "
+            f"{juntas} juntas de solda, {punch} pendências no punch list. "
             f"Abra /rdc/avanco/?projeto={projeto.pk}"))
 
     def _rdc_do_dia(self, projeto, area, disciplina, equipe, time_, dia, hoje, lista, feito, usuario):
@@ -384,3 +387,55 @@ class Command(BaseCommand):
                     registrar_execucao(junta, soldador=random.choice(soldadores[:3]), data=data_reparo,
                                        metros=Decimal("2.0"), reparo=True, usuario=usuario)
         return total
+
+    def _punch(self, projeto, areas, disciplinas, hoje, usuario):
+        """Pendências típicas de bloco naval em várias situações (A/B/C, vencidas, em verificação, fechadas)."""
+        from datetime import timedelta as td
+        from punchlist.models import PunchItem
+        from punchlist.services import abrir_item, iniciar_item, resolver_item, verificar_item
+
+        empresa = Empresa.objects.filter(nome__startswith="DEMO Estaleiro").first()
+        pintura = Empresa.objects.filter(nome__startswith="DEMO Pinturas").first()
+        d = disciplinas
+        # (bloco, compartimento, disciplina, cat, origem, descrição, empresa, dias atrás, prazo em dias, situação final)
+        casos = [
+            ("B101", "Duplo-fundo, tanque 1BB", "DEMO-EST", "C", "interna", "Rebarba de corte na borda do agulheiro.", empresa, 30, 10, "fechada"),
+            ("B101", "Convés principal", "DEMO-PIN", "B", "fiscal", "Retoque de pintura na região da solda C-07.", pintura, 25, 10, "fechada"),
+            ("B101", "Antepara 34", "DEMO-SOL", "B", "interna", "Mordedura na solda de filete do reforço vertical.", empresa, 22, 7, "fechada"),
+            ("B102", "Costado BE, caverna 28", "DEMO-SOL", "A", "classe", "Reparo da junta B102-C05 reprovada no ultrassom (falta de fusão, 2,5 m).", empresa, 6, 4, "aberta"),
+            ("B102", "Duplo-fundo", "DEMO-EST", "B", "interna", "Agulheiro de passagem fora de cota (desvio de 12 mm).", empresa, 9, 7, "andamento"),
+            ("B102", "Antepara 30", "DEMO-TUB", "B", "comissionamento", "Falta suporte do spool TUB-B102-04.", empresa, 4, 10, "verificacao"),
+            ("B102", "Convés", "DEMO-PIN", "C", "fiscal", "Marcação de tinta ilegível na identificação do bloco.", pintura, 3, 15, "aberta"),
+            ("B201", "Praça de máquinas, nível 2", "DEMO-ELE", "B", "interna", "Bandeja de cabos sem aterramento no trecho 3.", empresa, 8, 5, "verificacao"),
+            ("B201", "Praça de máquinas", "DEMO-EST", "C", "interna", "Olhais de içamento ainda não removidos.", empresa, 5, 20, "aberta"),
+            ("B201", "Tanque 2BE", "DEMO-PIN", "B", "classe", "Espessura de película abaixo do especificado em 3 pontos.", pintura, 12, 6, "recusada"),
+            ("B202", "Costado BB", "DEMO-EST", "A", "interna", "Abertura provisória para passagem de material sem fechamento (aguardando chapa de 12,5 mm).", empresa, 15, 5, "aberta"),
+            ("B202", "Antepara 40", "DEMO-SOL", "A", "fiscal", "Junta B202-C03 sem resultado de END; não liberar edificação.", empresa, 10, 3, "aberta"),
+            ("B202", "Duplo-fundo", "DEMO-TUB", "B", "comissionamento", "Teste hidrostático do trecho de lastro pendente.", empresa, 7, 4, "aberta"),
+            ("B202", "Convés", "DEMO-EST", "C", "seguranca", "Guarda-corpo provisório com fixação improvisada.", empresa, 2, 3, "aberta"),
+            ("B301", "Convés principal", "DEMO-EST", "B", "interna", "Desalinhamento de 4 mm na costura transversal.", empresa, 4, 10, "aberta"),
+            ("B301", "Superestrutura", "DEMO-ELE", "C", "interna", "Furos de passagem de cabos sem bucha de proteção.", empresa, 1, 20, "aberta"),
+        ]
+        for bloco, comp, disc, cat, origem, desc, emp, atras, prazo, final in casos:
+            item = abrir_item(projeto=projeto, area_local=areas[bloco], descricao=desc, categoria=cat, usuario=usuario,
+                              compartimento=comp, disciplina=d[disc], origem=origem, responsavel_empresa=emp,
+                              responsavel="Encarregado " + d[disc].nome.split()[0].lower(),
+                              prazo=hoje - timedelta(days=atras) + timedelta(days=prazo))
+            aberta_em = timezone.now() - timedelta(days=atras)
+            if final in ("andamento", "verificacao", "fechada", "recusada"):
+                iniciar_item(item)
+            if final in ("verificacao", "fechada", "recusada"):
+                resolver_item(item, nota="Corrigido conforme procedimento.", usuario=usuario)
+            if final == "fechada":
+                verificar_item(item, aprovado=True, nota="Conferido no local.", usuario=usuario)
+            if final == "recusada":
+                verificar_item(item, aprovado=False, nota="Ainda abaixo de 250 µm em 1 ponto; refazer.", usuario=usuario)
+            # datas no passado só depois das transições (o save() delas regravaria created_at)
+            datas = {"created_at": aberta_em}
+            if final == "fechada":
+                fechada = aberta_em + timedelta(days=random.randint(2, 6))
+                datas.update(fechada_em=fechada, resolvida_em=fechada - td(days=1))
+            elif final in ("verificacao", "recusada"):
+                datas["resolvida_em"] = timezone.now() - td(days=1)
+            PunchItem.objects.filter(pk=item.pk).update(**datas)
+        return len(casos)
